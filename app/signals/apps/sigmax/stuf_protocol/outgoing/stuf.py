@@ -61,7 +61,8 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
             cert=cert,
             verify=verify,
             headers=headers,
-            data=encoded
+            data=encoded,
+            timeout=30,
         )
         response.raise_for_status()
     except requests.RequestException as e:
