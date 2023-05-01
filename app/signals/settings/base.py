@@ -274,6 +274,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_EXTENDED = True
 CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', False) in TRUE_VALUES
+CELERY_TASK_DEFAULT_PRIORITY = 5  # Make sure that all task are scheduled with a default priority of '5'
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
