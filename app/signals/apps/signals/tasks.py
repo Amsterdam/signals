@@ -32,7 +32,7 @@ def apply_routing(signal_id):
     dsl_service.process_routing_rules(signal)
 
 
-@app.task
+@app.task(priority=0)
 def anonymize_reporters(days=365):
     created_before = (timezone.now() - timezone.timedelta(days=days))
     allowed_signal_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
@@ -47,12 +47,12 @@ def anonymize_reporters(days=365):
 
     reporter_count = reporter_ids.count()
     for reporter_id in reporter_ids:
-        anonymize_reporter.delay(reporter_id=reporter_id)
+        anonymize_reporter.apply_async(kwargs={'reporter_id': reporter_id}, priority=0)
 
     return reporter_count
 
 
-@app.task
+@app.task(priority=0)
 def anonymize_reporter(reporter_id):
     try:
         reporter = Reporter.objects.get(pk=reporter_id)
