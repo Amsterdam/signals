@@ -10,8 +10,8 @@ from elasticsearch_dsl import (
 
 class StatusMessage(Document):
     id = Integer()
-    title = Text()
-    text = Text()
+    title = Text(analyzer='dutch')
+    text = Text(analyzer='dutch')
     state = Text()
     active = Boolean()
 
