@@ -3429,6 +3429,15 @@ components:
           description: A list of child categories
           items:
             $ref: '#/components/schemas/publicCategoryChildResponse'
+        configuration:
+          type: object
+          nullable: true
+          properties:
+            show_children_in_filter:
+              type: boolean
+              description: >-
+                This should control whether or not the child categories of this category should be displayed in the
+                category filter.
 
     publicCategoryChildResponse:
       description: JSON data describing the public parent category response
