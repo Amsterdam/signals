@@ -296,6 +296,19 @@ EMAIL_REST_ENDPOINT_CLIENT_CERT = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_CERT', N
 EMAIL_REST_ENDPOINT_CLIENT_KEY = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_KEY', None)
 EMAIL_REST_ENDPOINT_CA_BUNDLE = os.getenv('EMAIL_REST_ENDPOINT_CA_BUNDLE', None)
 
+O365_ACTUALLY_SEND_IN_DEBUG = os.getenv('O365_ACTUALLY_SEND_IN_DEBUG', False) in TRUE_VALUES
+O365_MAIL_CLIENT_ID = os.getenv('O365_MAIL_CLIENT_ID', None)
+O365_MAIL_CLIENT_SECRET = os.getenv('O365_MAIL_CLIENT_SECRET', None)
+O365_MAIL_TENANT_ID = os.getenv('O365_MAIL_TENANT_ID', None)
+O365_MAIL_ACCOUNT_KWARGS = {
+    'token_backend': 'O365.utils.token.EnvTokenBackend'
+}
+
+if os.getenv('O365_MAIL_RESOURCE'):
+    O365_MAIL_MAILBOX_KWARGS = {
+        'resource': os.getenv('O365_MAIL_RESOURCE')
+    }
+
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Meldingen gemeente Amsterdam <noreply@meldingen.amsterdam.nl>')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
