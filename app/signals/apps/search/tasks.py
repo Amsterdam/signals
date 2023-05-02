@@ -102,6 +102,7 @@ def index_status_message(status_message_id: int):
     status_message = StatusMessageModel.objects.get(id=status_message_id)
 
     document = StatusMessageDocument()
+    document.meta['id'] = status_message_id
     document.id = status_message.id
     document.title = status_message.title
     document.text = status_message.text
