@@ -92,6 +92,13 @@ def index_signals_updated_in_date_range(from_date=None, to_date=None):
 
 @app.task
 def index_status_message(status_message_id: int):
+    """Celery task that indexes a status message.
+
+    Parameters
+    ----------
+    status_message_id : int
+        The database id of the status message to be indexed.
+    """
     status_message = StatusMessageModel.objects.get(id=status_message_id)
 
     document = StatusMessageDocument()
