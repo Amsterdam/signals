@@ -3,8 +3,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from signals.apps.search.documents.status_message import StatusMessage as StatusMessageDocument
-from signals.apps.search.tasks import save_to_elastic
+from signals.apps.search.tasks import index_status_message, save_to_elastic
 from signals.apps.signals.managers import (
     create_child,
     create_initial,
@@ -40,11 +39,4 @@ def status_message_post_save_receiver(sender: str, instance: StatusMessageModel,
     instance : StatusMessageModel
         The instance of the StatusMessage model that was saved to the database.
     """
-    document = StatusMessageDocument()
-    document.id = instance.id
-    document.title = instance.title
-    document.text = instance.text
-    document.active = instance.active
-    document.state = instance.state
-
-    document.save()
+    index_status_message.delay(status_message_id=instance.id)
