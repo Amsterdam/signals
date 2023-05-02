@@ -47,6 +47,7 @@ class ParentCategoryHALSerializer(HALSerializer):
     _display = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='children')
     is_public_accessible = serializers.SerializerMethodField(method_name='get_is_public_accessible')
+    configuration = serializers.JSONField(required=False)
 
     class Meta:
         model = Category
@@ -58,6 +59,7 @@ class ParentCategoryHALSerializer(HALSerializer):
             'public_name',
             'is_public_accessible',
             'sub_categories',
+            'configuration',
         )
 
     def get_is_public_accessible(self, obj):
