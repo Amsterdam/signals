@@ -26,7 +26,7 @@ def add_to_elastic_handler(sender, signal_obj, **kwargs):
     save_to_elastic.delay(signal_id=signal_obj.id)
 
 
-@receiver(post_save, sender=StatusMessageModel)
+@receiver(post_save, sender=StatusMessageModel, dispatch_uid='status_message_post_save_receiver')
 def status_message_post_save_receiver(sender: str, instance: StatusMessageModel, **kwargs):
     """Django signal receiver used to index StatusMessage models in elasticsearch
     after they're saved in the database.

@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
+from django.db.models import signals
 
 from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.factories.status_message import (
     StatusMessageCategoryFactory,
     StatusMessageFactory
 )
-from signals.apps.signals.models import StatusMessageCategory
+from signals.apps.signals.models import StatusMessage, StatusMessageCategory
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -19,6 +20,8 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     PATH = '/signals/v1/private/status-messages/'
 
     def setUp(self):
+        signals.post_save.disconnect(sender=StatusMessage, dispatch_uid='status_message_post_save_receiver')
+
         statusmessagetemplate_write_permission = Permission.objects.get(
             codename='sia_statusmessage_write'
         )
