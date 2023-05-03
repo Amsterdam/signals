@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from elasticsearch import NotFoundError
 
@@ -100,9 +101,12 @@ def index_status_message(status_message_id: int):
     status_message_id : int
         The database id of the status message to be indexed.
     """
-    status_message = StatusMessageModel.objects.get(id=status_message_id)
-    document = transform(status_message)
-    document.save()
+    try:
+        status_message = StatusMessageModel.objects.get(id=status_message_id)
+        document = transform(status_message)
+        document.save()
+    except ObjectDoesNotExist:
+        log.error(f'Could not find StatusMessage with id {status_message_id}!')
 
 
 @app.task
