@@ -110,3 +110,16 @@ def index_status_message(status_message_id: int):
     document.state = status_message.state
 
     document.save()
+
+
+@app.task
+def remove_status_message_from_index(status_message_id: int):
+    """Celery task that removes a status message from the index.
+
+    Parameters
+    ----------
+    status_message_id : int
+        The database id of the status message to be removed.
+    """
+    document = StatusMessageDocument.get(status_message_id)
+    document.delete()
