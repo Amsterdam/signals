@@ -43,7 +43,7 @@ def status_message_post_save_receiver(sender: str, instance: StatusMessageModel,
     instance : StatusMessageModel
         The instance of the StatusMessage model that was saved to the database.
     """
-    index_status_message.delay(status_message_id=instance.id)
+    index_status_message.apply_async(kwargs={'status_message_id': instance.id}, priority=10)
 
 
 @receiver(post_delete, sender=StatusMessageModel, dispatch_uid='status_message_post_delete_receiver')
@@ -59,4 +59,4 @@ def status_message_post_delete_receiver(sender: str, instance: StatusMessageMode
     instance : StatusMessageModel
         The instance of the StatusMessage model that was saved to the database.
     """
-    remove_status_message_from_index.delay(status_message_id=instance.id)
+    remove_status_message_from_index.apply_async(kwargs={'status_message_id': instance.id}, priority=10)
