@@ -18,11 +18,14 @@ def transform(instance: StatusMessageModel) -> StatusMessageDocument:
         An elasticsearch document based on the database model.
     """
     document = StatusMessageDocument()
-    document.meta['id'] = instance.id
     document.id = instance.id
     document.title = instance.title
     document.text = instance.text
     document.active = instance.active
     document.state = instance.state
+
+    # Setting the meta id makes sure the elasticsearch id is the same as the database id
+    # so that we can easily delete it later.
+    document.meta['id'] = instance.id
 
     return document
