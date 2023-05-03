@@ -7,6 +7,7 @@ from elasticsearch import NotFoundError
 
 from signals.apps.search.documents.signal import SignalDocument
 from signals.apps.search.documents.status_message import StatusMessage as StatusMessageDocument
+from signals.apps.search.transformers.status_message import transform
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models import StatusMessage as StatusMessageModel
 from signals.celery import app
@@ -100,15 +101,7 @@ def index_status_message(status_message_id: int):
         The database id of the status message to be indexed.
     """
     status_message = StatusMessageModel.objects.get(id=status_message_id)
-
-    document = StatusMessageDocument()
-    document.meta['id'] = status_message_id
-    document.id = status_message.id
-    document.title = status_message.title
-    document.text = status_message.text
-    document.active = status_message.active
-    document.state = status_message.state
-
+    document = transform(status_message)
     document.save()
 
 
