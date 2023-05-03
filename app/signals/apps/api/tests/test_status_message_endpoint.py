@@ -21,6 +21,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def setUp(self):
         signals.post_save.disconnect(sender=StatusMessage, dispatch_uid='status_message_post_save_receiver')
+        signals.post_delete.disconnect(sender=StatusMessage, dispatch_uid='status_message_post_delete_receiver')
 
         statusmessagetemplate_write_permission = Permission.objects.get(
             codename='sia_statusmessage_write'
