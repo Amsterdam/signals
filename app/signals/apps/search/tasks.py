@@ -2,11 +2,15 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from elasticsearch import NotFoundError
 
 from signals.apps.search.documents.signal import SignalDocument
+from signals.apps.search.documents.status_message import StatusMessage as StatusMessageDocument
+from signals.apps.search.transformers.status_message import transform
 from signals.apps.signals.models import Signal
+from signals.apps.signals.models import StatusMessage as StatusMessageModel
 from signals.celery import app
 
 log = logging.getLogger(__name__)
@@ -86,3 +90,36 @@ def index_signals_updated_in_date_range(from_date=None, to_date=None):
     SignalDocument.index_documents(queryset=signal_qs)
 
     log.info('index_signals_updated_in_date_range - done!')
+
+
+@app.task
+def index_status_message(status_message_id: int):
+    """Celery task that indexes a status message.
+
+    Parameters
+    ----------
+    status_message_id : int
+        The database id of the status message to be indexed.
+    """
+    try:
+        status_message = StatusMessageModel.objects.get(id=status_message_id)
+        document = transform(status_message)
+        document.save()
+    except ObjectDoesNotExist:
+        log.error(f'Could not find StatusMessage with id {status_message_id}!')
+
+
+@app.task
+def remove_status_message_from_index(status_message_id: int):
+    """Celery task that removes a status message from the index.
+
+    Parameters
+    ----------
+    status_message_id : int
+        The database id of the status message to be removed.
+    """
+    try:
+        document = StatusMessageDocument.get(status_message_id)
+        document.delete()
+    except NotFoundError:
+        log.error(f'Could not find StatusMessage with id {status_message_id} in elasticsearch!')
