@@ -3,7 +3,6 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from signals.apps.search.documents.status_message import StatusMessage as StatusMessageDocument
 from signals.apps.search.tasks import (
     index_status_message,
     remove_status_message_from_index,
