@@ -118,5 +118,8 @@ def remove_status_message_from_index(status_message_id: int):
     status_message_id : int
         The database id of the status message to be removed.
     """
-    document = StatusMessageDocument.get(status_message_id)
-    document.delete()
+    try:
+        document = StatusMessageDocument.get(status_message_id)
+        document.delete()
+    except NotFoundError:
+        log.error(f'Could not find StatusMessage with id {status_message_id} in elasticsearch!')
