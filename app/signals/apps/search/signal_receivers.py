@@ -46,7 +46,7 @@ def status_message_post_save_receiver(sender: str, instance: StatusMessageModel,
     index_status_message.delay(status_message_id=instance.id)
 
 
-@receiver(post_delete, sender=StatusMessageModel)
+@receiver(post_delete, sender=StatusMessageModel, dispatch_uid='status_message_post_delete_receiver')
 def status_message_post_delete_receiver(sender: str, instance: StatusMessageModel, **kwargs):
     """Django signal receiver used to delete status message documents from the
     elasticsearch index after they have been deleted from the database.
