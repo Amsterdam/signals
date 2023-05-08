@@ -33,7 +33,7 @@ from signals.apps.api.views.status_message import (
     StatusMessagesViewSet
 )
 from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
-from signals.apps.search.rest_framework.views import SearchView
+from signals.apps.search.rest_framework.views import SearchView, StatusMessageSearchView
 from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
     LoggedInUserView,
@@ -120,6 +120,7 @@ urlpatterns = [
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
+        re_path('status-messages-search/?$', StatusMessageSearchView.as_view(), name='status-messages-search'),
 
         # Used for autocompletion
         path('autocomplete/', include([
