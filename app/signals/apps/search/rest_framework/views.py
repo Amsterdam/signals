@@ -71,6 +71,7 @@ class StatusMessageSearchView(APIView):
             q = request.query_params['q']
 
         # TODO: Pagination
+        # TODO: Add filters (active, state)
 
         query = MultiMatch(query=q, fields=('title', 'text'), fuzziness='AUTO', zero_terms_query='all')
         search = StatusMessage.search().query(query).highlight('title', 'text')
