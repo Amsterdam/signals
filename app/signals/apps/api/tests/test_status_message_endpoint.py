@@ -741,6 +741,60 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('created_at', body)
         self.assertIsNotNone(body['created_at'])
 
+    def test_get_view_list(self):
+        # In the setup of the test one status_message has already been created
+        StatusMessageFactory.create_batch(4)
+
+        response = self.client.get(self.PATH, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertEqual(body['count'], 5)
+        self.assertEqual(len(body['results']), 5)
+
+    def test_get_filter_list(self):
+        # 1 status message for state 'm'
+        StatusMessageFactory.create(state='m')
+
+        # 2 status messages for state 'b'
+        StatusMessageFactory.create_batch(2, state='b')
+
+        # 3 status messages for state 'o' (In the setup of the test one status_message has already been created)
+        StatusMessageFactory.create_batch(2, state='o')
+
+        # 4 inactive random status messages
+        StatusMessageFactory.create_batch(4, active=False)
+
+        response = self.client.get(self.PATH, {'state': 'm'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(state='m').count())
+
+        response = self.client.get(self.PATH, {'state': 'b'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(state='b').count())
+
+        response = self.client.get(self.PATH, {'state': 'o'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(state='o').count())
+
+        response = self.client.get(self.PATH, {'state': ['m', 'b', ]}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(state__in=['m', 'b', ]).count())
+
+        response = self.client.get(self.PATH, {'active': False}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(active=False).count())
+
+        response = self.client.get(self.PATH, {'state': ['o', 'b', ], 'active': True}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'],
+                         StatusMessage.objects.filter(state__in=['o', 'b', ], active=True).count())
+
 
 class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
     TITLE = 'title'
