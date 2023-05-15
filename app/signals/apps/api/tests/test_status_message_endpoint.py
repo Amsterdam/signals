@@ -850,3 +850,7 @@ class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
         response = self.client.delete(self.PATH + str(self.status_message.pk))
 
         self.assertEqual(403, response.status_code)
+
+    def test_cannot_list_without_permission(self):
+        response = self.client.get(self.PATH, format='json')
+        self.assertEqual(403, response.status_code)
