@@ -80,14 +80,14 @@ class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(f'{self.list_endpoint}{self.areas[self.area_types[0].code][0].id}')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_post_method_not_allowed(self):
+    def test_post_404(self):
         response = self.client.post(f'{self.list_endpoint}1', data={}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_patch_method_not_allowed(self):
+    def test_patch_404(self):
         response = self.client.patch(f'{self.list_endpoint}1', data={}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_method_not_allowed(self):
+    def test_delete_404(self):
         response = self.client.delete(f'{self.list_endpoint}1')
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
