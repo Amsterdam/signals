@@ -444,7 +444,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_get_list(self):
         response = self.client.get(f'{self.list_endpoint}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation

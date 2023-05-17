@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+from typing import Any
+
 from django.db.models import Min, Q
-from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -27,33 +29,39 @@ from signals.apps.signals.workflow import (
 from signals.throttling import PostOnlyNoUserRateThrottle
 
 
-class PublicSignalViewSet(GenericViewSet):
-    lookup_field = 'uuid'
-    lookup_url_kwarg = 'uuid'
+class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
+    """ViewSet for public signals."""
+    lookup_field: str = 'uuid'
+    lookup_url_kwarg: str = 'uuid'
 
     queryset = Signal.objects.all()
+    geography_queryset = PublicSignalGeographyFeature.objects.all()
 
-    # A queryset based on a materialized view that can quickly provide the information needed for the
-    # geography endpoint
-    geography_queryset = PublicSignalGeographyFeature.objects.exclude(
-        # Only signals that are in an "Open" state
-        Q(state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, GESPLITST, VERZOEK_TOT_HEROPENEN])
-    )
-
-    filter_backends = (DjangoFilterBackend, OrderingFilter)
-    filterset_class = None
-    ordering = None
-    ordering_fields = None
-
-    pagination_class = None
+    filter_backends: tuple = ()
+    filterset_class: Any = None
+    ordering: Any = None
+    ordering_fields: Any = None
+    pagination_class: Any = None
     serializer_class = PublicSignalSerializerDetail
+    throttle_classes: tuple = (PostOnlyNoUserRateThrottle, )
 
-    throttle_classes = (PostOnlyNoUserRateThrottle,)
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 
-    def list(self, *args, **kwargs):
-        raise Http404
+        """
+        Create a signal.
 
-    def create(self, request):
+        Args:
+            request: The request object.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A Response containing the created signal data that can be shared publicly.
+
+        Raises:
+            Exception: If the serializer validation fails.
+
+        """
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         signal = serializer.save()
@@ -61,27 +69,26 @@ class PublicSignalViewSet(GenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, uuid):
-        signal = get_object_or_404(Signal.objects.all(), uuid=uuid)
-        data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
-        return Response(data)
-
-    @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
+    @action(detail=False, url_path=r'geography/?$', methods=['GET'],
+            filter_backends=(DjangoFilterBackend, OrderingFilter), filterset_class=PublicSignalGeographyFilter,
             ordering=('-created_at', ), ordering_fields=('created_at', ), queryset=geography_queryset)
-    def geography(self, request) -> Response:
+    def geography(self, request: Request) -> Response:
         """
-        Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
-        Additional filtering can be done by adding query parameters.
+        Retrieve a GeoJSON representation of signals that can be shared on a public map.
 
-        This endpoint uses a materialized view in the database that can quickly provide the information needed
+        Args:
+            request: The request object.
+
+        Returns:
+            A Response containing the paginated GeoJSON feature collection.
+
         """
         queryset = self.filter_queryset(
-            self.get_queryset()
-        ).exclude(
-            child_category_is_public_accessible=False
-        ).order_by(
-            'geometry'
-        )
+            self.get_queryset().exclude(
+                Q(state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, GESPLITST, VERZOEK_TOT_HEROPENEN]) |
+                ~Q(child_category_is_public_accessible=True)
+            )
+        ).order_by('geometry')
 
         if request.query_params.get('group_by', '').lower() == 'category':
             # Group by category and return the oldest signal created_at date
