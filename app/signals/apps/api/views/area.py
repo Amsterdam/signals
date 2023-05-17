@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
-from datapunt_api.pagination import HALPagination
-from datapunt_api.rest import DatapuntViewSet
-from django.http import Http404
-from django_filters.rest_framework import DjangoFilterBackend
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.filters import AreaFilterSet
 from signals.apps.api.generics.pagination import LinkHeaderPagination
@@ -14,28 +12,22 @@ from signals.apps.signals.models import Area
 from signals.auth.backend import JWTAuthBackend
 
 
-class PublicAreasViewSet(DatapuntViewSet):
+class PublicAreasViewSet(ListModelMixin, GenericViewSet):
     """
-    Public ViewSet to display all area's in the database
+    A viewset for retrieving areas.
     """
+
     queryset = Area.objects.all()
-    queryset_detail = Area.objects.all()
-
     serializer_class = AreaSerializer
-    serializer_detail_class = AreaSerializer
-
-    pagination_class = HALPagination
-
-    authentication_classes = ()
-
-    filter_backends = (DjangoFilterBackend, )
     filterset_class = AreaFilterSet
-
-    def retrieve(self, request, *args, **kwargs):
-        raise Http404
 
     @action(detail=False, url_path=r'geography/?$')
     def geography(self, request):
+        """
+        Retrieve a paginated list of area geographies.
+
+        Returns a paginated response with area geographies.
+        """
         filtered_qs = self.filter_queryset(self.get_queryset())
 
         paginator = LinkHeaderPagination(page_query_param='geopage')
@@ -50,6 +42,9 @@ class PublicAreasViewSet(DatapuntViewSet):
 
 class PrivateAreasViewSet(PublicAreasViewSet):
     """
-    Private ViewSet to display all area's in the database
+    A viewset for retrieving areas.
+
+    Inherits from PublicAreasViewSet and adds authentication.
     """
+
     authentication_classes = (JWTAuthBackend, )
