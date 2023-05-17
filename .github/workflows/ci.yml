@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   test:
     name: Unit tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     services:
       database:
@@ -26,8 +26,8 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Install geospatial libraries # https://docs.djangoproject.com/en/3.0/ref/contrib/gis/install/geolibs/
-        run: sudo apt update && sudo apt install binutils libproj-dev gdal-bin graphviz
+      - name: Install geospatial libraries # https://docs.djangoproject.com/en/3.2/ref/contrib/gis/install/geolibs/
+        run: sudo apt update && sudo apt install binutils libproj-dev gdal-bin
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v4

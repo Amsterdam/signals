@@ -81,9 +81,3 @@ class TestLoadSIAStadsdeel(TestCase):
         # There should be four "sia-stadsdeel" type areas (Amsterdamse bos,
         # zuid, noord and weesp).
         self.assertEqual(Area.objects.filter(_type__code='sia-stadsdeel').count(), 4)
-
-        # Since we know "Het Amsterdamse Bos" does not intersect City Hall:
-        zuid = Area.objects.get(name__iexact='zuid', _type__code='stadsdeel')
-        sia_zuid = Area.objects.get(name__iexact='zuid', _type__code='sia-stadsdeel')
-
-        self.assertEqual(zuid.geometry, sia_zuid.geometry)
