@@ -242,6 +242,8 @@ if AZURE_STORAGE_ENABLED:
         }
     }
 
+    AZURE_CUSTOM_DOMAIN = os.getenv('AZURE_STORAGE_CUSTOM_DOMAIN', None)
+
 # Save files using system's standard umask. This is required for network mounts like
 # Azure Files as they do not implement a full-fledged permission system.
 # See https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FILE_UPLOAD_PERMISSIONS
