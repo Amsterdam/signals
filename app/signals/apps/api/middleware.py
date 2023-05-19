@@ -7,8 +7,7 @@ from django.contrib.auth import login
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 
-from signals import VERSION
-from signals.utils.version import get_version
+from signals import __version__
 
 
 class APIVersionHeaderMiddleware:
@@ -27,7 +26,7 @@ class APIVersionHeaderMiddleware:
         # numbers, but they are now all the same.
 
         response = self.get_response(request)
-        response['X-API-Version'] = get_version(VERSION)
+        response['X-API-Version'] = __version__
         return response
 
 

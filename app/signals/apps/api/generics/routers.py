@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
 from django.urls import reverse
@@ -7,8 +7,7 @@ from rest_framework.response import Response
 from rest_framework.routers import APIRootView
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 
-from signals import API_VERSIONS, VERSION
-from signals.utils.version import get_version
+from signals import __version__
 
 
 class BaseSignalsAPIRootView(APIRootView):
@@ -20,10 +19,10 @@ class BaseSignalsAPIRootView(APIRootView):
                         'href': request._request.build_absolute_uri(reverse('api-root')),
                     }
                 },
-                'version': get_version(API_VERSIONS['v1']),
+                'version': __version__,
                 'status': 'in production',
             },
-            'version': get_version(VERSION),
+            'version': __version__,
         })
 
         return Response(data)
