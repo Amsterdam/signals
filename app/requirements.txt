@@ -39,7 +39,7 @@ django-markdownx==3.0.1
 django-o365mail==1.1.0
 django-rest-swagger==2.2.0
 django-silk==5.0.3
-django-storages==1.12.3
+django-storages==1.13.2
 django-timezone-field==5.0
 djangorestframework==3.13.1
 djangorestframework-csv==2.1.1
