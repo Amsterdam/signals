@@ -1,0 +1,16 @@
+-r requirements.txt
+
+factory-boy
+flake8
+freezegun
+isort
+pytest
+pytest-cov
+pytest-django
+pytest-forked
+pytest-subtests
+pytest-timeout
+pytest-xdist
+requests_mock
+tox
+xmlunittest

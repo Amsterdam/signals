@@ -1,6 +1,7 @@
 # Documentation topic index
 
 * [Local development guide](./development/local.md)
+* [Managing dependencies](./development/managing_dependencies.md)
 * [SIA Application design and basic principles](topics/application-design.md)
 * [SIA Authorization system](topics/authorization.md)
 * [How to use the V1 API](topics/api/table_of_contents.md)

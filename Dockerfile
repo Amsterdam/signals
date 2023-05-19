@@ -14,11 +14,8 @@ WORKDIR /app
 
 RUN useradd --no-create-home signals
 
-COPY app/requirements.txt /app/requirements.txt
-
 RUN set -eux;  \
-    apt-get update; \
-    apt-get install -y \
+    apt-get update && apt-get install -y \
         libgeos-3.7 \
         gdal-bin \
         libgdal20 \
@@ -42,13 +39,13 @@ RUN set -eux;  \
         gcc \
         graphviz \
     ; \
-    pip install --no-cache -r /app/requirements.txt; \
-    apt-get purge -y gcc; \
     rm -rf /var/lib/apt/lists/*
 
 COPY app /app
 
 RUN set -eux; \
+    pip install --no-cache -r /app/requirements/requirements.txt; \
+    pip install --no-cache tox; \
     chgrp signals /app; \
     chmod g+w /app; \
     mkdir -p /app/static /app/media; \
