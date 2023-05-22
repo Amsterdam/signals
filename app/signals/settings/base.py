@@ -252,9 +252,6 @@ FILE_UPLOAD_PERMISSIONS = None
 # Object store - Datawarehouse (DWH)
 DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
 
-# Using `HEALTH_MODEL` for health check endpoint.
-HEALTH_MODEL = 'signals.Signal'
-
 SIGNALS_AUTH = {
     'JWKS': os.getenv('PUB_JWKS'),
     'JWKS_URL': os.getenv('JWKS_URL'),
