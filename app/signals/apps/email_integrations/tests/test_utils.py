@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import re
-from unittest import expectedFailure
 from urllib.parse import quote
 
 from django.conf import settings
@@ -191,24 +190,6 @@ class TestUtils(TestCase):
                                                              title='{{ text|lower:"a" }}',  # TemplateSyntaxError
                                                              body='{{ created_at|date:"PO" }}')  # NotImplementedError
         result = validate_email_template(email_template_invalid)
-        self.assertFalse(result)
-
-    @expectedFailure
-    def test_validate_email_template_date_filter_tag(self):
-        # Django 3.2 has different behavior from Django 2.2, it no longer raises
-        # an exception on unsupported options to the date filter tag.
-        # This test is kept around (marked a expected failure) in case that this
-        # new behavior is regression in Django 3.2 and to document it.
-        self.assertFalse(validate_template('{{ created_at|date:"B" }}'))
-
-        email_template_invalid_title = EmailTemplateFactory.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND,
-                                                                   title='{{ created_at|date:"B" }}')  # noqa NotImplementedError
-        result = validate_email_template(email_template_invalid_title)
-        self.assertFalse(result)
-
-        email_template_invalid_body = EmailTemplateFactory.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL,
-                                                                  body='{{ created_at|date:"B" }}')  # noqa NotImplementedError
-        result = validate_email_template(email_template_invalid_body)
         self.assertFalse(result)
 
     def test_validate_template(self):

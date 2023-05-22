@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
 from datetime import timedelta
-from unittest import skip
 from unittest.mock import patch
 
 from django.conf import settings
@@ -19,12 +18,7 @@ from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import (
-    CategoryFactory,
-    ParentCategoryFactory,
-    SignalFactory,
-    SourceFactory
-)
+from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
 from signals.apps.signals.models import Attachment, Note, Priority, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, STATUS_CHOICES
@@ -604,82 +598,3 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         session.refresh_from_db()
         self.assertEqual(session._signal_id, another_signal.id)
-
-    @skip('Disbaled the check on the extra propeties, this causes an issue when creating "child" signals')
-    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
-           side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_and_validate_extra_properties_for_streetlights(self, validate_address):
-        """
-        Disabled the additional check. This check prevents the creation of a "child" signal in the
-        lantaarnpaal-straatverlichting category because there is no way to provide the streetlight
-
-        SIG-4382 [BE] Extra check op formaat en inhoud van extra_properties bij de verlichting sub categorien
-        (tbv koppeling Techview)
-
-        To make sure we accept the valid data in the extra properties when a Signal is created for the category
-        containing streetlights we are adding an additional check.
-        """
-        parent_category = ParentCategoryFactory.create(slug='wegen-verkeer-straatmeubilair')
-        link_main_category = f'/signals/v1/public/terms/categories/{parent_category.slug}'
-
-        child_category = CategoryFactory.create(slug='lantaarnpaal-straatverlichting', parent=parent_category)
-        link_sub_category = f'{link_main_category}/sub_categories/{child_category.slug}'
-
-        extra_properties_none = None
-        extra_properties_empty_list = []
-        extra_properties_not_on_map_simple = [
-            {
-                'id': 'extra_straatverlichting_nummer',
-                'label': 'Lichtpunt(en) op kaart',
-                'category_url': link_sub_category,
-                'answer': {'type': 'not-on-map'},
-            },
-        ]
-        extra_properties_not_on_map_complex = [
-            {
-                'id': 'extra_straatverlichting_nummer',
-                'label': 'Lichtpunt(en) op kaart',
-                'category_url': link_sub_category,
-                'answer': {
-                    'id': '345345433',
-                    'type': 'not-on-map',
-                    'label': 'De container staat niet op de kaart - 345345433',
-                },
-            },
-        ]
-        extra_properties = [
-            {
-                'id': 'extra_straatverlichting_nummer',
-                'label': 'Lichtpunt(en) op kaart',
-                'category_url': link_sub_category,
-                'answer': {
-                    'id': '115617',
-                    'type': '4',
-                    'description': 'Overig lichtpunt',
-                    'isReported': False,
-                    'label': 'Overig lichtpunt - 115617',
-                },
-            },
-        ]
-
-        create_initial_data = copy.deepcopy(self.create_initial_data)
-        create_initial_data.update({'category': {'category_url': link_sub_category}}),
-
-        for invalid_extra_properties in [extra_properties_none, extra_properties_empty_list]:
-            create_initial_data.update({'extra_properties': invalid_extra_properties})
-            response = self.client.post(self.list_endpoint, create_initial_data, format='json')
-
-            self.assertEqual(400, response.status_code)
-            self.assertEqual(response.json()['extra_properties'][0],
-                             'Extra properties not valid for category "lantaarnpaal-straatverlichting"')
-            self.assertEqual(0, Signal.objects.count())
-
-        signal_count = Signal.objects.count()
-        for valid_extra_properties in [extra_properties_not_on_map_simple, extra_properties_not_on_map_complex,
-                                       extra_properties]:
-            create_initial_data.update({'extra_properties': valid_extra_properties})
-            response = self.client.post(self.list_endpoint, create_initial_data, format='json')
-            self.assertEqual(201, response.status_code)
-
-            signal_count += 1
-            self.assertEqual(signal_count, Signal.objects.count())

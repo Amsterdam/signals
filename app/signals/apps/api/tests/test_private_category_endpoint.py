@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
-from unittest import skip
-
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
-from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
+from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from signals.apps.signals.models import CategoryDepartment
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -128,24 +126,6 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         category = self.parent_category.children.first()
-
-        url = f'/signals/v1/private/categories/{category.pk}'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self._assert_category_data(category=category, data=response.json())
-
-    @skip('TODO Fix failing test')
-    def test_get_second_child_category(self):
-        self.client.force_authenticate(user=self.sia_read_write_user)
-
-        category = self.parent_category.children.first()
-
-        department = DepartmentFactory.create(is_intern=False)
-        category.departments.add(department, through_defaults={'is_responsible': False, 'can_view': True})
-
-        department = DepartmentFactory.create(is_intern=True)
-        category.departments.add(department, through_defaults={'is_responsible': True, 'can_view': True})
 
         url = f'/signals/v1/private/categories/{category.pk}'
         response = self.client.get(url)

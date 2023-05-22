@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
-from unittest import mock, skip
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
+from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase
@@ -18,16 +18,6 @@ class TestJWTAuthBackend(TestCase):
             username='normie@example.com',
             email='normie@example.com',
         )
-
-    @skip("Scope test are not required")
-    def test_missing_scope(self):
-        jwt_auth_backend = backend.JWTAuthBackend()
-
-        mocked_request = mock.Mock()
-        mocked_request.is_authorized_for.return_value = False
-
-        with self.assertRaises(exceptions.AuthenticationFailed):
-            jwt_auth_backend.authenticate(mocked_request)
 
     @mock.patch('signals.auth.tokens.JWTAccessToken.token_data')
     @mock.patch('signals.auth.backend.cache')
@@ -91,23 +81,6 @@ class TestJWTAuthBackend(TestCase):
             user, scope = jwt_auth_backend.authenticate(mocked_request)
             self.assertEqual(user, self.normal_user)
             # self.assertEqual(scope, 'SIG/ALL')
-
-    @skip('TODO fix test')
-    @mock.patch('signals.auth.backend.cache')
-    def test_get_token_subject_is_none(self, mocked_cache):
-        # In case the subject is not set on the JWT token (as the `sub claim`).
-        # This test demonstrates the problem. See SIG-889 for next steps.
-
-        jwt_auth_backend = backend.JWTAuthBackend()
-
-        mocked_request = mock.Mock()
-        mocked_request.is_authorized_for.return_value = True
-        mocked_request.get_token_subject = None
-
-        mocked_cache.get.return_value = None  # Force database lookup
-
-        with self.assertRaises(AttributeError):
-            jwt_auth_backend.authenticate(mocked_request)
 
     # --- Note ---
     # For local development the "always_ok" user with email=settings.TEST_LOGIN

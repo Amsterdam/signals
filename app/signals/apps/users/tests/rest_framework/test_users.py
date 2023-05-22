@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
-import unittest
-
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Group, Permission
 
 from signals.apps.signals.factories import DepartmentFactory
@@ -218,14 +216,13 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_data = response.json()
         self.assertEqual(response_data['profile']['note'], 'note #2')
 
-    @unittest.expectedFailure  # SIG-2210 PUT is no longer allowed so this test should fail
     def test_put_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         response = self.client.put('/signals/v1/private/users/{}'.format(
             self.sia_read_write_user.pk
         ), data={}, format='json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
     def test_delete_users_forbidden(self):
         self.client.force_authenticate(user=self.sia_read_write_user)

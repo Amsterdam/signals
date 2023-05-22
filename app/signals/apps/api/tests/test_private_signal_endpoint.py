@@ -4,7 +4,6 @@ import copy
 import json
 import os
 from datetime import timedelta
-from unittest import skip
 from unittest.mock import patch
 
 import dateutil
@@ -18,10 +17,7 @@ from django.utils.http import urlencode
 from freezegun import freeze_time
 from rest_framework import status
 
-from signals.apps.api.validation.address.base import (
-    AddressValidationUnavailableException,
-    NoResultsException
-)
+from signals.apps.api.validation.address.base import AddressValidationUnavailableException
 from signals.apps.history.models import Log
 from signals.apps.reporting.csv.utils import map_choices
 from signals.apps.signals import workflow
@@ -349,15 +345,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(response_json['location']['area_type_code'], 'district')
         self.assertEqual(response_json['location']['area_code'], 'centrum')
         self.assertEqual(response_json['location']['area_name'], 'Centrum')
-
-    @skip('Disabled for now, it no longer throws an error but logs a warning and stores the unvalidated address')
-    @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
-           side_effect=NoResultsException)
-    def test_create_initial_invalid_location(self, validate_address):
-        """ Tests that a 400 is returned when an invalid location is provided """
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
-        self.assertEqual(response.status_code, 400)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address")
     def test_create_initial_valid_location(self, validate_address):

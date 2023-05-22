@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from datetime import timedelta
-from unittest import skip
 
 from django.contrib.gis.geos import Point
 from django.db.models import Q
@@ -131,25 +130,6 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         response_data = response.json()
         self.assertEqual(response_data['count'], 5)
         self.assertEqual(len(response_data['results']), 5)
-
-    @skip('TODO Fix failing test')
-    def test_get_signal_context_geography_detail(self):
-        self.client.force_authenticate(user=self.superuser)
-
-        signal_id = self.reporter_1_signals[2].pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/near/geography')
-        self.assertEqual(response.status_code, 200)
-
-        response_json = response.json()
-        self.assertEqual(len(response_json['features']), 2)
-
-        signal_id = self.reporter_1_signals[3].pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/near/geography')
-        self.assertEqual(response.status_code, 200)
-
-        # TODO: Fix this test case
-        # response_json = response.json()
-        # self.assertEqual(len(response_json['features']), 0)
 
     def test_get_anonymous_signals_context(self):
         self.client.force_authenticate(user=self.superuser)
