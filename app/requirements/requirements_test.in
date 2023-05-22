@@ -7,7 +7,6 @@ isort
 pytest
 pytest-cov
 pytest-django
-pytest-forked
 pytest-subtests
 pytest-timeout
 pytest-xdist

@@ -413,8 +413,6 @@ psycopg2-binary==2.9.6
     # via
     #   -r app/requirements/requirements.txt
     #   opencensus-ext-postgresql
-py==1.11.0
-    # via pytest-forked
 pyasn1==0.5.0
     # via
     #   -r app/requirements/requirements.txt
@@ -443,7 +441,7 @@ pyopenssl==23.1.1
     # via
     #   -r app/requirements/requirements.txt
     #   josepy
-pypdf==3.8.1
+pypdf==3.9.0
     # via -r app/requirements/requirements.txt
 pyphen==0.14.0
     # via
@@ -460,7 +458,6 @@ pytest==7.3.1
     #   -r app/requirements/requirements_test.in
     #   pytest-cov
     #   pytest-django
-    #   pytest-forked
     #   pytest-subtests
     #   pytest-timeout
     #   pytest-xdist
@@ -468,13 +465,11 @@ pytest-cov==4.0.0
     # via -r app/requirements/requirements_test.in
 pytest-django==4.5.2
     # via -r app/requirements/requirements_test.in
-pytest-forked==1.6.0
-    # via -r app/requirements/requirements_test.in
 pytest-subtests==0.11.0
     # via -r app/requirements/requirements_test.in
 pytest-timeout==2.1.0
     # via -r app/requirements/requirements_test.in
-pytest-xdist==3.3.0
+pytest-xdist==3.3.1
     # via -r app/requirements/requirements_test.in
 python-crontab==2.7.1
     # via
