@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 from django.urls import path
 
-from signals.apps.health.rest_framework import views
+from signals.apps.health.views import health
 
 urlpatterns = [
-    path('health', views.health),
-    path('data', views.check_data),
+    path('health', health, name='health_check'),
 ]
