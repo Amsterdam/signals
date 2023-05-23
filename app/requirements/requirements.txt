@@ -313,7 +313,7 @@ pyyaml==6.0
     # via flex
 raven==6.10.0
     # via -r app/requirements/requirements.in
-requests==2.30.0
+requests==2.31.0
     # via
     #   -r app/requirements/requirements.in
     #   azure-core
@@ -368,7 +368,7 @@ tornado==6.3.2
     # via flower
 types-cryptography==3.3.23.2
     # via -r app/requirements/requirements.in
-typing-extensions==4.5.0
+typing-extensions==4.6.0
     # via
     #   azure-core
     #   azure-storage-blob

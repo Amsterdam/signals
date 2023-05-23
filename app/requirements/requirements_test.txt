@@ -500,7 +500,7 @@ pyyaml==6.0
     #   flex
 raven==6.10.0
     # via -r app/requirements/requirements.txt
-requests==2.30.0
+requests==2.31.0
     # via
     #   -r app/requirements/requirements.txt
     #   azure-core
@@ -580,7 +580,7 @@ tox==4.5.1
     # via -r app/requirements/requirements_test.in
 types-cryptography==3.3.23.2
     # via -r app/requirements/requirements.txt
-typing-extensions==4.5.0
+typing-extensions==4.6.0
     # via
     #   -r app/requirements/requirements.txt
     #   azure-core
