@@ -385,6 +385,7 @@ SEARCH = {
     'CONNECTION': {
         'HOST': os.getenv('ELASTICSEARCH_HOST', 'elastic-index.service.consul:9200'),
         'INDEX': os.getenv('ELASTICSEARCH_INDEX', 'signals'),
+        'CA_BUNDLE': os.getenv('ELASTICSEARCH_CA_BUNDLE', None)
     },
 }
 
