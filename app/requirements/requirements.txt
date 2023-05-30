@@ -10,7 +10,7 @@ arpeggio==2.0.0
     # via
     #   -r app/requirements/requirements.in
     #   textx
-asgiref==3.6.0
+asgiref==3.7.2
     # via django
 attrs==23.1.0
     # via jsonschema
@@ -29,7 +29,7 @@ beautifulsoup4==4.12.2
     # via o365
 billiard==3.6.4.0
     # via celery
-cachetools==5.3.0
+cachetools==5.3.1
     # via google-auth
 cairocffi==1.5.1
     # via
@@ -101,7 +101,7 @@ defusedxml==0.7.1
     # via
     #   cairosvg
     #   djangorestframework-xml
-deprecated==1.2.13
+deprecated==1.2.14
     # via jwcrypto
 django==3.2.19
     # via
@@ -176,7 +176,7 @@ flower==1.2.0
     # via -r app/requirements/requirements.in
 google-api-core==2.11.0
     # via opencensus
-google-auth==2.18.1
+google-auth==2.19.0
     # via google-api-core
 googleapis-common-protos==1.59.0
     # via google-api-core
@@ -257,11 +257,11 @@ pillow==9.5.0
     #   weasyprint
 portalocker==2.7.0
     # via msal-extensions
-prometheus-client==0.16.0
+prometheus-client==0.17.0
     # via flower
 prompt-toolkit==3.0.38
     # via click-repl
-protobuf==4.23.1
+protobuf==4.23.2
     # via
     #   google-api-core
     #   googleapis-common-protos
@@ -368,7 +368,7 @@ tornado==6.3.2
     # via flower
 types-cryptography==3.3.23.2
     # via -r app/requirements/requirements.in
-typing-extensions==4.6.0
+typing-extensions==4.6.2
     # via
     #   azure-core
     #   azure-storage-blob
@@ -380,7 +380,7 @@ unicodecsv==0.14.1
     # via djangorestframework-csv
 uritemplate==4.1.1
     # via coreapi
-urllib3==1.26.15
+urllib3==1.26.16
     # via
     #   elasticsearch
     #   google-auth
