@@ -12,7 +12,7 @@ arpeggio==2.0.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   textx
-asgiref==3.6.0
+asgiref==3.7.2
     # via
     #   -r app/requirements/requirements_test.txt
     #   django
@@ -45,7 +45,7 @@ billiard==3.6.4.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   celery
-cachetools==5.3.0
+cachetools==5.3.1
     # via
     #   -r app/requirements/requirements_test.txt
     #   google-auth
@@ -118,7 +118,7 @@ coreschema==0.0.4
     # via
     #   -r app/requirements/requirements_test.txt
     #   coreapi
-coverage[toml]==7.2.5
+coverage[toml]==7.2.7
     # via
     #   -r app/requirements/requirements_test.txt
     #   pytest-cov
@@ -149,7 +149,7 @@ defusedxml==0.7.1
     #   -r app/requirements/requirements_test.txt
     #   cairosvg
     #   djangorestframework-xml
-deprecated==1.2.13
+deprecated==1.2.14
     # via
     #   -r app/requirements/requirements_test.txt
     #   jwcrypto
@@ -264,7 +264,7 @@ google-api-core==2.11.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   opencensus
-google-auth==2.18.1
+google-auth==2.19.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   google-api-core
@@ -415,7 +415,7 @@ portalocker==2.7.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   msal-extensions
-prometheus-client==0.16.0
+prometheus-client==0.17.0
     # via
     #   -r app/requirements/requirements_test.txt
     #   flower
@@ -423,7 +423,7 @@ prompt-toolkit==3.0.38
     # via
     #   -r app/requirements/requirements_test.txt
     #   click-repl
-protobuf==4.23.1
+protobuf==4.23.2
     # via
     #   -r app/requirements/requirements_test.txt
     #   google-api-core
@@ -488,7 +488,7 @@ pytest==7.3.1
     #   pytest-subtests
     #   pytest-timeout
     #   pytest-xdist
-pytest-cov==4.0.0
+pytest-cov==4.1.0
     # via -r app/requirements/requirements_test.txt
 pytest-django==4.5.2
     # via -r app/requirements/requirements_test.txt
@@ -604,11 +604,11 @@ tornado==6.3.2
     # via
     #   -r app/requirements/requirements_test.txt
     #   flower
-tox==4.5.1
+tox==4.5.2
     # via -r app/requirements/requirements_test.txt
 types-cryptography==3.3.23.2
     # via -r app/requirements/requirements_test.txt
-typing-extensions==4.6.0
+typing-extensions==4.6.2
     # via
     #   -r app/requirements/requirements_test.txt
     #   azure-core
@@ -629,7 +629,7 @@ uritemplate==4.1.1
     # via
     #   -r app/requirements/requirements_test.txt
     #   coreapi
-urllib3==1.26.15
+urllib3==1.26.16
     # via
     #   -r app/requirements/requirements_test.txt
     #   elasticsearch
