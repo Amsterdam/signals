@@ -82,6 +82,9 @@ base_router.registry.extend(public_router.registry)
 base_router.registry.extend(private_router.registry)
 
 urlpatterns = [
+    # Status message search
+    re_path(r'v1/private/status-messages/search/?$', StatusMessageSearchView.as_view(), name='status-message-search'),
+
     # Legacy prediction proxy endpoint, still needed
     path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
 
@@ -120,7 +123,6 @@ urlpatterns = [
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
-        re_path('status-messages-search/?$', StatusMessageSearchView.as_view(), name='status-messages-search'),
 
         # Used for autocompletion
         path('autocomplete/', include([
