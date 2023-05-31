@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
+from typing import Optional
+
 from datapunt_api.rest import DatapuntViewSet
+from elasticsearch_dsl import FacetedSearch, Search, TermsFacet
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.request import Request
 from rest_framework.response import Response
-from typing import Optional
-
 from rest_framework.views import APIView
 
 from signals.apps.api.generics.exceptions import GatewayTimeoutException
@@ -66,17 +67,43 @@ class StatusMessageSearchView(APIView):
     def get(self, request: Request, format: Optional[str]=None) -> Response:
         """TODO
         """
+        class StatusMessagesSearch(FacetedSearch):
+            """The Elasticsearch DSL library requires us to subclass FacetedSearch in order to
+            configure a faceted search, which allows us to use filters and provides us with
+            counts for each possible filter option.
+            """
+            doc_types = (StatusMessage,)
+            fields = ('title', 'text')
+            facets = {
+                'states': TermsFacet(field='state'),
+            }
+
+            def query(self, search: Search, query: str):
+                """Overridden query method in order to set the fuzziness of the query and
+                to provide the zero_terms_query option in order to get (all) results when
+                no query term is provided.
+                """
+                return search.query(
+                    'multi_match',
+                    query=query,
+                    fields=self.fields,
+                    fuzziness='AUTO',
+                    zero_terms_query='all'
+                )
+
         q = ''
         if 'q' in request.query_params:
             q = request.query_params['q']
 
         # TODO: Pagination
-        # TODO: Add filters (active, state)
 
-        query = MultiMatch(query=q, fields=('title', 'text'), fuzziness='AUTO', zero_terms_query='all')
-        search = StatusMessage.search().query(query).highlight('title', 'text')
-        result = search.execute()
+        if 'state' in request.query_params:
+            state = request.query_params['state']
+            search = StatusMessagesSearch(q, {'states': state})
+        else:
+            search = StatusMessagesSearch(q)
 
-        serializer = StatusMessageSerializer(result.hits, many=True)
+        response = search.execute()
+        serializer = StatusMessageSerializer(response.hits, many=True)
 
         return Response(data=serializer.data)
