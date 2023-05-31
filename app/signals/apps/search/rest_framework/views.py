@@ -98,7 +98,7 @@ class StatusMessageSearchView(APIView):
         # TODO: Pagination
 
         if 'state' in request.query_params:
-            state = request.query_params['state']
+            state = request.query_params.getlist('state')
             search = StatusMessagesSearch(q, {'state': state})
         else:
             search = StatusMessagesSearch(q)
