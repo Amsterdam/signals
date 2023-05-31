@@ -75,7 +75,7 @@ class StatusMessageSearchView(APIView):
             doc_types = (StatusMessage,)
             fields = ('title', 'text')
             facets = {
-                'states': TermsFacet(field='state'),
+                'state': TermsFacet(field='state'),
             }
 
             def query(self, search: Search, query: str):
@@ -99,7 +99,7 @@ class StatusMessageSearchView(APIView):
 
         if 'state' in request.query_params:
             state = request.query_params['state']
-            search = StatusMessagesSearch(q, {'states': state})
+            search = StatusMessagesSearch(q, {'state': state})
         else:
             search = StatusMessagesSearch(q)
 
