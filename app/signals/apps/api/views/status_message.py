@@ -38,8 +38,7 @@ class StatusMessagesViewSet(ModelViewSet):
     ordering = ('-created_at', )
     ordering_fields = ('created_at',
                        'updated_at',
-                       'active',
-                       'state', )
+                       ('statusmessagecategory__position', 'position'),)
 
 
 class StatusMessagesCategoryPositionViewSet(CreateModelMixin, GenericViewSet):
