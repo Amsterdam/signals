@@ -28,7 +28,10 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
-from signals.apps.api.views.status_message import StatusMessagesViewSet
+from signals.apps.api.views.status_message import (
+    StatusMessagesCategoryPositionViewSet,
+    StatusMessagesViewSet
+)
 from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.rest_framework.views import SearchView
 from signals.apps.users.rest_framework.views import (
@@ -70,7 +73,8 @@ private_router.register(r'private/expressions', PrivateExpressionViewSet, basena
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
 private_router.register(r'private/csv', PrivateCsvViewSet, basename='private-csv')
 private_router.register(r'private/status-messages', StatusMessagesViewSet, basename='status-message')
-
+private_router.register(r'private/status-messages/category/(?P<category_id>\d+)',
+                        StatusMessagesCategoryPositionViewSet, basename='status-message-category-position')
 
 # Combined API
 base_router = SignalsRouter()
