@@ -36,6 +36,7 @@ class TermFacetSerializer(serializers.Serializer):
 
 class StatusMessageFacetSerializer(serializers.Serializer):
     state = serializers.ListSerializer(child=TermFacetSerializer())
+    active = serializers.ListSerializer(child=TermFacetSerializer())
 
 
 class StatusMessageListSerializer(serializers.Serializer):

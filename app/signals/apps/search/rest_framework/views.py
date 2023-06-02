@@ -77,6 +77,7 @@ class StatusMessageSearchView(APIView):
             fields = ('title', 'text',)
             facets = {
                 'state': TermsFacet(field='state', size=20, min_doc_count=0),
+                'active': TermsFacet(field='active', min_doc_count=0),
             }
 
             def query(self, search: Search, query: str):
@@ -98,11 +99,14 @@ class StatusMessageSearchView(APIView):
 
         # TODO: Pagination
 
+        filters = {}
         if 'state' in request.query_params:
-            state = request.query_params.getlist('state')
-            search = StatusMessagesSearch(q, {'state': state})
-        else:
-            search = StatusMessagesSearch(q)
+            filters['state'] = request.query_params.getlist('state')
+
+        if 'active' in request.query_params:
+            filters['active'] = request.query_params['active']
+
+        search = StatusMessagesSearch(q, filters)
 
         response = search.execute()
         serializer = StatusMessageListSerializer(response)
