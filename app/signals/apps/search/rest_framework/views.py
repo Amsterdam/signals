@@ -59,13 +59,23 @@ class SearchView(DatapuntViewSet):
 
 
 class StatusMessageSearchView(APIView):
-    """TODO
-    """
+    """View providing support for searching for status messages using elasticsearch."""
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
     def get(self, request: Request, format: Optional[str] = None) -> Response:
-        """TODO
+        """This will perform a lookup using elasticsearch using a "fuzzy" search, which allows
+        for typos, misspelling, pluralization, etc...
+        It allows for filtering based on the 'state' key and by the 'active' state by using
+        querystring parameters 'state' and 'active' respectively.
+        When no search term is provided using querystring parameter 'q', all status messages
+        will be returned (optionally filtered using the 'state' and 'active' filters).
+        When a search term is provided a 'highlight' section is available for both the 'title'
+        and 'text' field, which can be used to display the title and text of the status messages
+        in the results with the search term highlighted.
+        Pagination is provided using the 'page_size' and 'page' querystring parameters.
+        In the results there is a 'facets' section available, which provides counts for every
+        filter option.
         """
         class StatusMessagesSearch(FacetedSearch):
             """The Elasticsearch DSL library requires us to subclass FacetedSearch in order to
