@@ -7,6 +7,7 @@ applies to communication between the SIA system and Sigmax CityControl.
 import logging
 
 from django.shortcuts import render
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 
@@ -20,6 +21,7 @@ from signals.auth.backend import JWTAuthBackend
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(exclude=True)
 class CityControlReceiver(APIView):
     """
     Receive SOAP messages from CityControl and handle them.

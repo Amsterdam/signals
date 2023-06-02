@@ -135,11 +135,14 @@ urlpatterns = [
     path('v1/', include('signals.apps.reporting.urls')),
     # Questionnaires
     path('v1/', include('signals.apps.questionnaires.urls')),
-
-    # Swagger
-    path('swagger/openapi.yaml', TemplateView.as_view(template_name='api/swagger/openapi.yaml',
-                                                      extra_context={'schema_url': 'openapi-schema'})),
 ]
+
+if not settings.DRF_SPECTACULAR_ENABLED:
+    urlpatterns += [
+        # Swagger
+        path('swagger/openapi.yaml', TemplateView.as_view(template_name='api/swagger/openapi.yaml',
+                                                          extra_context={'schema_url': 'openapi-schema'})),
+    ]
 
 if settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
     urlpatterns += [

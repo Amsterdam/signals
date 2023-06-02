@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
 import sys
-
-from logging import LogRecord, Handler
+from logging import Handler, LogRecord
 
 
 class ColoredHandler(Handler):
