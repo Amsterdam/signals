@@ -2202,7 +2202,7 @@ paths:
             $ref: '#/components/schemas/StatusStateChoices'
           required: false
         - name: category_id
-          description: Filter for specific category/categories
+          description: Filter for specific category
           in: query
           required: false
           schema:
@@ -2213,12 +2213,10 @@ paths:
           schema:
             type: string
             enum:
-              - active
-              - -active
               - created_at
               - -created_at
-              - state
-              - -state
+              - statusmessagecategory__position
+              - -statusmessagecategory__position
               - updated_at
               - -updated_at
           example: created_at
