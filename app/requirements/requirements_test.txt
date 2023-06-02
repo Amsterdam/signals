@@ -164,6 +164,8 @@ django==3.2.19
     #   django-silk
     #   django-storages
     #   djangorestframework
+    #   drf-spectacular
+    #   drf-spectacular-sidecar
     #   mozilla-django-oidc
     #   opencensus-ext-django
 django-appconf==1.0.5
@@ -204,6 +206,7 @@ djangorestframework==3.14.0
     #   djangorestframework-gis
     #   drf-amsterdam
     #   drf-extensions
+    #   drf-spectacular
 djangorestframework-csv==2.1.1
     # via
     #   -r app/requirements/requirements.txt
@@ -220,6 +223,10 @@ drf-extensions==0.7.1
     # via
     #   -r app/requirements/requirements.txt
     #   drf-amsterdam
+drf-spectacular==0.26.2
+    # via -r app/requirements/requirements.txt
+drf-spectacular-sidecar==2023.5.1
+    # via -r app/requirements/requirements.txt
 elasticsearch==7.17.9
     # via
     #   -r app/requirements/requirements.txt
@@ -272,6 +279,10 @@ idna==3.4
     # via
     #   -r app/requirements/requirements.txt
     #   requests
+inflection==0.5.1
+    # via
+    #   -r app/requirements/requirements.txt
+    #   drf-spectacular
 iniconfig==2.0.0
     # via pytest
 isodate==0.6.1
@@ -297,7 +308,9 @@ jsonpointer==2.3
     #   -r app/requirements/requirements.txt
     #   flex
 jsonschema==4.17.3
-    # via -r app/requirements/requirements.txt
+    # via
+    #   -r app/requirements/requirements.txt
+    #   drf-spectacular
 jwcrypto==1.4.2
     # via
     #   -r app/requirements/requirements.txt
@@ -497,6 +510,7 @@ pytz==2023.3
 pyyaml==6.0
     # via
     #   -r app/requirements/requirements.txt
+    #   drf-spectacular
     #   flex
 raven==6.10.0
     # via -r app/requirements/requirements.txt
@@ -601,6 +615,7 @@ uritemplate==4.1.1
     # via
     #   -r app/requirements/requirements.txt
     #   coreapi
+    #   drf-spectacular
 urllib3==1.26.16
     # via
     #   -r app/requirements/requirements.txt

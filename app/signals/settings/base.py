@@ -2,6 +2,8 @@
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 
+from signals import __version__
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 TRUE_VALUES = [True, 'True', 'true', '1']
@@ -439,3 +441,29 @@ STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_I
 
 MARKDOWNX_MARKDOWNIFY_FUNCTION = 'signals.apps.email_integrations.utils.markdownx_md'  # noqa Renders markdown as HTML using Mistune
 MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Signals has for markdownx
+
+# DRF Spectacular settings
+DRF_SPECTACULAR_ENABLED = os.getenv('DRF_SPECTACULAR_ENABLED', False) in TRUE_VALUES
+
+if DRF_SPECTACULAR_ENABLED:
+    INSTALLED_APPS += [
+        'drf_spectacular',
+        'drf_spectacular_sidecar',
+    ]
+
+    REST_FRAMEWORK.update(dict(
+        DEFAULT_SCHEMA_CLASS='drf_spectacular.openapi.AutoSchema',
+    ))
+
+    SPECTACULAR_SETTINGS = {
+        'TITLE': 'Signalen API',
+        'DESCRIPTION': 'One of the tasks of a municipality is to maintain public spaces. When citizens have '
+                       'complaints about public spaces they can leave these complaints with the municipality. '
+                       'Signalen (SIG) receives these complaints and is used to track progress towards their '
+                       'resolution. SIG provides an API that is used both by the SIG frontend and external '
+                       'systems that integrate with SIG.',
+        'VERSION': __version__,
+        'SERVE_INCLUDE_SCHEMA': False,
+        'SWAGGER_UI_DIST': 'SIDECAR',
+        'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    }

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.core.exceptions import ValidationError as DjangoCoreValidationError
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,7 @@ from signals.apps.api.ml_tool.client import MLToolClient
 from signals.apps.signals.models import Category
 
 
+@extend_schema(exclude=True)
 class LegacyMlPredictCategoryView(APIView):
     ml_tool_client = MLToolClient()
 

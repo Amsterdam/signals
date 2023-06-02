@@ -2,13 +2,11 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 import copy
 import os
-
 from typing import List, Union
 
+from .config import BASE_LOGGING
 from .filters import DebugQueryFilter
 from .handlers import ColoredHandler
-from .config import BASE_LOGGING
-
 
 __all__ = ["ColoredHandler", "DebugQueryFilter", "get_configuration"]
 

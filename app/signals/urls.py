@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from signals.admin.oidc import views as admin_oidc_views
 from signals.apps.api.generics.routers import BaseSignalsAPIRootView
@@ -41,3 +42,10 @@ if settings.OIDC_RP_CLIENT_ID:
 
 if settings.SILK_ENABLED:
     urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+
+# DRF Spectacular
+if settings.DRF_SPECTACULAR_ENABLED:
+    urlpatterns += [
+        path('signals/schema/', SpectacularAPIView.as_view(), name='schema'),
+        path('signals/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    ]
