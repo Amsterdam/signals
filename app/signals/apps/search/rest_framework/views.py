@@ -64,7 +64,7 @@ class StatusMessageSearchView(APIView):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
-    def get(self, request: Request, format: Optional[str]=None) -> Response:
+    def get(self, request: Request, format: Optional[str] = None) -> Response:
         """TODO
         """
         class StatusMessagesSearch(FacetedSearch):
