@@ -2369,6 +2369,38 @@ paths:
         '404':
           description: Not found.
 
+  /signals/v1/private/status-messages/category/{id}:
+    post:
+      parameters:
+        - name: id
+          in: path
+          description: ID of the category
+          required: true
+          schema:
+            type: integer
+            example: 1
+      description: Set the position for one or all status messages connected to the given category
+      requestBody:
+        description: Status message data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1StatusMessageCategoryPosition'
+      responses:
+        '201':
+          description: Status message data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageCategoryPosition'
+        '400':
+          description: Bad request, see response body for the reason.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+
 components:
   schemas:
     StatusStateChoices:
@@ -5307,6 +5339,32 @@ components:
           type: string
           format: date-time
           example: "2020-01-01T00:00:00+00:00"
+
+    V1StatusMessageCategoryPosition:
+      description: Status message category position
+      oneOf:
+        - type: array
+          items:
+            type: object
+            properties:
+              status_message:
+                description: The id of the status message
+                type: integer
+                example: 1
+              position:
+                description: The position of the status message
+                type: integer
+                example: 1
+        - type: object
+          properties:
+            status_message:
+              description: The id of the status message
+              type: integer
+              example: 1
+            position:
+              description: The position of the status message
+              type: integer
+              example: 1
 
   securitySchemes:
     OAuth2:
