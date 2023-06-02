@@ -15,7 +15,7 @@ from signals.apps.api.serializers import PrivateSignalSerializerDetail, PrivateS
 from signals.apps.search.documents.signal import SignalDocument
 from signals.apps.search.documents.status_message import StatusMessage
 from signals.apps.search.rest_framework.pagination import ElasticHALPagination
-from signals.apps.search.rest_framework.serializers import StatusMessageSerializer
+from signals.apps.search.rest_framework.serializers import StatusMessageListSerializer
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -72,8 +72,9 @@ class StatusMessageSearchView(APIView):
             configure a faceted search, which allows us to use filters and provides us with
             counts for each possible filter option.
             """
+            index = 'status_messages'
             doc_types = (StatusMessage,)
-            fields = ('title', 'text')
+            fields = ('title', 'text',)
             facets = {
                 'state': TermsFacet(field='state'),
             }
@@ -88,7 +89,7 @@ class StatusMessageSearchView(APIView):
                     query=query,
                     fields=self.fields,
                     fuzziness='AUTO',
-                    zero_terms_query='all'
+                    zero_terms_query='all',
                 )
 
         q = ''
@@ -104,6 +105,6 @@ class StatusMessageSearchView(APIView):
             search = StatusMessagesSearch(q)
 
         response = search.execute()
-        serializer = StatusMessageSerializer(response.hits, many=True)
+        serializer = StatusMessageListSerializer(response)
 
         return Response(data=serializer.data)
