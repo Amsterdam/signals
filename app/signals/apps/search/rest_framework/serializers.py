@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from elasticsearch_dsl.response import Response
 from rest_framework import serializers
 
 
@@ -42,6 +43,9 @@ class StatusMessageFacetSerializer(serializers.Serializer):
 
 
 class StatusMessageListSerializer(serializers.Serializer):
-    # TODO: Rename hits to results
-    hits = serializers.ListSerializer(child=StatusMessageSerializer())
+    count = serializers.SerializerMethodField()
+    results = serializers.ListSerializer(child=StatusMessageSerializer(), source='hits')
     facets = StatusMessageFacetSerializer()
+
+    def get_count(self, obj: Response):
+        return obj.hits.total.value
