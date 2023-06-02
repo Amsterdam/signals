@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
 from django.db.models import signals
+from factory.django import mute_signals
 
 from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.factories.status_message import (
@@ -854,3 +855,139 @@ class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
     def test_cannot_list_without_permission(self):
         response = self.client.get(self.PATH, format='json')
         self.assertEqual(403, response.status_code)
+
+
+@mute_signals('post_save', 'post_delete')
+class TestStatusMessageCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    PATH = '/signals/v1/private/status-messages/category'
+
+    def setUp(self):
+        statusmessagetemplate_write_permission = Permission.objects.get(
+            codename='sia_statusmessage_write'
+        )
+        self.sia_read_write_user.user_permissions.add(statusmessagetemplate_write_permission)
+        self.sia_read_write_user.save()
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.category = CategoryFactory.create()
+
+        self.status_messages = StatusMessageFactory.create_batch(5)
+
+        for position in range(len(self.status_messages)):
+            StatusMessageCategoryFactory.create(status_message=self.status_message,
+                                                category=self.category,
+                                                position=position)
+
+    def test_post_new_positions(self):
+        payload = [
+            {
+                'status_message': self.status_messages[1].pk,
+                'position': 1,
+            },
+            {
+                'status_message': self.status_messages[0].pk,
+                'position': 2,
+            },
+            {
+                'status_message': self.status_messages[2].pk,
+                'position': 3,
+            },
+            {
+                'status_message': self.status_messages[4].pk,
+                'position': 4,
+            },
+            {
+                'status_message': self.status_messages[3].pk,
+                'position': 5,
+            }
+        ]
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), payload)
+
+        for item in payload:
+            status_message_from_db = StatusMessageCategory.objects.get(id=item['status_message'])
+            self.assertEqual(status_message_from_db.position, item['position'])
+
+    def test_post_new_position_single_item(self):
+        payload = {
+            'status_message': self.status_messages[1].pk,
+            'position': 1,
+        }
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), payload)
+
+        status_message_from_db = StatusMessageCategory.objects.get(id=payload['status_message'])
+        self.assertEqual(status_message_from_db.position, payload['position'])
+
+    def test_post_duplicate_positions(self):
+        payload = [
+            {
+                'status_message': self.status_messages[0].pk,
+                'position': 1,
+            },
+            {
+                'status_message': self.status_messages[1].pk,
+                'position': 1,
+            }
+        ]
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json(), ['position'])
+        self.assertEqual(response.json()['position'][0], 'Duplicate positions in request.')
+
+    def test_post_duplicate_status_messages(self):
+        payload = [
+            {
+                'status_message': self.status_messages[0].pk,
+                'position': 1,
+            },
+            {
+                'status_message': self.status_messages[0].pk,
+                'position': 2,
+            }
+        ]
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json(), ['status_message'])
+        self.assertEqual(response.json()['status_message'][0], 'Duplicate status messages in request.')
+
+    def test_post_invalid_category(self):
+        payload = [{'status_message': self.status_message[0].pk, 'position': 1}]
+
+        response = self.client.post(f'{self.PATH}/1234567890/', payload, format='json')
+
+        self.asserEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json(), ['category'])
+        self.assertEqual(response.json()['category'][0], 'Category with id 1234567890 does not exist.')
+
+        payload = {'status_message': self.status_message[0].pk, 'position': 1}
+
+        response = self.client.post(f'{self.PATH}/1234567890/', payload, format='json')
+
+        self.asserEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json(), ['category'])
+        self.assertEqual(response.json()['category'][0], 'Category with id 1234567890 does not exist.')
+
+    def test_post_invalid_status_message(self):
+        payload = [{'status_message': 1234567890, 'position': 1}]
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+
+        self.asserEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json()[0], ['status_message'])
+        self.assertEqual(response.json()[0]['status_message'][0], 'Status message with id 1234567890 does not exist.')
+
+        payload = {'status_message': 1234567890, 'position': 1}
+
+        response = self.client.post(f'{self.PATH}/{self.category.pk}/', payload, format='json')
+
+        self.asserEqual(response.status_code, 400)
+        self.assertKeysEqual(response.json()[0], ['status_message'])
+        self.assertEqual(response.json()[0]['status_message'][0], 'Status message with id 1234567890 does not exist.')
