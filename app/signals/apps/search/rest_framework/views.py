@@ -97,8 +97,6 @@ class StatusMessageSearchView(APIView):
         if 'q' in request.query_params:
             q = request.query_params['q']
 
-        # TODO: Pagination
-
         filters = {}
         if 'state' in request.query_params:
             filters['state'] = request.query_params.getlist('state')
@@ -106,7 +104,20 @@ class StatusMessageSearchView(APIView):
         if 'active' in request.query_params:
             filters['active'] = request.query_params['active']
 
-        search = StatusMessagesSearch(q, filters)
+        end = 15
+        if 'page_size' in request.query_params:
+            end = int(request.query_params['page_size'])
+
+        start = 0
+        if 'page' in request.query_params:
+            page = int(request.query_params['page']) - 1
+            if page < 0:
+                return Response({'detail': 'Ongeldige pagina.'}, 404)
+
+            start = page * end
+            end = start + end
+
+        search = StatusMessagesSearch(q, filters)[start:end]
 
         response = search.execute()
         serializer = StatusMessageListSerializer(response)
