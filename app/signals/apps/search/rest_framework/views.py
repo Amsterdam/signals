@@ -76,7 +76,7 @@ class StatusMessageSearchView(APIView):
             doc_types = (StatusMessage,)
             fields = ('title', 'text',)
             facets = {
-                'state': TermsFacet(field='state', size=20),
+                'state': TermsFacet(field='state', size=20, min_doc_count=0),
             }
 
             def query(self, search: Search, query: str):
