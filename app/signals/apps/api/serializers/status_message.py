@@ -60,20 +60,18 @@ class StatusMessageCategoryPositionSerializer(serializers.Serializer):
     def validate(self, attrs):
         status_message_id = attrs['status_message']
         try:
-            status_message = StatusMessage.objects.get(id=status_message_id)
+            StatusMessage.objects.get(id=status_message_id)
         except StatusMessage.DoesNotExist:
             raise ValidationError({'status_message': f"Status message with id {status_message_id} does not exist."})
-        else:
-            attrs['status_message'] = status_message
 
         return super().validate(attrs)
 
     def create(self, validated_data):
-        status_message = validated_data['status_message']
+        status_message_id = validated_data['status_message']
         category = validated_data['category']
         position = validated_data['position']
 
-        instance, _ = StatusMessageCategory.objects.update_or_create(status_message=status_message,
+        instance, _ = StatusMessageCategory.objects.update_or_create(status_message_id=status_message_id,
                                                                      category=category,
                                                                      defaults={'position': position})
         return validated_data
