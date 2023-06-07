@@ -2399,6 +2399,51 @@ paths:
         '403':
           description: Not authorized to access this endpoint.
 
+  /signals/v1/private/status-messages/search:
+    get:
+      parameters:
+        - name: q
+          in: query
+          description: The search term.
+          required: false
+          schema:
+            type: string
+            example: Search for this string
+        - name: state
+          in: query
+          description: Filter the search results using one or more state codes (add parameter to querystring multiple times for multiple states).
+          required: false
+          schema:
+            $ref: '#/components/schemas/StatusStateChoices'
+        - name: active
+          in: query
+          description: Filter the search results using the 'active' flag.
+          required: false
+          schema:
+            type: boolean
+            example: false
+        - name: page_size
+          in: query
+          description: Determines how many result should be returned (Defaults to 15 when omitted).
+          required: false
+          schema:
+            type: integer
+            example: 10
+        - name: page
+          in: query
+          description: The page number of the paginated results (Defaults to 1 when omitted).
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Paginated search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageSearchGet'
+
 components:
   schemas:
     StatusStateChoices:
@@ -5363,6 +5408,111 @@ components:
               description: The position of the status message
               type: integer
               example: 1
+
+    V1StatusMessageSearchGet:
+      description: Search results of the status message search.
+      type: object
+      properties:
+        count:
+          description: The total number of results.
+          type: integer
+          example: 5
+        results:
+          description: List of the actual results.
+          type: array
+          items:
+            $ref: '#/components/schemas/V1StatusMessageSearchResult'
+        facets:
+          description: Counts of results when the available filter options would be used.
+          type: object
+          properties:
+            state:
+              description: List of the possible filter options for 'state' with the result count when using that option.
+              type: array
+              items:
+                $ref: '#/components/schemas/V1StatusMessageTermsFacetState'
+            active:
+              description: List of the possible filter options for 'active' with the result count when using that option.
+              type: array
+              items:
+                $ref: '#/components/schemas/V1StatusMessageTermsFacetActive'
+
+    V1StatusMessageSearchResult:
+      description: Singular search result of the status message search.
+      type: object
+      properties:
+        id:
+          description: The database id of the status message.
+          type: integer
+          example: 1
+        title:
+          description: The title of the status message.
+          type: string
+          example: No action taken.
+        text:
+          description: The text of the status message.
+          type: string
+          example: We have decided to take no further action regarding your signal.
+        active:
+          description: The active flag of the status message.
+          type: boolean
+          example: true
+        state:
+          $ref: '#/components/schemas/StatusStateChoices'
+        meta:
+          description: Metadata section, containing things as highlighted snippets.
+          type: object
+          properties:
+            highlight:
+              description: Section containing highlighted snippets containing the search term.
+              type: object
+              properties:
+                title:
+                  description: Highlighted snippets containing the search term in the title.
+                  type: array
+                  items:
+                    description: The snippet containing the highlighted search term.
+                    type: string
+                    example: '<em>Banaan</em>'
+                text:
+                  description: Highlighted snippets containing the search term in the text.
+                  type: array
+                  items:
+                    description: The snippet containing the highlighted search term.
+                    type: string
+                    example: '<em>bananen</em>'
+
+    V1StatusMessageTermsFacetState:
+      description: The facet count in regard to a filter option.
+      type: object
+      properties:
+        term:
+          $ref: '#/components/schemas/StatusStateChoices'
+        count:
+          description: The number of results using that filter option.
+          type: integer
+          example: 34
+        active:
+          description: The state of the filter, will be true if the filter option is being used in the current search.
+          type: boolean
+          example: true
+
+    V1StatusMessageTermsFacetActive:
+      description: The facet count in regard to a filter option.
+      type: object
+      properties:
+        term:
+          description: The filter option in regard to the 'state' of the status message.
+          type: boolean
+          example: false
+        count:
+          description: The number of results using that filter option.
+          type: integer
+          example: 34
+        active:
+          description: The state of the filter, will be true if the filter option is being used in the current search.
+          type: boolean
+          example: true
 
   securitySchemes:
     OAuth2:

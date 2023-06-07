@@ -33,7 +33,7 @@ from signals.apps.api.views.status_message import (
     StatusMessagesViewSet
 )
 from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
-from signals.apps.search.rest_framework.views import SearchView
+from signals.apps.search.rest_framework.views import SearchView, StatusMessageSearchView
 from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
     LoggedInUserView,
@@ -82,6 +82,9 @@ base_router.registry.extend(public_router.registry)
 base_router.registry.extend(private_router.registry)
 
 urlpatterns = [
+    # Status message search
+    re_path(r'v1/private/status-messages/search/?$', StatusMessageSearchView.as_view(), name='status-message-search'),
+
     # Legacy prediction proxy endpoint, still needed
     path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
 
