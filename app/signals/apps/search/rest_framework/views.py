@@ -3,6 +3,8 @@
 from typing import Optional
 
 from datapunt_api.rest import DatapuntViewSet
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -61,7 +63,25 @@ class StatusMessageSearchView(APIView):
     """View providing support for searching for status messages using elasticsearch."""
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
+    # serializer_class is defined so that drf-spectacular can find out which serializer belongs with this view
+    serializer_class = StatusMessageListSerializer
 
+    @extend_schema(parameters=[
+        OpenApiParameter('q', OpenApiTypes.STR, description='The search term.'),
+        OpenApiParameter(
+            'state',
+            OpenApiTypes.STR,
+            description='Filter the search results on state code '
+                        '(add parameter to querystring multiple times to filter on multiple states).'
+        ),
+        OpenApiParameter(
+            'active',
+            OpenApiTypes.BOOL,
+            description='Filter the search results on the "active" state of the status message.'
+        ),
+        OpenApiParameter('page_size', OpenApiTypes.INT, description='Number of results returned per page.'),
+        OpenApiParameter('page', OpenApiTypes.INT, description='The page number of the paginated results.'),
+    ])
     def get(self, request: Request, format: Optional[str] = None) -> Response:
         """This will perform a lookup using elasticsearch using a "fuzzy" search, which allows
         for typos, misspelling, pluralization, etc...
