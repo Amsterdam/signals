@@ -13,7 +13,7 @@ class MetaSerializer(serializers.Serializer):
     highlight = HighlightSerializer(required=False)
 
 
-class StatusMessageSerializer(serializers.Serializer):
+class StatusMessageSearchResultSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
     text = serializers.CharField()
@@ -54,7 +54,7 @@ class StatusMessageFacetSerializer(serializers.Serializer):
 
 class StatusMessageListSerializer(serializers.Serializer):
     count = serializers.SerializerMethodField()
-    results = serializers.ListSerializer(child=StatusMessageSerializer(), source='hits')
+    results = serializers.ListSerializer(child=StatusMessageSearchResultSerializer(), source='hits')
     facets = StatusMessageFacetSerializer()
 
     def get_count(self, obj: Response) -> int:
