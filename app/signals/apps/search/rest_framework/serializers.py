@@ -22,24 +22,34 @@ class StatusMessageSerializer(serializers.Serializer):
     meta = MetaSerializer()
 
 
-class TermFacetSerializer(serializers.Serializer):
-    term = serializers.SerializerMethodField()
+class TermsFacetSerializer(serializers.Serializer):
     count = serializers.SerializerMethodField()
     active = serializers.SerializerMethodField()
 
-    def get_term(self, obj: tuple):
-        return obj[0]
-
-    def get_count(self, obj: tuple):
+    def get_count(self, obj: tuple) -> int:
         return obj[1]
 
-    def get_active(self, obj: tuple):
+    def get_active(self, obj: tuple) -> bool:
         return obj[2]
 
 
+class StateTermsFacetSerializer(TermsFacetSerializer):
+    term = serializers.SerializerMethodField()
+
+    def get_term(self, obj: tuple) -> str:
+        return obj[0]
+
+
+class ActiveTermsFacetSerializer(TermsFacetSerializer):
+    term = serializers.SerializerMethodField()
+
+    def get_term(self, obj: tuple) -> bool:
+        return obj[0]
+
+
 class StatusMessageFacetSerializer(serializers.Serializer):
-    state = serializers.ListSerializer(child=TermFacetSerializer())
-    active = serializers.ListSerializer(child=TermFacetSerializer())
+    state = serializers.ListSerializer(child=StateTermsFacetSerializer())
+    active = serializers.ListSerializer(child=ActiveTermsFacetSerializer())
 
 
 class StatusMessageListSerializer(serializers.Serializer):
@@ -47,5 +57,5 @@ class StatusMessageListSerializer(serializers.Serializer):
     results = serializers.ListSerializer(child=StatusMessageSerializer(), source='hits')
     facets = StatusMessageFacetSerializer()
 
-    def get_count(self, obj: Response):
+    def get_count(self, obj: Response) -> int:
         return obj.hits.total.value
