@@ -4,7 +4,7 @@ from typing import Optional
 
 from datapunt_api.rest import DatapuntViewSet
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.request import Request
 from rest_framework.response import Response

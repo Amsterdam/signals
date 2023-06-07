@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from elasticsearch_dsl import FacetedSearch, TermsFacet, Search
+from elasticsearch_dsl import FacetedSearch, Search, TermsFacet
 
 from signals.apps.search.documents.status_message import StatusMessage
 
