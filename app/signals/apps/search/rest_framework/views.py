@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from typing import Optional
 
 from datapunt_api.rest import DatapuntViewSet
-from elasticsearch_dsl import FacetedSearch, Search, TermsFacet
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -13,7 +12,7 @@ from signals.apps.api.generics.exceptions import GatewayTimeoutException
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import PrivateSignalSerializerDetail, PrivateSignalSerializerList
 from signals.apps.search.documents.signal import SignalDocument
-from signals.apps.search.documents.status_message import StatusMessage
+from signals.apps.search.elasticsearch_dsl.search import StatusMessagesSearch
 from signals.apps.search.rest_framework.pagination import ElasticHALPagination
 from signals.apps.search.rest_framework.serializers import StatusMessageListSerializer
 from signals.apps.signals.models import Signal
@@ -56,33 +55,6 @@ class SearchView(DatapuntViewSet):
         if not SignalDocument.ping():
             raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
         return super().list(request=request, *args, **kwargs)
-
-
-class StatusMessagesSearch(FacetedSearch):
-    """The Elasticsearch DSL library requires us to subclass FacetedSearch in order to
-    configure a faceted search, which allows us to use filters and provides us with
-    counts for each possible filter option.
-    """
-    index = 'status_messages'
-    doc_types = (StatusMessage,)
-    fields = ('title', 'text',)
-    facets = {
-        'state': TermsFacet(field='state', size=20, min_doc_count=0),
-        'active': TermsFacet(field='active', min_doc_count=0),
-    }
-
-    def query(self, search: Search, query: str):
-        """Overridden query method in order to set the fuzziness of the query and
-        to provide the zero_terms_query option in order to get (all) results when
-        no query term is provided.
-        """
-        return search.query(
-            'multi_match',
-            query=query,
-            fields=self.fields,
-            fuzziness='AUTO',
-            zero_terms_query='all',
-        )
 
 
 class StatusMessageSearchView(APIView):
