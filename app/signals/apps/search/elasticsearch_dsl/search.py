@@ -29,4 +29,4 @@ class StatusMessagesSearch(FacetedSearch):
             fields=self.fields,
             fuzziness='AUTO',
             zero_terms_query='all',
-        )
+        ).suggest('auto_complete', query, completion={'field': 'suggest'})
