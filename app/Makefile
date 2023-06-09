@@ -12,11 +12,11 @@ pip-tools:
 	pip install pip-tools
 
 install: pip-tools                  ## Install requirements and sync venv with expected state as defined in requirements.txt
-	pip-sync app/requirements/requirements.txt app/requirements/requirements_dev.txt
+	pip-sync requirements/requirements.txt requirements/requirements_dev.txt
 
 requirements: pip-tools             ## Upgrade requirements (in requirements.in) to latest versions and compile requirements.txt
-	pip-compile --upgrade --output-file app/requirements/requirements.txt app/requirements/requirements.in
-	pip-compile --upgrade --output-file app/requirements/requirements_test.txt app/requirements/requirements_test.in
-	pip-compile --upgrade --output-file app/requirements/requirements_dev.txt app/requirements/requirements_dev.in
+	pip-compile --upgrade --output-file requirements/requirements.txt requirements/requirements.in
+	pip-compile --upgrade --output-file requirements/requirements_test.txt requirements/requirements_test.in
+	pip-compile --upgrade --output-file requirements/requirements_dev.txt requirements/requirements_dev.in
 
 upgrade: requirements install       ## Run 'requirements' and 'install' targets

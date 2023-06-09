@@ -2,3 +2,4 @@
 app/static
 app/media
 app/signals/settings/local.py
+app/Makefile

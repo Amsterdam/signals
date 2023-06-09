@@ -30,7 +30,7 @@ docker-compose build
 Start the api:
 
 ```console
-docker-compose up api
+./dev-up.sh
 ```
 
 You will now have the Signals API running on http://localhost:8000/signals/.

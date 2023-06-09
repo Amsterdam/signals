@@ -1,7 +1,7 @@
 # Managing dependencies
 Managing the dependencies and their versions is crucial for maintaining a stable
 and reliable application. This guide explains how to update the requirements
-files using the provided [Makefile](../../Makefile).
+files using the provided [Makefile](../../app/Makefile).
 
 ## Prerequisites
 Before installing/updating the requirements files, make sure you have the
@@ -49,7 +49,7 @@ To update the requirements files, follow these steps:
     ```
 3. Run the following command to update the requirements files:
     ```
-    make requirements
+    make --directory app requirements
     ```
     This command uses pip-tools to compile the `*.in` files into `*.txt` files
     with pinned versions and resolves the dependencies 
@@ -69,7 +69,7 @@ steps:
     ```
 - Run the following command to install the project requirements:
     ```yaml
-    make install
+    make --directory app install
     ```
     This command will use `pip-tools` to install the dependencies
 - After running the command, the required packages will be installed within your virtual environment.
