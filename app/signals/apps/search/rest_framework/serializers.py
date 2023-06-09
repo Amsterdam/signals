@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from typing import List
+
 from elasticsearch_dsl.response import Response
 from rest_framework import serializers
 
@@ -56,6 +58,14 @@ class StatusMessageListSerializer(serializers.Serializer):
     count = serializers.SerializerMethodField()
     results = serializers.ListSerializer(child=StatusMessageSearchResultSerializer(), source='hits')
     facets = StatusMessageFacetSerializer()
+    suggestions = serializers.SerializerMethodField()
 
     def get_count(self, obj: Response) -> int:
         return obj.hits.total.value
+
+    def get_suggestions(self, obj: Response) -> List[str]:
+        suggestions = []
+        for suggestion in obj.suggest.auto_complete[0].options:
+            suggestions.append(suggestion.text)
+
+        return suggestions
