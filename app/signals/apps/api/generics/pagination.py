@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 
 class HALPagination(DataPuntHALPagination):
-    def get_paginated_response_schema(self, schema):
+    def get_paginated_response_schema(self, schema: dict) -> dict:
         return {
             'type': 'object',
             'properties': {
