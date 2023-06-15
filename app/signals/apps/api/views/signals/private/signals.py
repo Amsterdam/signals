@@ -2,20 +2,24 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
-from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
+from signals.apps.api.generics.pagination import HALPagination, LinkHeaderPaginationForQuerysets
 from signals.apps.api.generics.permissions import (
     SignalCreateInitialPermission,
     SignalViewObjectPermission
@@ -41,7 +45,19 @@ from signals.auth.backend import JWTAuthBackend
 logger = logging.getLogger(__name__)
 
 
-class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
+@extend_schema_view(
+    list=extend_schema(responses={HTTP_200_OK: PrivateSignalSerializerList(many=True)},
+                       description='List of signals'),
+    create=extend_schema(responses={HTTP_201_CREATED: PrivateSignalSerializerList},
+                         description='Create a new signal'),
+    retrieve=extend_schema(responses={HTTP_200_OK: PrivateSignalSerializerDetail},
+                           description='Retrieve a signal'),
+    update=extend_schema(responses={HTTP_200_OK: PrivateSignalSerializerDetail},
+                         description='Update a signal'),
+    partial_update=extend_schema(responses={HTTP_200_OK: PrivateSignalSerializerDetail},
+                                 description='Partial update a signal'),
+)
+class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelMixin, ReadOnlyModelViewSet):
     """Viewset for `Signal` objects in private API"""
     queryset = Signal.objects.select_related(
         'location',
@@ -74,10 +90,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     serializer_class = PrivateSignalSerializerList
     serializer_detail_class = PrivateSignalSerializerDetail
 
-    pagination_class = HALPagination
-
-    authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SignalCreateInitialPermission,)
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (SignalCreateInitialPermission, )
     object_permission_classes = (SignalViewObjectPermission, )
 
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
@@ -128,7 +142,11 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                     request, message=getattr(permission, 'message', None)
                 )
 
-    @action(detail=True, url_path=r'history/?$')
+    @extend_schema(
+        parameters=[OpenApiParameter('what', OpenApiTypes.STR, description='Filters a specific "action"')],
+        responses={HTTP_200_OK: HistoryLogHalSerializer(many=True)}
+    )
+    @action(detail=True, url_path='history', filterset_class=None, filter_backends=(), pagination_class=None)
     def history(self, *args, **kwargs):
         """
         History endpoint filterable by action.
@@ -150,7 +168,74 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)
+    @extend_schema(
+        responses={
+            HTTP_200_OK: {
+                'type': 'object',
+                'properties': {
+                    'type': {
+                        'type': 'string',
+                        'enum': [
+                            'FeatureCollection'
+                        ],
+                        'example': 'FeatureCollection'
+                    },
+                    'features': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'type': {
+                                    'type': 'string',
+                                    'enum': [
+                                        'Feature'
+                                    ],
+                                    'example': 'Feature'
+                                },
+                                'geometry': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'type': {
+                                            'type': 'string',
+                                            'enum': [
+                                                'Point'
+                                            ]
+                                        },
+                                        'coordinates': {
+                                            'type': 'array',
+                                            'items': {
+                                                'type': 'number'
+                                            },
+                                            'example': [
+                                                4.890659,
+                                                52.373069
+                                            ]
+                                        }
+                                    }
+                                },
+                                'properties': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'id': {
+                                            'type': 'integer',
+                                            'example': 1
+                                        },
+                                        'created_at': {
+                                            'type': 'string',
+                                            'format': 'date-time',
+                                            'example': '2023-06-01T00:00:00.000000+00:00'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        description='GeoJSON of all signals',
+    )
+    @action(detail=False, url_path='geography', filterset_class=SignalFilterSet)
     def geography(self, request):
         """
         SIG-3988
@@ -193,7 +278,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         return Response(feature_collection, headers=headers)
 
-    @action(detail=True, url_path=r'children/?$')
+    @extend_schema(responses={HTTP_200_OK: AbridgedChildSignalSerializer(many=True)})
+    @action(detail=True, url_path='children', filterset_class=None, filter_backends=())
     def children(self, request, pk=None):
         """Show abridged version of child signals for a given parent signal."""
         # Based on a user's department a signal may not be accessible.
@@ -223,7 +309,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
-    @action(detail=True, url_path=r'email/preview/?$', methods=['POST', ], serializer_class=EmailPreviewPostSerializer,
+    @extend_schema(responses={HTTP_200_OK: EmailPreviewSerializer},
+                   description='Render the email preview before transitioning to a specific status.')
+    @action(detail=True, url_path='email/preview', methods=['POST', ], serializer_class=EmailPreviewPostSerializer,
             serializer_detail_class=EmailPreviewPostSerializer, filterset_class=None)
     def email_preview(self, request, *args, **kwargs):
         """
@@ -249,7 +337,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = EmailPreviewSerializer(signal, context=context)
         return Response(serializer.data)
 
-    @action(detail=True, url_path=r'pdf/?$', methods=['GET'], url_name='pdf-download')
+    @extend_schema(responses={HTTP_200_OK: None}, description='Download the Signal as a PDF.')
+    @action(detail=True, url_path='pdf', methods=['GET'], url_name='pdf-download')
     def pdf(self, request, *args, **kwargs):
         signal = self.get_object()
         user = request.user
@@ -270,4 +359,4 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)

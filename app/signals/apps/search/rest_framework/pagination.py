@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
-from datapunt_api.pagination import HALPagination
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.core.paginator import InvalidPage, Page, Paginator
 from rest_framework.exceptions import NotFound
+
+from signals.apps.api.generics.pagination import HALPagination
 
 
 class ElasticPage(Page):

@@ -151,7 +151,7 @@ if not settings.DRF_SPECTACULAR_ENABLED:
                                                           extra_context={'schema_url': 'openapi-schema'})),
     ]
 
-if settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
+if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
     urlpatterns += [
         # My Signals
         path('v1/', include('signals.apps.my_signals.urls')),

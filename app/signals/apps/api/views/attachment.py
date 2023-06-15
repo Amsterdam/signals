@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 """
 Views dealing with 'signals.Attachment' model directly.
 """
 import os
 
-from datapunt_api.rest import DatapuntViewSet
-from rest_framework import mixins, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
 
 from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
@@ -22,7 +22,7 @@ from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
-class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, GenericViewSet):
+class PublicSignalAttachmentsViewSet(CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
 
@@ -39,8 +39,8 @@ class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, GenericViewSet):
         return self.get_object()
 
 
-class PrivateSignalAttachmentsViewSet(
-        NestedViewSetMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, DatapuntViewSet):
+class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, DetailSerializerMixin, CreateModelMixin, DestroyModelMixin,
+                                      ReadOnlyModelViewSet):
     queryset = Attachment.objects.all()
 
     serializer_class = PrivateSignalAttachmentSerializer
@@ -99,4 +99,4 @@ class PrivateSignalAttachmentsViewSet(
         Signal.actions.create_note({
             'text': f'Bijlage {att_filename} is verwijderd.', 'created_by': user
         }, signal=signal)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)

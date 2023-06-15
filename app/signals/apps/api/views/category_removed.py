@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 """
 ViewSet that returns `signals.Signal` instance dropped out of a category.
 """
-from datapunt_api.rest import HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 
@@ -16,7 +15,6 @@ from signals.auth.backend import JWTAuthBackend
 
 class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = SignalIdListSerializer
-    pagination_class = HALPagination
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)

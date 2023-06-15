@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import logging
 
-from datapunt_api.rest import HALPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Q
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api import app_settings
@@ -19,6 +20,7 @@ from signals.apps.api.serializers import (
     SignalContextReporterSerializer,
     SignalContextSerializer
 )
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -29,14 +31,79 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     serializer_class = SignalContextSerializer
     serializer_detail_class = SignalContextSerializer
 
-    pagination_class = HALPagination
-
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
     def get_queryset(self, *args, **kwargs):
         return Signal.objects.filter_for_user(user=self.request.user)
 
+    @extend_schema(
+        responses={
+            HTTP_200_OK: {
+                'type': 'object',
+                'properties': {
+                    'type': {
+                        'type': 'string',
+                        'enum': [
+                            'FeatureCollection'
+                        ],
+                        'example': 'FeatureCollection'
+                    },
+                    'features': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'type': {
+                                    'type': 'string',
+                                    'enum': [
+                                        'Feature'
+                                    ],
+                                    'example': 'Feature'
+                                },
+                                'geometry': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'type': {
+                                            'type': 'string',
+                                            'enum': [
+                                                'Point'
+                                            ]
+                                        },
+                                        'coordinates': {
+                                            'type': 'array',
+                                            'items': {
+                                                'type': 'number'
+                                            },
+                                            'example': [
+                                                4.890659,
+                                                52.373069
+                                            ]
+                                        }
+                                    }
+                                },
+                                'properties': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'state': {
+                                            'type': 'string',
+                                            'enum': [state[0] for state in workflow.STATUS_CHOICES_API],
+                                            'example': 'm',
+                                        },
+                                        'state_display': {
+                                            'type': 'string',
+                                            'example': 'Gemeld',
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        description='Get an overview of signals in the same category and within a certain radius of the signal',
+    )
     def near(self, request, pk=None):
         signal = self.get_object()
 
@@ -60,6 +127,8 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
         serializer = SignalContextGeoSerializer(page, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
+    @extend_schema(responses={'200': SignalContextReporterSerializer(many=True)},
+                   description='Get an overview of signals from the same reporter')
     def reporter(self, request, pk=None):
         signal = self.get_object()
         if signal.reporter.email:
