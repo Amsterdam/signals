@@ -1,12 +1,102 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from signals.apps.signals.models import Signal
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/2'
+                }
+            }
+        },
+        'archives': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/2/history/'
+                }
+            }
+        },
+        'sia:attachments': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/2/attachments/'
+                }
+            }
+        },
+        'sia:pdf': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/2/pdf/'
+                }
+            }
+        },
+        'sia:context': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/2/context/'
+                }
+            }
+        },
+        'sia:parent': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1'
+                }
+            }
+        },
+        'sia:children': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'href': {
+                        'type': 'string',
+                        'format': 'uri',
+                        'example': 'https://api.example.com/signals/v1/private/signals/3'
+                    }
+                }
+            },
+            'minItems': 0
+        },
+    }
+})
 class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
@@ -37,6 +127,21 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         return result
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1'
+                }
+            }
+        }
+    }
+})
 class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
@@ -49,6 +154,51 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         return result
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1'
+                }
+            }
+        },
+        'sia:context-reporter-detail': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1/context/reporter/'
+                }
+            }
+        },
+        'sia:context-geography-detail': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1/context/near/geography/'
+                }
+            }
+        },
+    }
+})
 class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:

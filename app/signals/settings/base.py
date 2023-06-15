@@ -333,7 +333,7 @@ REST_FRAMEWORK = dict(
     PAGE_SIZE=100,
     UNAUTHENTICATED_TOKEN={},
     DEFAULT_AUTHENTICATION_CLASSES=[],
-    DEFAULT_PAGINATION_CLASS='datapunt_api.pagination.HALPagination',
+    DEFAULT_PAGINATION_CLASS='signals.apps.api.generics.pagination.HALPagination',
     DEFAULT_FILTER_BACKENDS=(
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
@@ -452,7 +452,7 @@ if DRF_SPECTACULAR_ENABLED:
     ]
 
     REST_FRAMEWORK.update(dict(
-        DEFAULT_SCHEMA_CLASS='drf_spectacular.openapi.AutoSchema',
+        DEFAULT_SCHEMA_CLASS='signals.schema.SIGAutoSchema',
     ))
 
     SPECTACULAR_SETTINGS = {
@@ -466,4 +466,5 @@ if DRF_SPECTACULAR_ENABLED:
         'SERVE_INCLUDE_SCHEMA': False,
         'SWAGGER_UI_DIST': 'SIDECAR',
         'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+        'GENERIC_ADDITIONAL_PROPERTIES': True,
     }

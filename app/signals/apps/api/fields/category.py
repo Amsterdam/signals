@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework_extensions.settings import extensions_api_settings
@@ -43,6 +44,11 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         return result
 
 
+@extend_schema_field({
+    'type': 'string',
+    'format': 'uri',
+    'example': 'https://api.example.com/signals/v1/public/terms/categories/1/sub_categories/2/'
+})
 class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'public-subcategory-detail'
     queryset = Category.objects.all().select_related('parent')

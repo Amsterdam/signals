@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Q
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
@@ -33,7 +34,32 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             'has_children',
         )
 
-    def get_category(self, obj):
+    @extend_schema_field({
+        'type': 'object',
+        'properties': {
+            'sub': {
+                'type': 'string',
+                'example': 'Overig',
+            },
+            'sub_slug': {
+                'type': 'string',
+                'example': 'overig',
+            },
+            'departments': {
+                'type': 'string',
+                'example': 'ASC, WAT',
+            },
+            'main': {
+                'type': 'string',
+                'example': 'Overig',
+            },
+            'main_slug': {
+                'type': 'string',
+                'example': 'overig',
+            },
+        },
+    })
+    def get_category(self, obj) -> dict:
         departments = ', '.join(
             obj.category_assignment.category.departments.filter(
                 categorydepartment__is_responsible=True
@@ -47,10 +73,38 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             'main_slug': obj.category_assignment.category.parent.slug,
         }
 
-    def get_status(self, obj):
+    @extend_schema_field({
+        'type': 'object',
+        'properties': {
+            'state': {
+                'type': 'string',
+                'enum': [state[0] for state in workflow.STATUS_CHOICES_API],
+                'example': 'm',
+            },
+            'state_display': {
+                'type': 'string',
+                'example': 'Gemeld',
+            },
+        },
+    })
+    def get_status(self, obj) -> dict:
         return {'state': obj.status.state, 'state_display': obj.status.get_state_display(), }
 
-    def get_feedback(self, obj):
+    @extend_schema_field({
+        'type': 'object',
+        'properties': {
+            'is_satisfied': {
+                'type': 'boolean',
+                'example': True,
+            },
+            'submitted_at': {
+                'type': 'string',
+                'format': 'date-time',
+                'example': '2023-06-01T00:00:00Z',
+            },
+        },
+    })
+    def get_feedback(self, obj) -> dict:
         """
         Returns the lastest feedback object if it exists else None
         """
@@ -58,10 +112,10 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             latest_feedback = obj.feedback.first()
             return {'is_satisfied': latest_feedback.is_satisfied, 'submitted_at': latest_feedback.submitted_at, }
 
-    def get_can_view_signal(self, obj):
+    def get_can_view_signal(self, obj) -> bool:
         return Signal.objects.filter(pk=obj.pk).filter_for_user(self.context['request'].user).exists()
 
-    def get_has_children(self, obj):
+    def get_has_children(self, obj) -> bool:
         return obj.children.exists()
 
 
@@ -79,7 +133,18 @@ class SignalContextSerializer(HALSerializer):
             'reporter',
         )
 
-    def get_near(self, obj):
+    @extend_schema_field({
+        'type': 'object',
+        'properties': {
+            'signal_count': {
+                'type': 'integer',
+                'description': 'The number of signals in the same category as the current signal, '
+                               'within a radius of 500 meters, created in the last 4 weeks.',
+                'example': 5,
+            },
+        },
+    })
+    def get_near(self, obj) -> dict:
         signals_for_geography_qs = Signal.objects.annotate(
             distance_from_point=Distance('location__geometrie', obj.location.geometrie),
         ).filter(
@@ -95,7 +160,39 @@ class SignalContextSerializer(HALSerializer):
             'signal_count': signals_for_geography_qs.count(),
         }
 
-    def get_reporter(self, obj):
+    @extend_schema_field({
+        'oneOf': [{
+            'type': 'object',
+            'properties': {
+                'signal_count': {
+                    'type': 'integer',
+                    'description': 'The number of signals created by the same reporter as the current signal.',
+                    'example': 5,
+                },
+                'open_count': {
+                    'type': 'integer',
+                    'description': 'The number of open signals created by the same reporter as the current signal.',
+                    'example': 5,
+                },
+                'positive_count': {
+                    'type': 'integer',
+                    'description': 'The number of signals created by the same reporter as the current signal, '
+                                   'that have been marked as positive feedback.',
+                    'example': 5,
+                },
+                'negative_count': {
+                    'type': 'integer',
+                    'description': 'The number of signals created by the same reporter as the current signal, '
+                                   'that have been marked as negative feedback.',
+                    'example': 5,
+                },
+            },
+            }, {
+                'type': 'null',
+            },
+        ],
+    })
+    def get_reporter(self, obj) -> dict:
         if not obj.reporter.email:
             return None
 
@@ -128,7 +225,21 @@ class SignalContextGeoSerializer(GeoFeatureModelSerializer):
         geo_field = 'location'
         fields = ['id', 'created_at']
 
-    def get_properties(self, instance, fields):
+    @extend_schema_field({
+        'type': 'object',
+        'properties': {
+            'state': {
+                'type': 'string',
+                'enum': [state[0] for state in workflow.STATUS_CHOICES_API],
+                'example': 'm',
+            },
+            'state_display': {
+                'type': 'string',
+                'example': 'Gemeld',
+            },
+        },
+    })
+    def get_properties(self, instance, fields) -> dict:
         properties = super(SignalContextGeoSerializer, self).get_properties(instance, fields)
         properties.update({
             'status': {

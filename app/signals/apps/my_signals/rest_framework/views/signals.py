@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
-from datapunt_api.pagination import HALPagination
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DEFAULT_RENDERERS
 from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
@@ -37,7 +36,6 @@ from signals.apps.signals.models import (
 
 class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
-    pagination_class = HALPagination
 
     authentication_classes = (MySignalsTokenAuthentication, )
 
