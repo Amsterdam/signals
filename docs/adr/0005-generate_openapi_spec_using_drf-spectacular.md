@@ -13,7 +13,7 @@ Our project requires an OpenAPI Specification (OAS) to document the API
 endpoints and provide a clear understanding of the available resources,
 operations, and data models. Previously, we manually maintained the OAS
 documentation, which proved to be time-consuming, error-prone, and difficult
-to keep in sync with the API. Al so when deadlines are approaching, it is easy
+to keep in sync with the API. Also, when deadlines are approaching, it is easy
 to skip the manual documentation updates, which can result in inconsistencies.
 
 ## Decision
