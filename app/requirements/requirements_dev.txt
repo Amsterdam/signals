@@ -353,7 +353,7 @@ mccabe==0.7.0
     # via
     #   -r requirements/requirements_test.txt
     #   flake8
-mistune==3.0.1
+mistune==2.0.5
     # via -r requirements/requirements_test.txt
 mozilla-django-oidc==3.0.0
     # via -r requirements/requirements_test.txt
