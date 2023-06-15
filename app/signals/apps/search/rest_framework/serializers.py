@@ -5,8 +5,8 @@ from rest_framework import serializers
 
 
 class HighlightSerializer(serializers.Serializer):
-    title = serializers.ListField(child=serializers.CharField())
-    text = serializers.ListField(child=serializers.CharField())
+    title = serializers.ListField(child=serializers.CharField(), required=False)
+    text = serializers.ListField(child=serializers.CharField(), required=False)
 
 
 class MetaSerializer(serializers.Serializer):
