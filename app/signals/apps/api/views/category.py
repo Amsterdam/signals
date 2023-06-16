@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
-from datapunt_api.rest import DatapuntViewSet
-from rest_framework import mixins
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema, extend_schema_view
 from rest_framework.decorators import action
+from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
-from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework.status import HTTP_200_OK
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
 
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.serializers import (
@@ -18,7 +20,25 @@ from signals.apps.signals.models import Category
 from signals.auth.backend import JWTAuthBackend
 
 
-class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        responses=PolymorphicProxySerializer(
+            component_name='Category',
+            serializers=[ParentCategoryHALSerializer, CategoryHALSerializer, ],
+            resource_type_field_name='sub_categories',
+            many=True
+        )
+    ),
+    retrieve=extend_schema(
+        responses=PolymorphicProxySerializer(
+            component_name='Category',
+            serializers=[ParentCategoryHALSerializer, CategoryHALSerializer, ],
+            resource_type_field_name='sub_categories',
+            many=False
+        )
+    )
+)
+class PublicCategoryViewSet(NestedViewSetMixin, DetailSerializerMixin, ReadOnlyModelViewSet):
     queryset = Category.objects.select_related('parent').prefetch_related('children').all()
     lookup_field = 'slug'
 
@@ -37,7 +57,7 @@ class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
         return serializer_class(*args, **kwargs)
 
 
-class PrivateCategoryViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
+class PrivateCategoryViewSet(UpdateModelMixin, DetailSerializerMixin, ReadOnlyModelViewSet):
     serializer_class = PrivateCategorySerializer
     serializer_detail_class = PrivateCategorySerializer
 
@@ -57,7 +77,12 @@ class PrivateCategoryViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
         instance = serializer.save()
         HistoryLogService.log_update(instance=instance, user=self.request.user)
 
-    @action(detail=True, url_path=r'history/?$')
+    @extend_schema(
+        responses={
+            HTTP_200_OK: PrivateCategoryHistoryHalSerializer(many=True),
+        }
+    )
+    @action(detail=True, url_path='history', pagination_class=None)
     def history(self, request, pk=None):
         """
         The change log of the selected Category instance

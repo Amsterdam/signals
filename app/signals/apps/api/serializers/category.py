@@ -133,7 +133,7 @@ class PrivateCategorySerializer(HALSerializer):
             'slug',
         )
 
-    def get_sla(self, obj):
+    def get_sla(self, obj: Category) -> PrivateCategorySLASerializer:
         return PrivateCategorySLASerializer(obj.slo.first()).data
 
     def update(self, instance, validated_data):
@@ -175,13 +175,13 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
             '_category',
         )
 
-    def get_identifier(self, log):
+    def get_identifier(self, log: Log) -> str:
         return f'{log.get_action_display().upper()}_CATEGORY_{log.id}'
 
-    def get_what(self, log):
+    def get_what(self, log: Log) -> str:
         return f'{log.get_action_display().upper()}_CATEGORY'
 
-    def get_action(self, log):  # noqa C901
+    def get_action(self, log: Log) -> str:  # noqa C901
         actions = []
         for key, value in log.data.items():
             if key == 'name':
@@ -210,5 +210,5 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
             actions.append(action)
         return '\n'.join(actions)
 
-    def get_description(self, log):
+    def get_description(self, log: Log) -> None:
         return None  # No description implemented yet

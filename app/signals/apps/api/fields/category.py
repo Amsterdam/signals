@@ -19,6 +19,62 @@ def category_public_url(category, request, format=None):
     return reverse(viewname, kwargs=kwargs, request=request, format=format)
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/categories/1'
+                }
+            }
+        },
+        'archives': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1/history/'
+                }
+            }
+        },
+        'sia:questionnaire': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/public/qa/questionnaires/'
+                               '636aacb1-2813-423e-adbe-7ef84d4afc37',
+                }
+            }
+        },
+        'sia:icon': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/media/icons/1.png'
+                }
+            }
+        },
+    }
+})
 class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request')
@@ -70,6 +126,51 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
         return super().to_internal_value(data=data)
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/categories/1'
+                }
+            }
+        },
+        'archives': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/signals/1/history/'
+                }
+            }
+        },
+        'sia:status-message-templates': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/private/status-messages/category/1'
+                }
+            }
+        },
+    }
+})
 class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def _get_public_url(self, obj, request=None):
         return category_public_url(obj, request=request)
