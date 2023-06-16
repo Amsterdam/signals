@@ -13,6 +13,7 @@ django-celery-results
 django-cors-headers
 django-extensions
 django-filter
+django-fsm
 django-markdownx
 django-o365mail
 djangorestframework

@@ -136,6 +136,8 @@ django-extensions==3.2.3
     # via -r requirements/requirements.in
 django-filter==23.2
     # via -r requirements/requirements.in
+django-fsm==2.8.1
+    # via -r requirements/requirements.in
 django-markdownx==4.0.2
     # via -r requirements/requirements.in
 django-o365mail==1.1.0
