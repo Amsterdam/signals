@@ -90,6 +90,8 @@ INSTALLED_APPS = [
     'storages',
     'mozilla_django_oidc',
     'silk',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ] + SIGNAL_APPS
 
 MIDDLEWARE = [
@@ -446,11 +448,6 @@ MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Sig
 DRF_SPECTACULAR_ENABLED = os.getenv('DRF_SPECTACULAR_ENABLED', False) in TRUE_VALUES
 
 if DRF_SPECTACULAR_ENABLED:
-    INSTALLED_APPS += [
-        'drf_spectacular',
-        'drf_spectacular_sidecar',
-    ]
-
     REST_FRAMEWORK.update(dict(
         DEFAULT_SCHEMA_CLASS='signals.schema.SIGAutoSchema',
     ))
