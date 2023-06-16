@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import MaxLengthValidator
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -105,12 +106,12 @@ class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
             'state_display',
         )
 
-    def get_public_state(self, obj):
+    def get_public_state(self, obj: Status) -> str:
         if obj.state in SIGNALS_API_CLOSED_STATES:
             return SIGNALS_API_STATE_CLOSED
         return SIGNAL_API_STATE_OPEN
 
-    def get_public_state_display(self, obj):
+    def get_public_state_display(self, obj: Status) -> str:
         if obj.state in SIGNALS_API_CLOSED_STATES:
             return SIGNALS_API_STATE_CLOSED_DISPLAY
         return SIGNAL_API_STATE_OPEN_DISPLAY

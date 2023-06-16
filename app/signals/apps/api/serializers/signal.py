@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -550,7 +550,7 @@ class PublicSignalSerializerDetail(HALSerializer):
             'incident_date_end',
         )
 
-    def get__display(self, obj):
+    def get__display(self, obj: Signal) -> str:
         return obj.get_id_display()
 
 

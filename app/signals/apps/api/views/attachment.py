@@ -5,6 +5,7 @@ Views dealing with 'signals.Attachment' model directly.
 """
 import os
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
@@ -22,6 +23,14 @@ from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
+@extend_schema_view(
+    create=extend_schema(
+        operation_id='upload_file',
+        request={
+            'multipart/form-data': PublicSignalAttachmentSerializer
+        }
+    )
+)
 class PublicSignalAttachmentsViewSet(CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'

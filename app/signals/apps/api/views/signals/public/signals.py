@@ -4,12 +4,14 @@ from typing import Any
 
 from django.db.models import Min, Q
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
@@ -29,6 +31,11 @@ from signals.apps.signals.workflow import (
 from signals.throttling import PostOnlyNoUserRateThrottle
 
 
+@extend_schema_view(
+    retrieve=extend_schema(
+        description='Retrieve a public signal',
+    ),
+)
 class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
     """ViewSet for public signals."""
     lookup_field: str = 'uuid'
@@ -45,6 +52,9 @@ class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
     serializer_class = PublicSignalSerializerDetail
     throttle_classes: tuple = (PostOnlyNoUserRateThrottle, )
 
+    @extend_schema(request=PublicSignalCreateSerializer,
+                   responses={HTTP_201_CREATED: PublicSignalSerializerDetail},
+                   description='Create a signal')
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 
         """
@@ -69,7 +79,97 @@ class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, url_path=r'geography/?$', methods=['GET'],
+    @extend_schema(
+        filters=True,
+        responses={
+            HTTP_200_OK: {
+                'type': 'object',
+                'properties': {
+                    'type': {
+                        'type': 'string',
+                        'enum': [
+                            'FeatureCollection'
+                        ],
+                        'example': 'FeatureCollection'
+                    },
+                    'features': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'type': {
+                                    'type': 'string',
+                                    'enum': [
+                                        'Feature'
+                                    ],
+                                    'example': 'Feature'
+                                },
+                                'geometry': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'type': {
+                                            'type': 'string',
+                                            'enum': [
+                                                'Point'
+                                            ]
+                                        },
+                                        'coordinates': {
+                                            'type': 'array',
+                                            'items': {
+                                                'type': 'number'
+                                            },
+                                            'example': [
+                                                4.890659,
+                                                52.373069
+                                            ]
+                                        }
+                                    }
+                                },
+                                'properties': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'category': {
+                                            'type': 'object',
+                                            'properties': {
+                                                'name': {
+                                                    'type': 'string',
+                                                    'example': 'Overig'
+                                                },
+                                                'slug': {
+                                                    'type': 'string',
+                                                    'example': 'overig'
+                                                },
+                                                'parent': {
+                                                    'type': 'object',
+                                                    'properties': {
+                                                        'name': {
+                                                            'type': 'string',
+                                                            'example': 'Overig'
+                                                        },
+                                                        'slug': {
+                                                            'type': 'string',
+                                                            'example': 'overig'
+                                                        },
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        'created_at': {
+                                            'type': 'string',
+                                            'format': 'date-time',
+                                            'example': '2023-06-01T00:00:00.000000+00:00'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        description='GeoJSON of all signals that can be shown on a public map.',
+    )
+    @action(detail=False, url_path='geography', methods=['GET'],
             filter_backends=(DjangoFilterBackend, OrderingFilter), filterset_class=PublicSignalGeographyFilter,
             ordering=('-created_at', ), ordering_fields=('created_at', ), queryset=geography_queryset)
     def geography(self, request: Request) -> Response:
