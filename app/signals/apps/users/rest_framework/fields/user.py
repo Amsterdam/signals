@@ -29,16 +29,6 @@ from rest_framework import serializers
                 }
             }
         },
-        # 'archives': {
-        #     'type': 'object',
-        #     'properties': {
-        #         'href': {
-        #             'type': 'string',
-        #             'format': 'uri',
-        #             'example': 'https://api.example.com/signals/v1/private/user/1/history/'
-        #         }
-        #     }
-        # },
     }
 })
 class UserHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
@@ -50,7 +40,6 @@ class UserHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
             ('self', dict(
                 href=self.get_url(value, 'user-detail', request, None),
              )),
-            # ('archives', dict(href=self.get_url(value, 'user-history', request, None))),
         ])
 
         return result
