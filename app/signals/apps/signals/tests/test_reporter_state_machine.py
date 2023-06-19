@@ -108,7 +108,12 @@ class TestReporterStateMachine(TestCase):
             reporter.verify_email()
 
     def test_cannot_transition_from_approved_to_verification_email_sent(self):
-        pass
+        reporter = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+
+        with pytest.raises(TransitionNotAllowed) as e_info:
+            reporter.verify_email()
+
+        self.assertEqual(str(e_info.value), "Can't switch from state 'approved' using method 'verify_email'")
 
     def test_cannot_transition_from_verification_email_sent_to_verification_email_sent(self):
         pass
