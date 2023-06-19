@@ -62,15 +62,19 @@ class TestReporterStateMachine(TestCase):
         original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
         new = ReporterFactory.create(state='approved', _signal=original._signal)
 
-        with pytest.raises(TransitionNotAllowed):
+        with pytest.raises(TransitionNotAllowed) as e_info:
             new.cancel()
+
+        self.assertEqual(str(e_info.value), "Can't switch from state 'approved' using method 'cancel'")
 
     def test_cannot_transition_from_cancelled_to_cancelled(self):
         original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
         new = ReporterFactory.create(state='cancelled', _signal=original._signal)
 
-        with pytest.raises(TransitionNotAllowed):
+        with pytest.raises(TransitionNotAllowed) as e_info:
             new.cancel()
+
+        self.assertEqual(str(e_info.value), "Can't switch from state 'cancelled' using method 'cancel'")
 
     # transitions to verification_email_sent
     def test_can_transition_from_new_to_verification_email_sent(self):
@@ -104,8 +108,10 @@ class TestReporterStateMachine(TestCase):
     def test_cannot_transition_from_cancelled_to_verification_email_sent(self):
         reporter = ReporterFactory.create(state='cancelled', email=self.EMAIL, phone=self.PHONE)
 
-        with pytest.raises(TransitionNotAllowed):
+        with pytest.raises(TransitionNotAllowed) as e_info:
             reporter.verify_email()
+
+        self.assertEqual(str(e_info.value), "Can't switch from state 'cancelled' using method 'verify_email'")
 
     def test_cannot_transition_from_approved_to_verification_email_sent(self):
         reporter = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
