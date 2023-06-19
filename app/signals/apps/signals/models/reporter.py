@@ -73,14 +73,41 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         return False
 
+    def includes_email(self) -> bool:
+        """
+        Used as state machine transition condition to check if email is available.
+        """
+        return self.email is not None and self.email != ''
+
+    def email_changed(self) -> bool:
+        """
+        Used as state machine transition condition to check if email changed from the
+        previous approved reporter.
+        """
+        return self._signal.reporter.email != self.email
+
+    # TODO: Don't hardcode state names
     @transition(
         field='state',
         source=('new', 'verification_email_sent', ),
-        target='cancel', conditions=(is_not_original, )
+        target='cancel',
+        conditions=(is_not_original, ),
     )
     def cancel(self):
         """
         Use this method to transition to the 'cancelled' state.
+        """
+        pass
+
+    @transition(
+        field='state',
+        source=('new', ),
+        target='verification_email_sent',
+        conditions=(includes_email, is_not_original, email_changed)
+    )
+    def verify_email(self):
+        """
+        Use this method to transition to the 'verification_email_sent' state.
         """
         pass
 

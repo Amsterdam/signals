@@ -74,7 +74,14 @@ class TestReporterStateMachine(TestCase):
 
     # transitions to verification_email_sent
     def test_can_transition_from_new_to_verification_email_sent(self):
-        pass
+        original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.email = 'new@example.com'
+        new.phone = self.PHONE
+        new.save()
+
+        new.verify_email()
 
     def test_cannot_transition_from_new_to_verification_email_sent_when_email_not_changed(self):
         pass
@@ -86,6 +93,9 @@ class TestReporterStateMachine(TestCase):
         pass
 
     def test_cannot_transition_from_approved_to_verification_email_sent(self):
+        pass
+
+    def test_cannot_transition_from_verification_email_sent_to_verification_email_sent(self):
         pass
 
     # transitions to approved
@@ -111,4 +121,7 @@ class TestReporterStateMachine(TestCase):
         pass
 
     def test_cannot_transition_from_cancelled_to_approved(self):
+        pass
+
+    def test_cannot_transition_from_approved_to_approved(self):
         pass
