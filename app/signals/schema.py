@@ -1,7 +1,29 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from drf_spectacular.extensions import OpenApiSerializerFieldExtension
 from drf_spectacular.openapi import AutoSchema
 from rest_framework import serializers
+
+
+class DatapuntLinksFieldFix(OpenApiSerializerFieldExtension):
+    target_class = 'datapunt_api.serializers.LinksField'
+
+    def map_serializer_field(self, auto_schema, direction):
+        return {
+            'type': 'object',
+            'properties': {
+                'self': {
+                    'type': 'object',
+                    'properties': {
+                        'href': {
+                            'type': 'string',
+                            'format': 'uri',
+                            'example': 'http://api.example.org/endpoint/1',
+                        },
+                    },
+                },
+            },
+        }
 
 
 class ErrorSerializer(serializers.Serializer):

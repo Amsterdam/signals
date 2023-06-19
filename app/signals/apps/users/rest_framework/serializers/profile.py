@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from rest_framework import serializers
 
 from signals.apps.signals.models import Department
@@ -27,7 +27,7 @@ class ProfileListSerializer(serializers.ModelSerializer):
             'updated_at',
         )
 
-    def get_departments(self, obj):
+    def get_departments(self, obj) -> list[str]:
         return obj.departments.values_list('name', flat=True)
 
 
@@ -50,5 +50,5 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             'notification_on_department_assignment',
         )
 
-    def get_departments(self, obj):
+    def get_departments(self, obj: Profile) -> list[str]:
         return obj.departments.values_list('name', flat=True)
