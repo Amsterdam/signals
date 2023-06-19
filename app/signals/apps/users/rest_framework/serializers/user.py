@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, User
@@ -50,7 +50,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
             'username',
         )
 
-    def get_roles(self, obj):
+    def get_roles(self, obj: User) -> list[str]:
         return [group.name for group in obj.groups.all()]
 
 
@@ -93,12 +93,12 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
             'username',
         )
 
-    def validate_username(self, value):
+    def validate_username(self, value: str) -> str:
         if User.objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError(f'A user with username {value} already exists')
         return value
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> User:
         self.get_extra_kwargs()
 
         profile_data = validated_data.pop('profile', None)
@@ -115,7 +115,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 
         return instance
 
-    def update(self, instance, validated_data):
+    def update(self, instance: User, validated_data: dict) -> User:
         profile_data = validated_data.pop('profile', None)
         if profile_data:
             profile_detail_serializer = ProfileDetailSerializer()
@@ -151,13 +151,13 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
             '_user',
         )
 
-    def get_identifier(self, log):
+    def get_identifier(self, log: Log) -> str:
         return f'{log.get_action_display().upper()}_USER_{log.id}'
 
-    def get_what(self, log):
+    def get_what(self, log: Log) -> str:
         return f'{log.get_action_display().upper()}_USER'
 
-    def get_action(self, log):
+    def get_action(self, log: Log) -> str:
         key_2_title = {
             'first_name': 'Voornaam gewijzigd',
             'last_name': 'Achternaam gewijzigd',
@@ -175,7 +175,7 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
             actions.append(f'{key_2_title[key]}:\n {value if value else "-"}')
         return '\n'.join(actions)
 
-    def get_description(self, log):
+    def get_description(self, log: Log) -> None:
         return None
 
 

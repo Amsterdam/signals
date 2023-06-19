@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
-from datapunt_api.pagination import HALPagination
-from datapunt_api.rest import DatapuntViewSetWritable
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Lower
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.viewsets import ModelViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
+from signals.apps.api.generics.pagination import HALPagination
 from signals.apps.api.generics.permissions import SIAPermissions, SIAUserPermissions
 from signals.apps.history.services import HistoryLogService
 from signals.apps.users.rest_framework.filters import UserFilterSet, UserNameListFilterSet
@@ -27,7 +30,13 @@ from signals.auth.backend import JWTAuthBackend
 User = get_user_model()
 
 
-class UserViewSet(DatapuntViewSetWritable):
+@extend_schema_view(
+    list=extend_schema(description='List all users'),
+    retrieve=extend_schema(description='Retrieve a user', responses={HTTP_200_OK: UserDetailHALSerializer}),
+    partial_update=extend_schema(description='Update a user', request=UserDetailHALSerializer,
+                                 responses={HTTP_200_OK: UserDetailHALSerializer}),
+)
+class UserViewSet(DetailSerializerMixin, ModelViewSet):
     queryset = User.objects.select_related(
         'profile'
     ).prefetch_related(
@@ -57,6 +66,8 @@ class UserViewSet(DatapuntViewSetWritable):
     # We only allow these methods
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
+    @extend_schema(responses={HTTP_201_CREATED: UserDetailHALSerializer}, request=UserDetailHALSerializer,
+                   description='Create a user')
     def create(self, request, *args, **kwargs):
         # If we create a user we want to use the detail serializer
         serializer = self.serializer_detail_class(data=request.data,
@@ -73,6 +84,7 @@ class UserViewSet(DatapuntViewSetWritable):
         instance = serializer.save()
         HistoryLogService.log_update(instance=instance, user=self.request.user)
 
+    @extend_schema(responses={HTTP_200_OK: PrivateUserHistoryHalSerializer})
     @action(detail=True)
     def history(self, request, pk=None):
         """
