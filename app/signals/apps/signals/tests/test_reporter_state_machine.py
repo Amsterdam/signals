@@ -13,7 +13,7 @@ class TestReporterStateMachine(TestCase):
     def test_can_transition_from_new_to_cancelled_when_not_original_reporter(self):
         original = ReporterFactory.create(state='approved')
         new = Reporter()
-        new._signal = original.signal
+        new._signal = original._signal
         new.save()
 
         with pytest.raises(TransitionNotAllowed):
