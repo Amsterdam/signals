@@ -62,18 +62,22 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
             self.save()
 
     def is_not_original(self) -> bool:
-        """Used as state machine transition condition to check if the reporter within this
+        """
+        Used as state machine transition condition to check if the reporter within this
         context is the original (first) reporter.
         """
         try:
             Reporter.objects.filter(_signal=self._signal).get()
         except MultipleObjectsReturned:
-            return False
+            return True
 
-        return True
+        return False
 
     @transition(field='state', source=('new', ), target='cancel', conditions=(is_not_original, ))
     def cancel(self):
+        """
+        Use this method to transition to the 'cancelled' state.
+        """
         pass
 
     def save(self, *args, **kwargs):

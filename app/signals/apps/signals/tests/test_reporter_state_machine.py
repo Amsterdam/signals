@@ -16,8 +16,7 @@ class TestReporterStateMachine(TestCase):
         new._signal = original._signal
         new.save()
 
-        with pytest.raises(TransitionNotAllowed):
-            new.cancel()
+        new.cancel()
 
     def test_cannot_transition_from_new_to_cancelled_when_original_reporter(self):
         pass
