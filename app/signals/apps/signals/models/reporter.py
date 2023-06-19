@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
+from django.core.exceptions import MultipleObjectsReturned
+from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
-class Reporter(CreatedUpdatedModel):
+class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     """
     Privacy sensitive information on reporter.
 
@@ -23,6 +25,9 @@ class Reporter(CreatedUpdatedModel):
     phone_anonymized = models.BooleanField(default=False)
 
     sharing_allowed = models.BooleanField(default=False)
+
+    # State managed through Django-FSM, used when a new reporter is added to a signal
+    state = FSMField(default='new', protected=True)
 
     class Meta:
         permissions = (
@@ -55,6 +60,21 @@ class Reporter(CreatedUpdatedModel):
 
         if call_save or always_call_save:
             self.save()
+
+    def is_not_original(self) -> bool:
+        """Used as state machine transition condition to check if the reporter within this
+        context is the original (first) reporter.
+        """
+        try:
+            Reporter.objects.filter(_signal=self._signal).get()
+        except MultipleObjectsReturned:
+            return False
+
+        return True
+
+    @transition(field='state', source=('new', ), target='cancel', conditions=(is_not_original, ))
+    def cancel(self):
+        pass
 
     def save(self, *args, **kwargs):
         """
