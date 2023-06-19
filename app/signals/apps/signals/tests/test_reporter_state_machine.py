@@ -4,7 +4,7 @@ import pytest
 from django.test import TestCase
 from django_fsm import TransitionNotAllowed
 
-from signals.apps.signals.factories import ReporterFactory
+from signals.apps.signals.factories import ReporterFactory, SignalFactory
 from signals.apps.signals.models import Reporter
 
 
@@ -19,7 +19,12 @@ class TestReporterStateMachine(TestCase):
         new.cancel()
 
     def test_cannot_transition_from_new_to_cancelled_when_original_reporter(self):
-        pass
+        new = Reporter()
+        new._signal = SignalFactory.create(reporter=new)
+        new.save()
+
+        with pytest.raises(TransitionNotAllowed):
+            new.cancel()
 
     def test_can_transition_from_new_to_cancelled_when_email_not_included_and_phone_not_changed(self):
         # should not be original reporter
