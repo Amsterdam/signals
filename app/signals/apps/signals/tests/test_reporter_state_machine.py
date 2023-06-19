@@ -84,7 +84,12 @@ class TestReporterStateMachine(TestCase):
         new.verify_email()
 
     def test_cannot_transition_from_new_to_verification_email_sent_when_email_not_changed(self):
-        pass
+        original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.email = self.EMAIL
+        new.phone = self.PHONE
+        new.save()
 
     def test_cannot_transition_from_new_to_verification_email_sent_when_original_reporter(self):
         pass
