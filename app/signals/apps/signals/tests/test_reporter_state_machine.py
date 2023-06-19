@@ -134,7 +134,11 @@ class TestReporterStateMachine(TestCase):
 
     # transitions to approved
     def test_can_transition_from_new_to_approved_when_original_reporter(self):
-        pass
+        reporter = Reporter()
+        reporter._signal = SignalFactory.create(reporter=None)
+        reporter.save()
+
+        reporter.approve()
 
     def test_can_transition_from_new_to_approved_when_email_not_included_and_phone_number_changed(self):
         pass

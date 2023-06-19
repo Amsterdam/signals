@@ -64,7 +64,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     def is_not_original(self) -> bool:
         """
         Used as state machine transition condition to check if the reporter within this
-        context is the original (first) reporter.
+        context is not the original (first) reporter.
         """
         try:
             Reporter.objects.filter(_signal=self._signal).get()
@@ -72,6 +72,13 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
             return True
 
         return False
+
+    def is_original(self) -> bool:
+        """
+        Used as state machine transition condition to check if the reporter within this
+        context is the original (first) reporter.
+        """
+        return not self.is_not_original()
 
     def includes_email(self) -> bool:
         """
@@ -103,11 +110,18 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         field='state',
         source=('new', ),
         target='verification_email_sent',
-        conditions=(includes_email, is_not_original, email_changed)
+        conditions=(includes_email, is_not_original, email_changed),
     )
     def verify_email(self):
         """
         Use this method to transition to the 'verification_email_sent' state.
+        """
+        pass
+
+    @transition(field='state', source=('new', ), target='approved', conditions=(is_original, ))
+    def approve(self):
+        """
+        Use this method to transition to the 'approved' state.
         """
         pass
 
