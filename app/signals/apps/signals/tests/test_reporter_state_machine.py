@@ -92,7 +92,14 @@ class TestReporterStateMachine(TestCase):
         new.save()
 
     def test_cannot_transition_from_new_to_verification_email_sent_when_original_reporter(self):
-        pass
+        new = Reporter()
+        new._signal = SignalFactory.create(reporter=None)
+        new.email = self.EMAIL
+        new.phone = self.PHONE
+        new.save()
+
+        with pytest.raises(TransitionNotAllowed):
+            new.verify_email()
 
     def test_cannot_transition_from_cancelled_to_verification_email_sent(self):
         pass
