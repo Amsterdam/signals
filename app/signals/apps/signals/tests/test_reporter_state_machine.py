@@ -102,7 +102,10 @@ class TestReporterStateMachine(TestCase):
             new.verify_email()
 
     def test_cannot_transition_from_cancelled_to_verification_email_sent(self):
-        pass
+        reporter = ReporterFactory.create(state='cancelled', email=self.EMAIL, phone=self.PHONE)
+
+        with pytest.raises(TransitionNotAllowed):
+            reporter.verify_email()
 
     def test_cannot_transition_from_approved_to_verification_email_sent(self):
         pass
