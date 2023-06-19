@@ -9,6 +9,9 @@ from signals.apps.signals.models import Reporter
 
 
 class TestReporterStateMachine(TestCase):
+    EMAIL = 'test@example.com'
+    PHONE = '0123456789'
+
     # transitions to cancelled
     def test_can_transition_from_new_to_cancelled_when_not_original_reporter(self):
         original = ReporterFactory.create(state='approved')
@@ -26,16 +29,34 @@ class TestReporterStateMachine(TestCase):
         with pytest.raises(TransitionNotAllowed):
             new.cancel()
 
+    # TODO: Test case is questionable, since you can always transition to cancelled, except from approved
+    #       or when original reporter
     def test_can_transition_from_new_to_cancelled_when_email_not_included_and_phone_not_changed(self):
-        # should not be original reporter
-        pass
+        original = ReporterFactory.create(state='approved', phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.phone = self.PHONE
+        new.save()
 
+        new.cancel()
+
+    # TODO: Test case is questionable, since you can always transition to cancelled, except from approved
+    #       or when original reporter
     def test_can_transition_from_new_to_cancelled_when_email_not_changed_and_phone_not_changed(self):
-        # should not be original reporter
-        pass
+        original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.email = self.EMAIL
+        new.phone = self.PHONE
+        new.save()
+
+        new.cancel()
 
     def test_can_transition_from_verification_email_sent_to_cancelled(self):
-        pass
+        original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+        new = ReporterFactory.create(state='verification_email_sent', _signal=original._signal)
+
+        new.cancel()
 
     def test_cannot_transition_from_approved_to_cancelled(self):
         pass

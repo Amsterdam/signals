@@ -73,7 +73,11 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         return False
 
-    @transition(field='state', source=('new', ), target='cancel', conditions=(is_not_original, ))
+    @transition(
+        field='state',
+        source=('new', 'verification_email_sent', ),
+        target='cancel', conditions=(is_not_original, )
+    )
     def cancel(self):
         """
         Use this method to transition to the 'cancelled' state.
