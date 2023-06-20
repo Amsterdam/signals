@@ -3,8 +3,6 @@
 """
 Views for feedback handling.
 """
-from typing import Union
-
 from django.http import Http404
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -50,7 +48,7 @@ class FeedbackViewSet(UpdateModelMixin, RetrieveModelMixin, GenericViewSet):
     serializer_class = FeedbackSerializer
     queryset = Feedback.objects.all()
 
-    def get_object(self) -> Union[Feedback, Http404, Gone]:
+    def get_object(self) -> Feedback | Http404 | Gone:
         obj = super().get_object()
 
         if obj.is_too_late:
