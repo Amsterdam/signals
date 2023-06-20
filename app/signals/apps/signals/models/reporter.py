@@ -95,8 +95,9 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         if not self.is_not_original():
             return True
 
-        if self.email is None and self._signal.reporter.phone != self.phone:
-            return True
+        if self._signal.reporter.phone != self.phone:
+            if self.email is None or self.email == self._signal.reporter.email:
+                return True
 
         return False
 
