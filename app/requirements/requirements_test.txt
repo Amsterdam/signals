@@ -59,7 +59,7 @@ cairosvg==2.7.0
     # via
     #   -r requirements/requirements.txt
     #   weasyprint
-celery==5.3.0
+celery==5.3.1
     # via
     #   -r requirements/requirements.txt
     #   django-celery-beat
@@ -163,6 +163,7 @@ django==3.2.19
     #   django-markdownx
     #   django-silk
     #   django-storages
+    #   django-timezone-field
     #   djangorestframework
     #   drf-spectacular
     #   drf-spectacular-sidecar
@@ -194,7 +195,7 @@ django-silk==5.0.3
     # via -r requirements/requirements.txt
 django-storages==1.13.2
     # via -r requirements/requirements.txt
-django-timezone-field==5.0
+django-timezone-field==5.1
     # via
     #   -r requirements/requirements.txt
     #   django-celery-beat
@@ -247,7 +248,7 @@ flake8==6.0.0
     # via -r requirements/requirements_test.in
 flex==6.14.1
     # via -r requirements/requirements.txt
-flower==1.2.0
+flower==2.0.0
     # via -r requirements/requirements.txt
 freezegun==1.2.2
     # via -r requirements/requirements_test.in
@@ -303,7 +304,7 @@ josepy==1.13.0
     # via
     #   -r requirements/requirements.txt
     #   mozilla-django-oidc
-jsonpointer==2.3
+jsonpointer==2.4
     # via
     #   -r requirements/requirements.txt
     #   flex
@@ -333,7 +334,7 @@ markupsafe==2.1.3
     #   jinja2
 mccabe==0.7.0
     # via flake8
-mistune==2.0.5
+mistune==3.0.1
     # via -r requirements/requirements.txt
 mozilla-django-oidc==3.0.0
     # via -r requirements/requirements.txt
@@ -393,7 +394,7 @@ pillow==9.5.0
     #   cairosvg
     #   django-markdownx
     #   weasyprint
-platformdirs==3.5.3
+platformdirs==3.6.0
     # via
     #   tox
     #   virtualenv
@@ -454,7 +455,7 @@ pyopenssl==23.2.0
     # via
     #   -r requirements/requirements.txt
     #   josepy
-pypdf==3.9.1
+pypdf==3.10.0
     # via -r requirements/requirements.txt
 pyphen==0.14.0
     # via
@@ -593,7 +594,7 @@ tornado==6.3.2
     # via
     #   -r requirements/requirements.txt
     #   flower
-tox==4.6.0
+tox==4.6.3
     # via -r requirements/requirements_test.in
 types-cryptography==3.3.23.2
     # via -r requirements/requirements.txt
@@ -639,7 +640,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.23.0
+virtualenv==20.23.1
     # via tox
 wcwidth==0.2.6
     # via
