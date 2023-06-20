@@ -101,6 +101,12 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         return False
 
+    def is_email_verified(self) -> bool:
+        """
+        Used as state machine transition condition to check if the email address is verified.
+        """
+        return True
+
     # TODO: Don't hardcode state names
     @transition(
         field='state',
@@ -127,9 +133,21 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         pass
 
     @transition(field='state', source=('new', ), target='approved', conditions=(is_approvable, ))
-    def approve(self):
+    def approve_new(self):
         """
-        Use this method to transition to the 'approved' state.
+        Use this method to transition from the 'new' state to the 'approved' state.
+        """
+        pass
+
+    @transition(
+        field='state',
+        source=('verification_email_sent', ),
+        target='approved',
+        conditions=(is_email_verified, )
+    )
+    def approve_verification_email_sent(self):
+        """
+        Use this method to transition from the 'verification_email_sent' state to the 'approved' state.
         """
         pass
 

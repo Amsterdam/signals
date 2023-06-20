@@ -141,7 +141,7 @@ class TestReporterStateMachine(TestCase):
         reporter._signal = SignalFactory.create(reporter=None)
         reporter.save()
 
-        reporter.approve()
+        reporter.approve_new()
 
     def test_can_transition_from_new_to_approved_when_email_not_included_and_phone_number_changed(self):
         original = ReporterFactory.create(state='approved', phone=self.PHONE)
@@ -150,7 +150,7 @@ class TestReporterStateMachine(TestCase):
         new.phone = '0987654321'
         new.save()
 
-        new.approve()
+        new.approve_new()
 
     def test_cannot_transition_from_new_to_approved_when_email_not_included_and_phone_not_changed(self):
         original = ReporterFactory.create(state='approved', phone=self.PHONE)
@@ -160,7 +160,7 @@ class TestReporterStateMachine(TestCase):
         new.save()
 
         with pytest.raises(TransitionNotAllowed):
-            new.approve()
+            new.approve_new()
 
     def test_can_transition_from_new_to_approved_when_email_included_but_not_changed_and_phone_changed(self):
         original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
@@ -170,7 +170,7 @@ class TestReporterStateMachine(TestCase):
         new.phone = '0987654321'
         new.save()
 
-        new.approve()
+        new.approve_new()
 
     def test_cannot_transition_from_new_to_approved_when_email_included_not_changed_and_phone_not_changed(self):
         original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
@@ -181,10 +181,18 @@ class TestReporterStateMachine(TestCase):
         new.save()
 
         with pytest.raises(TransitionNotAllowed):
-            new.approve()
+            new.approve_new()
 
     def test_can_transition_from_verification_email_sent_to_approved(self):
-        pass
+        original = ReporterFactory.create(state='approved', email=self.EMAIL, phone=self.PHONE)
+        new = ReporterFactory.create(
+            state='verification_email_sent',
+            email=self.EMAIL,
+            phone=self.PHONE,
+            _signal=original._signal
+        )
+
+        new.approve_verification_email_sent()
 
     def test_cannot_transition_from_verification_email_sent_to_approved(self):
         pass
