@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from rest_framework.generics import RetrieveAPIView
 
 from signals.apps.my_signals.models import Token

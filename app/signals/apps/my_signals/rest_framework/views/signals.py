@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 - 2023 Gemeente Amsterdam
-from datapunt_api.rest import DEFAULT_RENDERERS
 from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Min, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
@@ -34,9 +36,12 @@ from signals.apps.signals.models import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(description='List all Signals, created in the past year, for the currently logged in Reporter'),
+    retrieve=extend_schema(responses={HTTP_200_OK: SignalDetailSerializer},
+                           description='Retrieve a Signal for the currently logged in Reporter'),
+)
 class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
-    renderer_classes = DEFAULT_RENDERERS
-
     authentication_classes = (MySignalsTokenAuthentication, )
 
     lookup_field = 'uuid'
@@ -45,7 +50,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
     serializer_class = SignalListSerializer
     serializer_detail_class = SignalDetailSerializer
 
-    filter_backends = (DjangoFilterBackend, OrderingFilter,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter, )
     filterset_class = MySignalFilterSet
 
     ordering = (
@@ -54,6 +59,8 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
     ordering_fields = (
         'created_at',
     )
+
+    queryset = Signal.objects.none()
 
     def get_queryset(self, *args, **kwargs):
         """
@@ -68,7 +75,10 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
             parent__isnull=False  # Exclude all child signals
         )
 
-    @action(detail=True, url_path=r'history/?$')
+    @extend_schema(parameters=[OpenApiParameter('what', OpenApiTypes.STR, description='Filters a specific "action"')],
+                   responses={HTTP_200_OK: HistoryLogHalSerializer(many=True)},
+                   description='Retrieve the history of a Signal for the currently logged in Reporter')
+    @action(detail=True, url_path='history', filterset_class=None, filter_backends=(), pagination_class=None)
     def history(self, *args, **kwargs):
         """
         The public history view of a signal  
