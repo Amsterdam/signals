@@ -29,6 +29,8 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     # State managed through Django-FSM, used when a new reporter is added to a signal
     state = FSMField(default='new', protected=True)
 
+    email_verified = models.BooleanField(default=False)
+
     class Meta:
         permissions = (
             ('sia_can_view_contact_details', 'Inzien van contactgegevens melder (in melding)'),
@@ -105,7 +107,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         Used as state machine transition condition to check if the email address is verified.
         """
-        return True
+        return self.email_verified
 
     # TODO: Don't hardcode state names
     @transition(
