@@ -1,10 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from typing import Final
+
 from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
+
+REPORTER_STATE_NEW: Final = 'new'
+REPORTER_STATE_VERIFICATION_EMAIL_SENT: Final = 'verification_email_sent'
+REPORTER_STATE_CANCELLED: Final = 'cancelled'
+REPORTER_STATE_APPROVED: Final = 'approved'
 
 
 class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
@@ -27,7 +34,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     sharing_allowed = models.BooleanField(default=False)
 
     # State managed through Django-FSM, used when a new reporter is added to a signal
-    state = FSMField(default='new', protected=True)
+    state = FSMField(default=REPORTER_STATE_NEW, protected=True)
 
     email_verified = models.BooleanField(default=False)
 
@@ -109,11 +116,10 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         return self.email_verified
 
-    # TODO: Don't hardcode state names
     @transition(
         field='state',
-        source=('new', 'verification_email_sent', ),
-        target='cancel',
+        source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
+        target=REPORTER_STATE_CANCELLED,
         conditions=(is_not_original, ),
     )
     def cancel(self):
@@ -124,8 +130,8 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
     @transition(
         field='state',
-        source=('new', ),
-        target='verification_email_sent',
+        source=(REPORTER_STATE_NEW, ),
+        target=REPORTER_STATE_VERIFICATION_EMAIL_SENT,
         conditions=(includes_email, is_not_original, email_changed),
     )
     def verify_email(self):
@@ -134,7 +140,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         pass
 
-    @transition(field='state', source=('new', ), target='approved', conditions=(is_approvable, ))
+    @transition(field='state', source=(REPORTER_STATE_NEW, ), target=REPORTER_STATE_APPROVED, conditions=(is_approvable, ))
     def approve_new(self):
         """
         Use this method to transition from the 'new' state to the 'approved' state.
@@ -143,8 +149,8 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
     @transition(
         field='state',
-        source=('verification_email_sent', ),
-        target='approved',
+        source=(REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
+        target=REPORTER_STATE_APPROVED,
         conditions=(is_email_verified, )
     )
     def approve_verification_email_sent(self):
