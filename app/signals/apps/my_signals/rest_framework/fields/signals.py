@@ -1,12 +1,38 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework.relations import HyperlinkedIdentityField
 
 from signals.apps.signals.models import Signal
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/my/signals/358f6855-61b7-4a6e-b2b3-1737b63b93e9'
+                }
+            }
+        },
+    }
+})
 class MySignalListLinksField(HyperlinkedIdentityField):
     lookup_field = 'uuid'
 
@@ -20,6 +46,64 @@ class MySignalListLinksField(HyperlinkedIdentityField):
         ])
 
 
+@extend_schema_field({
+    'type': 'object',
+    'properties': {
+        'curies': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/relations/'
+                }
+            }
+        },
+        'self': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/my/signals/358f6855-61b7-4a6e-b2b3-1737b63b93e9'
+                }
+            }
+        },
+        'archives': {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'format': 'uri',
+                    'example': 'https://api.example.com/signals/v1/my/signals/358f6855-61b7-4a6e-b2b3-1737b63b93e9'
+                               '/history'
+                }
+            }
+        },
+        'sia:attachments': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'href': {
+                        'type': 'string',
+                        'format': 'uri',
+                        'example': 'https://api.example.com/media/1.png'
+                    },
+                    'created_by': {
+                        'type': 'string',
+                        'example': 'john.doe@example.com'
+                    },
+                    'created_at': {
+                        'type': 'string',
+                        'format': 'date-time',
+                        'example': '2023-06-01T00:00:00Z'
+                    }
+                }
+            }
+        },
+    }
+})
 class MySignalDetailLinksField(HyperlinkedIdentityField):
     lookup_field = 'uuid'
 

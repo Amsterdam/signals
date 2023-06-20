@@ -464,4 +464,8 @@ if DRF_SPECTACULAR_ENABLED:
         'SWAGGER_UI_DIST': 'SIDECAR',
         'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
         'GENERIC_ADDITIONAL_PROPERTIES': True,
+        'AUTHENTICATION_WHITELIST': [
+            'signals.auth.backend.JWTAuthBackend',
+            'signals.apps.my_signals.rest_framework.authentication.MySignalsTokenAuthentication'
+        ],
     }
