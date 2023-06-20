@@ -30,7 +30,7 @@ flower
 jsonschema
 lxml
 Markdown
-mistune<3
+mistune
 mozilla-django-oidc
 networkx
 opencensus-ext-azure
