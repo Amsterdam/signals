@@ -153,7 +153,14 @@ class TestReporterStateMachine(TestCase):
         new.approve()
 
     def test_cannot_transition_from_new_to_approved_when_email_not_included_and_phone_not_changed(self):
-        pass
+        original = ReporterFactory.create(state='approved', phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.phone = self.PHONE
+        new.save()
+
+        with pytest.raises(TransitionNotAllowed):
+            new.approve()
 
     def test_can_transition_from_new_to_approved_when_email_included_but_not_changed_and_phone_changed(self):
         pass
