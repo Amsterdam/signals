@@ -73,13 +73,6 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         return False
 
-    def is_original(self) -> bool:
-        """
-        Used as state machine transition condition to check if the reporter within this
-        context is the original (first) reporter.
-        """
-        return not self.is_not_original()
-
     def includes_email(self) -> bool:
         """
         Used as state machine transition condition to check if email is available.
@@ -92,6 +85,20 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         previous approved reporter.
         """
         return self._signal.reporter.email != self.email
+
+    def is_approvable(self) -> bool:
+        """
+        Used as state machine transition condition to check if transition can be approved.
+        This is less specific than the other condition methods, because there are a few "or"
+        conditions.
+        """
+        if not self.is_not_original():
+            return True
+
+        if self.email is None and self._signal.reporter.phone != self.phone:
+            return True
+
+        return False
 
     # TODO: Don't hardcode state names
     @transition(
@@ -118,7 +125,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         pass
 
-    @transition(field='state', source=('new', ), target='approved', conditions=(is_original, ))
+    @transition(field='state', source=('new', ), target='approved', conditions=(is_approvable, ))
     def approve(self):
         """
         Use this method to transition to the 'approved' state.
