@@ -140,7 +140,12 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         pass
 
-    @transition(field='state', source=(REPORTER_STATE_NEW, ), target=REPORTER_STATE_APPROVED, conditions=(is_approvable, ))
+    @transition(
+        field='state',
+        source=(REPORTER_STATE_NEW, ),
+        target=REPORTER_STATE_APPROVED,
+        conditions=(is_approvable, )
+    )
     def approve_new(self):
         """
         Use this method to transition from the 'new' state to the 'approved' state.
