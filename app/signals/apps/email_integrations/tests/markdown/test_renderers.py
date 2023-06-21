@@ -1,49 +1,58 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import mistune
-from django.test import TestCase
+import pytest
+from mistune import Markdown
 
 from signals.apps.email_integrations.markdown.renderers import PlaintextRenderer
 
 
-class TestPlaintextRenderer(TestCase):
-    render_plaintext = None
+# TODO: Check line endings, we're now missing a \n at the end of all expectations
+class TestPlaintextRenderer:
+    @pytest.fixture
+    def render_plaintext(self) -> Markdown:
+        return mistune.create_markdown(renderer=PlaintextRenderer())
 
-    def setUp(self):
-        self.render_plaintext = mistune.create_markdown(renderer=PlaintextRenderer())
+    def test_text(self, render_plaintext: Markdown):
+        markdown = 'This is just some plain old regular text'
+        expected = 'This is just some plain old regular text\n'
 
-    def test_headings(self):
-        markdown = '# First heading\n## Second heading'
-        expected = 'First heading\n\nSecond heading\n\n'
+        assert expected == render_plaintext(markdown)
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
-
-    def test_links(self):
+    def test_link(self, render_plaintext: Markdown):
         markdown = '[Example](https://www.example.com)'
-        expected = 'Example https://www.example.com\n\n'
+        expected = 'Example https://www.example.com\n'
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
+        assert expected == render_plaintext(markdown)
 
-    def test_bold(self):
+    def test_heading(self, render_plaintext: Markdown):
+        markdown = '# First heading\n## Second heading'
+        expected = 'First heading\n\nSecond heading\n'
+
+        assert expected == render_plaintext(markdown)
+
+    def test_bold(self, render_plaintext: Markdown):
         markdown = '**Bold**'
-        expected = 'Bold\n\n'
+        expected = 'Bold\n'
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
+        assert expected == render_plaintext(markdown)
 
-    def test_italic(self):
+    def test_italic(self, render_plaintext: Markdown):
         markdown = '*Italic*'
-        expected = 'Italic\n\n'
+        expected = 'Italic\n'
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
+        assert expected == render_plaintext(markdown)
 
-    def test_list(self):
+    def test_list(self, render_plaintext: Markdown):
         markdown = '- First\n- Second'
         expected = '- First\n- Second\n'
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
+        assert expected == render_plaintext(markdown)
 
-    def test_image(self):
+    def test_image(self, render_plaintext: Markdown):
         markdown = '![Alternative text](image.png)'
-        expected = 'Alternative text\n\n'
+        expected = 'Alternative text\n'
 
-        self.assertEqual(expected, self.render_plaintext(markdown))
+        assert expected == render_plaintext(markdown)
+
+    # TODO: There are a lot of missing test cases here
