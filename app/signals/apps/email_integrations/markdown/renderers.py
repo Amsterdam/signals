@@ -28,3 +28,28 @@ class PlaintextRenderer(MarkdownRenderer):
     def heading(self, token: dict[str, Any], state: BlockState) -> str:
         text = self.render_children(token, state)
         return text + '\n\n'
+
+    def block_quote(self, token: dict[str, Any], state: BlockState) -> str:
+        return self.render_children(token, state)
+
+    def list(self, token: dict[str, Any], state: BlockState) -> str:
+        attrs = token['attrs']
+        if not attrs['ordered']:
+            token['bullet'] = '-'
+
+        return super().list(token, state)
+
+    def thematic_break(self, token: dict[str, Any], state: BlockState) -> str:
+        return '-----------------------------------------------------------\n\n'
+
+    def block_code(self, token: dict[str, Any], state: BlockState) -> str:
+        return token['raw'] + '\n\n'
+
+    def codespan(self, token: dict[str, Any], state: BlockState) -> str:
+        return '"' + token['raw'] + '"'
+
+    def block_html(self, token: dict[str, Any], state: BlockState) -> str:
+        return ''
+
+    def inline_html(self, token: dict[str, Any], state: BlockState) -> str:
+        return ''

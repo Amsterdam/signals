@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+import os
+
 import mistune
 import pytest
 from mistune import Markdown
@@ -7,7 +9,6 @@ from mistune import Markdown
 from signals.apps.email_integrations.markdown.renderers import PlaintextRenderer
 
 
-# TODO: Check line endings, we're now missing a \n at the end of all expectations
 class TestPlaintextRenderer:
     @pytest.fixture
     def render_plaintext(self) -> Markdown:
@@ -55,4 +56,9 @@ class TestPlaintextRenderer:
 
         assert expected == render_plaintext(markdown)
 
-    # TODO: There are a lot of missing test cases here
+    def test_lots_of_markdown(self, render_plaintext: Markdown):
+        path = os.path.dirname(os.path.abspath(__file__))
+        markdown = open(os.path.join(path, 'lots_of.md'), 'r').read()
+        expected = open(os.path.join(path, 'lots_of.txt'), 'r').read()
+
+        assert expected == render_plaintext(markdown)
