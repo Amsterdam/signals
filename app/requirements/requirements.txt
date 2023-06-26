@@ -40,7 +40,7 @@ cairosvg==2.7.0
     # via
     #   -r requirements/requirements.in
     #   weasyprint
-celery==5.3.0
+celery==5.3.1
     # via
     #   -r requirements/requirements.in
     #   django-celery-beat
@@ -117,6 +117,7 @@ django==3.2.19
     #   django-markdownx
     #   django-silk
     #   django-storages
+    #   django-timezone-field
     #   djangorestframework
     #   drf-spectacular
     #   drf-spectacular-sidecar
@@ -136,6 +137,8 @@ django-extensions==3.2.3
     # via -r requirements/requirements.in
 django-filter==23.2
     # via -r requirements/requirements.in
+django-fsm==2.8.1
+    # via -r requirements/requirements.in
 django-markdownx==4.0.2
     # via -r requirements/requirements.in
 django-o365mail==1.1.0
@@ -146,7 +149,7 @@ django-silk==5.0.3
     # via -r requirements/requirements.in
 django-storages==1.13.2
     # via -r requirements/requirements.in
-django-timezone-field==5.0
+django-timezone-field==5.1
     # via django-celery-beat
 djangorestframework==3.14.0
     # via
@@ -169,7 +172,7 @@ drf-extensions==0.7.1
     # via
     #   -r requirements/requirements.in
     #   drf-amsterdam
-drf-spectacular==0.26.2
+drf-spectacular==0.26.3
     # via -r requirements/requirements.in
 drf-spectacular-sidecar==2023.6.1
     # via -r requirements/requirements.in
@@ -179,7 +182,7 @@ elasticsearch-dsl==7.4.1
     # via -r requirements/requirements.in
 flex==6.14.1
     # via -r requirements/requirements.in
-flower==1.2.0
+flower==2.0.0
     # via -r requirements/requirements.in
 google-api-core==2.11.1
     # via opencensus
@@ -205,7 +208,7 @@ jinja2==3.1.2
     # via coreschema
 josepy==1.13.0
     # via mozilla-django-oidc
-jsonpointer==2.3
+jsonpointer==2.4
     # via flex
 jsonschema==4.17.3
     # via
@@ -296,7 +299,7 @@ pyjwt[crypto]==2.7.0
     # via msal
 pyopenssl==23.2.0
     # via josepy
-pypdf==3.9.1
+pypdf==3.11.0
     # via -r requirements/requirements.in
 pyphen==0.14.0
     # via weasyprint
@@ -391,7 +394,7 @@ tzdata==2023.3
     #   celery
     #   django-celery-beat
     #   pytz-deprecation-shim
-tzlocal==4.3
+tzlocal==4.3.1
     # via o365
 unicodecsv==0.14.1
     # via djangorestframework-csv
