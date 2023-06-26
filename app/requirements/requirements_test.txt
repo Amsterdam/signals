@@ -336,8 +336,6 @@ markupsafe==2.1.3
     #   jinja2
 mccabe==0.7.0
     # via flake8
-mistune==2.0.5
-    # via -r requirements/requirements.txt
 mozilla-django-oidc==3.0.0
     # via -r requirements/requirements.txt
 msal==1.22.0
