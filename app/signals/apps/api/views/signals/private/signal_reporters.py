@@ -16,7 +16,6 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
     filterset_class = ReporterFilterSet
     ordering_fields = ('-updated_at', )
 
-
     serializer_class = SignalReporterSerializer
 
     authentication_classes = (JWTAuthBackend, )
