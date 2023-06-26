@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -11,7 +11,7 @@ from signals.apps.signals.models import Reporter
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateSignalReporterViewSet(ListModelMixin, NestedViewSetMixin, GenericViewSet):
+class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewSetMixin, GenericViewSet):
     queryset = Reporter.objects.all()
     filterset_class = ReporterFilterSet
     ordering_fields = ('-updated_at', )
