@@ -87,7 +87,7 @@ def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30):
 
     :returns:
     """
-    created_files = save_csv_files_datawarehouse(using=None)
+    created_files = save_csv_files_datawarehouse(using='datawarehouse')
     zip_csv_files(files_to_zip=created_files, using='datawarehouse')
     rotate_zip_files(using='datawarehouse', max_csv_amount=max_csv_amount)
 
