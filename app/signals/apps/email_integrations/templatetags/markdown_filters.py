@@ -8,6 +8,7 @@ from signals.apps.email_integrations.markdown.plaintext import strip_markdown_ht
 
 register = template.Library()
 
+
 @register.filter
 def markdown(value):
     return mark_safe(markdown.markdown(value, extensions=('legacy_em', )))
