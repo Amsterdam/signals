@@ -16,6 +16,7 @@ def strip_markdown_html(html: str) -> str:
 
     return text.strip()
 
+
 def _handle_tag(element: Tag) -> str:
     text = ''
     previous = None
@@ -40,6 +41,7 @@ def _handle_tag(element: Tag) -> str:
         text += f" {element.attrs['href']}"
 
     return text
+
 
 def _handle_list(list_element: Tag, indent: int = 0) -> str:
     text = ''
