@@ -10,7 +10,7 @@ class TestMarkdownTemplateTags(TestCase):
         template = Template('{% load markdown_filters %}{{ body|markdown }}')
 
         actual = template.render(context)
-        expected = '<p><strong>Example</strong></p>\n'
+        expected = '<p><strong>Example</strong></p>'
         self.assertEqual(expected, actual)
 
     def test_markdown_unsafe(self):
@@ -18,7 +18,7 @@ class TestMarkdownTemplateTags(TestCase):
         template = Template('{% load markdown_filters %}{{ body|markdown }}')
 
         actual = template.render(context)
-        expected = '<p><strong>Example</strong> &lt;script&gt;alert(&quot;evil&quot;);&lt;/script&gt;</p>\n'
+        expected = '<p><strong>Example</strong> &lt;script&gt;alert(&quot;evil&quot;);&lt;/script&gt;</p>'
         self.assertEqual(expected, actual)
 
     def test_plaintext(self):
@@ -26,7 +26,7 @@ class TestMarkdownTemplateTags(TestCase):
         template = Template('{% load markdown_filters %}{{ body|plaintext }}')
 
         actual = template.render(context)
-        expected = 'Example\n\n'
+        expected = 'Example'
         self.assertEqual(expected, actual)
 
     def test_plaintext_unsafe(self):
@@ -34,5 +34,5 @@ class TestMarkdownTemplateTags(TestCase):
         template = Template('{% load markdown_filters %}{{ body|plaintext }}')
 
         actual = template.render(context)
-        expected = 'Example alert(&quot;evil&quot;);\n\n'
+        expected = 'Example alert(&quot;evil&quot;);'
         self.assertEqual(expected, actual)
