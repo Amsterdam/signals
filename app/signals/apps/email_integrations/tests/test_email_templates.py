@@ -27,7 +27,7 @@ class TestEmailTemplates(TestCase):
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {signal.id} {signal.text}\n'
-                         f'{settings.ORGANIZATION_NAME}\n\n', mail.outbox[0].body)
+                         f'{settings.ORGANIZATION_NAME}', mail.outbox[0].body)
 
         body, mime_type = mail.outbox[0].alternatives[0]
         self.assertEqual(mime_type, 'text/html')
@@ -42,7 +42,7 @@ class TestEmailTemplates(TestCase):
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {signal.id} {signal.text}\n'
-                         f'Gemeente \'s-Hertogenbosch\n\n', mail.outbox[0].body)
+                         f'Gemeente \'s-Hertogenbosch', mail.outbox[0].body)
 
     def test_evil_input(self):
         evil_signal = SignalFactory.create(reporter__email='test@example.com',
@@ -52,4 +52,4 @@ class TestEmailTemplates(TestCase):
 
         self.assertEqual(f'Template title {evil_signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {evil_signal.id} '
-                         f'alert("something evil");\n{settings.ORGANIZATION_NAME}\n\n', mail.outbox[0].body)
+                         f'alert("something evil");\n{settings.ORGANIZATION_NAME}', mail.outbox[0].body)
