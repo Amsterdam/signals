@@ -4,11 +4,11 @@ import re
 from typing import Optional
 from urllib.parse import unquote
 
+import markdown
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.template import Context, Template
 from django.utils.timezone import now
-from mistune import create_markdown
 from rest_framework.exceptions import NotFound
 
 from signals.apps.email_integrations.admin import EmailTemplate
@@ -214,10 +214,9 @@ def validate_template(template: str) -> bool:
 
 def markdownx_md(value: str) -> str:
     """
-    Util function for the markdownx Django Admin preview functionality to make sure it is rendered with Mistune
+    Util function for the markdownx Django Admin preview functionality
     """
-    render_markdown = create_markdown(escape=True)
-    return render_markdown(value)
+    return markdown.markdown(value, extensions='legacy_em')
 
 
 def trigger_mail_action_for_email_preview(signal, status_data):
