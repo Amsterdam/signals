@@ -240,7 +240,7 @@ execnet==1.9.0
     # via pytest-xdist
 factory-boy==3.2.1
     # via -r requirements/requirements_test.in
-faker==18.11.1
+faker==18.11.2
     # via factory-boy
 filelock==3.12.2
     # via
@@ -258,7 +258,7 @@ google-api-core==2.11.1
     # via
     #   -r requirements/requirements.txt
     #   opencensus
-google-auth==2.20.0
+google-auth==2.21.0
     # via
     #   -r requirements/requirements.txt
     #   google-api-core
@@ -274,7 +274,7 @@ html5lib==1.1
     # via
     #   -r requirements/requirements.txt
     #   weasyprint
-humanize==4.6.0
+humanize==4.7.0
     # via
     #   -r requirements/requirements.txt
     #   flower
@@ -455,7 +455,7 @@ pyopenssl==23.2.0
     # via
     #   -r requirements/requirements.txt
     #   josepy
-pypdf==3.11.0
+pypdf==3.11.1
     # via -r requirements/requirements.txt
 pyphen==0.14.0
     # via
