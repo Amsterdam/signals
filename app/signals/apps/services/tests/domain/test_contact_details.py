@@ -29,9 +29,9 @@ class TestContactDetailsService(TestCase):
     def test_obscure_email_for_markdown(self):
         for email, obscured_email in self.email_cases:
             encoded = ContactDetailsService.obscure_email(email, True)
-            # paragraphs get \n\n appended, hence the slice below
+
             self.assertEqual(
-                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', )))[:-2],
+                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', ))),
                 obscured_email
             )
 
@@ -42,8 +42,8 @@ class TestContactDetailsService(TestCase):
     def test_obscure_phone_for_markdown(self):
         for phone, obscured_phone in self.phone_cases:
             encoded = ContactDetailsService.obscure_phone(phone, True)
-            # paragraphs get \n\n appended, hence the slice below
+
             self.assertEqual(
-                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', )))[:-2],
+                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', ))),
                 obscured_phone
             )
