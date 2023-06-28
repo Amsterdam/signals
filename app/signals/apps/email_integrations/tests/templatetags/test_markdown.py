@@ -7,7 +7,7 @@ from django.test import TestCase
 class TestMarkdownTemplateTags(TestCase):
     def test_markdown(self):
         context = Context({'body': '**Example**'})
-        template = Template('{% load markdown %}{{ body|markdown }}')
+        template = Template('{% load markdown_filters %}{{ body|markdown }}')
 
         actual = template.render(context)
         expected = '<p><strong>Example</strong></p>\n'
@@ -15,7 +15,7 @@ class TestMarkdownTemplateTags(TestCase):
 
     def test_markdown_unsafe(self):
         context = Context({'body': '**Example** <script>alert("evil");</script>'})
-        template = Template('{% load markdown %}{{ body|markdown }}')
+        template = Template('{% load markdown_filters %}{{ body|markdown }}')
 
         actual = template.render(context)
         expected = '<p><strong>Example</strong> &lt;script&gt;alert(&quot;evil&quot;);&lt;/script&gt;</p>\n'
@@ -23,7 +23,7 @@ class TestMarkdownTemplateTags(TestCase):
 
     def test_plaintext(self):
         context = Context({'body': '**Example**'})
-        template = Template('{% load markdown %}{{ body|plaintext }}')
+        template = Template('{% load markdown_filters %}{{ body|plaintext }}')
 
         actual = template.render(context)
         expected = 'Example\n\n'
@@ -31,7 +31,7 @@ class TestMarkdownTemplateTags(TestCase):
 
     def test_plaintext_unsafe(self):
         context = Context({'body': '**Example** <script>alert("evil");</script>'})
-        template = Template('{% load markdown %}{{ body|plaintext }}')
+        template = Template('{% load markdown_filters %}{{ body|plaintext }}')
 
         actual = template.render(context)
         expected = 'Example alert(&quot;evil&quot;);\n\n'
