@@ -43,7 +43,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
         postcode = f'{postcode_no_spaces[:4]} {postcode_no_spaces[-2:]}'
 
         expected_address = f'{signal.location.address["openbare_ruimte"]} {signal.location.address["huisnummer"]}, ' \
-                           f'{postcode} {signal.location.address["woonplaats"]}\n\n'
+                           f'{postcode} {signal.location.address["woonplaats"]}'
         self.assertEqual(expected_address, mail.outbox[0].body)
 
     def test_no_address_formatting(self):
@@ -68,4 +68,4 @@ class TestEmailTemplateAddressFormatting(TestCase):
         MailService.status_mail(signal=signal)
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
-        self.assertEqual('Locatie is gepind op de kaart\n\n', mail.outbox[0].body)
+        self.assertEqual('Locatie is gepind op de kaart', mail.outbox[0].body)
