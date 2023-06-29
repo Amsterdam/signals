@@ -18,18 +18,7 @@ def strip_markdown_html(html: str) -> str:
 
 
 def _handle_tag(element: Tag) -> str:
-    text = ''
-    previous = None
-    for child in element.children:
-        if isinstance(child, str) and child != '\n':
-            if previous and previous.name == 'br':
-                text += child.strip()
-            else:
-                text += child
-        elif isinstance(child, Tag):
-            text += _handle_tag(child)
-
-        previous = child
+    text = _handle_tag_children(element)
 
     if element.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'):
         text += '\n\n'
@@ -43,31 +32,56 @@ def _handle_tag(element: Tag) -> str:
     return text
 
 
+def _handle_tag_children(element: Tag) -> str:
+    text = ''
+
+    previous = None
+    for child in element.children:
+        if isinstance(child, str) and child != '\n':
+            if previous and previous.name == 'br':
+                text += child.strip()
+            else:
+                text += child
+        elif isinstance(child, Tag):
+            text += _handle_tag(child)
+
+        previous = child
+
+    return text
+
+
 def _handle_list(list_element: Tag, indent: int = 0) -> str:
     text = ''
     has_paragraph = False
     for list_item in list_element.contents:
         if isinstance(list_item, Tag):
             text += f'{" " * indent}- '
-
-            has_nested_list = False
-            has_paragraph = False
-            for child in list_item.contents:
-                if isinstance(child, Tag):
-                    if child.name in ('ol', 'ul'):
-                        text += '\n' + _handle_list(child, indent + 2)
-                        has_nested_list = True
-                    else:
-                        if child.name == 'p':
-                            has_paragraph = True
-                        text += _handle_tag(child)
-                elif isinstance(child, str) and child != '\n':
-                    text += child
-
-            if not has_nested_list and not has_paragraph:
-                text += '\n'
+            children_text, has_paragraph = _handle_list_item_children(list_item.contents, indent)
+            text += children_text
 
     if indent == 0 and not has_paragraph:
         text += '\n'
 
     return text
+
+
+def _handle_list_item_children(contents: list, indent: int) -> tuple[str, bool]:
+    text = ''
+    has_nested_list = False
+    has_paragraph = False
+    for child in contents:
+        if isinstance(child, Tag):
+            if child.name in ('ol', 'ul'):
+                text += '\n' + _handle_list(child, indent + 2)
+                has_nested_list = True
+            else:
+                if child.name == 'p':
+                    has_paragraph = True
+                text += _handle_tag(child)
+        elif isinstance(child, str) and child != '\n':
+            text += child
+
+    if not has_nested_list and not has_paragraph:
+        text += '\n'
+
+    return text, has_paragraph
