@@ -13,6 +13,6 @@ class TestPlaintextExtension:
         md = open(os.path.join(path, 'lots_of.md'), 'r').read()
         expected = open(os.path.join(path, 'lots_of.txt'), 'r').read()
 
-        html = markdown.markdown(md, extensions=('legacy_em', ))
+        html = markdown.markdown(md)
 
         assert expected == strip_markdown_html(html)

@@ -216,7 +216,7 @@ def markdownx_md(value: str) -> str:
     """
     Util function for the markdownx Django Admin preview functionality
     """
-    return markdown.markdown(value, extensions=('legacy_em', ))
+    return markdown.markdown(value)
 
 
 def trigger_mail_action_for_email_preview(signal, status_data):

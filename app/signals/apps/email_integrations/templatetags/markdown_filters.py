@@ -11,9 +11,9 @@ register = template.Library()
 
 @register.filter
 def markdown(value: str) -> str:
-    return mark_safe(md.markdown(value, extensions=('legacy_em', )))
+    return mark_safe(md.markdown(value))
 
 
 @register.filter(is_safe=True)
 def plaintext(value: str) -> str:
-    return strip_markdown_html(md.markdown(value, extensions=('legacy_em', )))
+    return strip_markdown_html(md.markdown(value))

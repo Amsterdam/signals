@@ -31,7 +31,7 @@ class TestContactDetailsService(TestCase):
             encoded = ContactDetailsService.obscure_email(email, True)
 
             self.assertEqual(
-                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', ))),
+                strip_markdown_html(markdown.markdown(encoded)),
                 obscured_email
             )
 
@@ -44,6 +44,6 @@ class TestContactDetailsService(TestCase):
             encoded = ContactDetailsService.obscure_phone(phone, True)
 
             self.assertEqual(
-                strip_markdown_html(markdown.markdown(encoded, extensions=('legacy_em', ))),
+                strip_markdown_html(markdown.markdown(encoded)),
                 obscured_phone
             )
