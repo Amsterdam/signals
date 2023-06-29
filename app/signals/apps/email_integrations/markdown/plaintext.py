@@ -1,9 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, PageElement, Tag
 
 
 def strip_markdown_html(html: str) -> str:
+    """This function is used to convert the HTML that the markdown
+    library produces to plaintext using beautiful soup.
+
+    Parameters
+    ----------
+    html: str
+        The string containing the HTML produced by the markdown library.
+
+    Returns
+    -------
+    str
+        The string containing the HTML that has been converted to plaintext.
+    """
     elements = BeautifulSoup(html, features="html.parser")
     text = ''
 
@@ -18,6 +31,20 @@ def strip_markdown_html(html: str) -> str:
 
 
 def _handle_tag(element: Tag) -> str:
+    """Converts most elements to plaintext output. Lists should not be passed
+    to this function as they need to be handled in a different way.
+
+    Parameters
+    ----------
+    element: Tag
+        The element to be converted to plaintext. This element will likely have
+        children which can be text, or other (nested) elements.
+
+    Returns
+    -------
+    str
+        The string containing the plaintext equivalent of the element that was provided.
+    """
     text = _handle_tag_children(element)
 
     if element.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'):
@@ -33,6 +60,20 @@ def _handle_tag(element: Tag) -> str:
 
 
 def _handle_tag_children(element: Tag) -> str:
+    """Processes the children of an element. If the child is text, then it will be used directly
+    otherwise when a child is an element it will be passed to _handle_tag() to recursively traverse
+    through all nested elements.
+
+    Parameters
+    ----------
+    element: Tag
+        The child element to be converted to plaintext.
+
+    Returns
+    -------
+    str
+        The string containing the plaintext equivalent of the element that was provided.
+    """
     text = ''
 
     previous = None
@@ -51,6 +92,22 @@ def _handle_tag_children(element: Tag) -> str:
 
 
 def _handle_list(list_element: Tag, indent: int = 0) -> str:
+    """Converts list elements <ol> and <ul> to plaintext. All list items will be prefixed with
+    a hyphen (-) and optionally add indentation when the list is nested within another list.
+
+    Parameters
+    ----------
+    list_element: Tag
+        The list element to be converted to plaintext. This should always be a <ol> or <ul>
+        element.
+    indent: int
+        The number of spaces to be used for indentation of the list items.
+
+    Returns
+    -------
+    str
+        The plaintext equivalent of the list element.
+    """
     text = ''
     has_paragraph = False
     for list_item in list_element.contents:
@@ -65,7 +122,24 @@ def _handle_list(list_element: Tag, indent: int = 0) -> str:
     return text
 
 
-def _handle_list_item_children(contents: list, indent: int) -> tuple[str, bool]:
+def _handle_list_item_children(contents: list[PageElement], indent: int) -> tuple[str, bool]:
+    """Converts the list items to plaintext. It will recurse when a nested list element is
+    encountered and when other elements are encountered.
+
+    Parameters
+    ----------
+    contents: list[PageElement]
+        List of the children of a list item element. The children can be either another
+        element or a text.
+    indent: int
+        The amount of space used to indent list items.
+
+    Returns
+    -------
+    tuple[str, bool]
+        The text equivalent of the list item children and if the children contain a
+        paragraph.
+    """
     text = ''
     has_nested_list = False
     has_paragraph = False
