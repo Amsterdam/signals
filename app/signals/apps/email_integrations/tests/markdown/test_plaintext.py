@@ -51,3 +51,36 @@ Met vriendelijke groet,
 {{ ORGANIZATION_NAME }}"""
 
         assert expected == strip_markdown_html(markdown.markdown(md))
+
+    def test_forwarded_to_external(self):
+        md = """Geachte behandelaar,
+
+Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken en ons laten weten of jullie deze kunnen afhandelen.
+
+Wat kunt u doen?
+U kunt de melding gelijk inzien en oppakken. Als de melding verwerkt, ontvangen wij graag een bericht.
+
+[Bekijk de actie]({{ reaction_url }})
+
+Nummer: {{ formatted_signal_id }}
+
+
+Met vriendelijke groet,  
+
+{{ ORGANIZATION_NAME }}"""
+        expected = """Geachte behandelaar,
+
+Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken en ons laten weten of jullie deze kunnen afhandelen.
+
+Wat kunt u doen?
+U kunt de melding gelijk inzien en oppakken. Als de melding verwerkt, ontvangen wij graag een bericht.
+
+Bekijk de actie {{ reaction_url }}
+
+Nummer: {{ formatted_signal_id }}
+
+Met vriendelijke groet,  
+
+{{ ORGANIZATION_NAME }}"""
+
+        assert expected == strip_markdown_html(markdown.markdown(md))
