@@ -7,7 +7,7 @@ import markdown
 from signals.apps.email_integrations.markdown.plaintext import strip_markdown_html
 
 
-class TestPlaintextExtension:
+class TestStripMarkdownHtml:
     def test_lost_of_markdown(self):
         path = os.path.dirname(os.path.abspath(__file__))
         md = open(os.path.join(path, 'lots_of.md'), 'r').read()
@@ -16,3 +16,38 @@ class TestPlaintextExtension:
         html = markdown.markdown(md)
 
         assert expected == strip_markdown_html(html)
+
+    def test_external_reaction_received(self):
+        md = """Geachte behandelaar,
+
+Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
+
+U liet ons het volgende weten:  
+{{ reaction_text }}
+
+Gegevens van de melding
+- Nummer: {{ formatted_signal_id }}
+- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
+- Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
+
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+        expected = """Geachte behandelaar,
+
+Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
+
+U liet ons het volgende weten:
+{{ reaction_text }}
+
+Gegevens van de melding
+- Nummer: {{ formatted_signal_id }}
+- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
+- Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+
+        assert expected == strip_markdown_html(markdown.markdown(md))
