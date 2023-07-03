@@ -239,3 +239,67 @@ Met vriendelijke groet,
 Dit bericht is automatisch gegenereerd"""
 
         assert expected == strip_markdown_html(markdown.markdown(md))
+
+    def test_reaction_requested_received(self):
+        md = """Geachte melder,
+
+Bedankt voor uw reactie. U krijgt binnen 3 werkdagen weer bericht van ons.
+
+**Bent u tevreden met de afhandeling van uw melding?**  
+{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}  
+
+{% if feedback_is_satisfied %}**Waarom bent u tevreden?** {% else %} **Waarom bent u niet tevreden?** {% endif %}  
+{% if feedback_text %} {{ feedback_text }} {% else %}{% for f_text in feedback_text_list %} {{ f_text }}{% endfor %}
+{%endif %}
+
+{% if feedback_text_extra %}
+**Wilt u ons verder nog iets laten weten?**  
+{{ feedback_text_extra }}
+{% endif %}
+
+**Contact**  
+{% if feedback_allows_contact %} Ja, bel of e-mail mij over deze melding of over mijn reactie. {% else %} Nee, bel of e-mail mij niet meer over deze melding of over mijn reactie. {% endif %}
+
+**Gegevens van uw melding**  
+Nummer: {{ formatted_signal_id }}  
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}  
+
+**Meer weten?**  
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+        expected = """Geachte melder,
+
+Bedankt voor uw reactie. U krijgt binnen 3 werkdagen weer bericht van ons.
+
+Bent u tevreden met de afhandeling van uw melding?
+{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}
+
+{% if feedback_is_satisfied %}Waarom bent u tevreden? {% else %} Waarom bent u niet tevreden? {% endif %}
+{% if feedback_text %} {{ feedback_text }} {% else %}{% for f_text in feedback_text_list %} {{ f_text }}{% endfor %}
+{%endif %}
+
+{% if feedback_text_extra %}
+Wilt u ons verder nog iets laten weten?
+{{ feedback_text_extra }}
+{% endif %}
+
+Contact
+{% if feedback_allows_contact %} Ja, bel of e-mail mij over deze melding of over mijn reactie. {% else %} Nee, bel of e-mail mij niet meer over deze melding of over mijn reactie. {% endif %}
+
+Gegevens van uw melding
+Nummer: {{ formatted_signal_id }}
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+
+        assert expected == strip_markdown_html(markdown.markdown(md))
