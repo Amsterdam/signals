@@ -33,7 +33,8 @@ Gegevens van de melding
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte behandelaar,
 
 Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
@@ -67,7 +68,8 @@ Nummer: {{ formatted_signal_id }}
 
 Met vriendelijke groet,  
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte behandelaar,
 
 Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken en ons laten weten of jullie deze kunnen afhandelen.
@@ -81,7 +83,7 @@ Nummer: {{ formatted_signal_id }}
 
 Met vriendelijke groet,  
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -115,7 +117,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.  
@@ -145,7 +148,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -179,7 +182,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 U bent niet tevreden over wat wij met uw melding hebben gedaan. Dat spijt ons. Wij willen u graag wat meer informatie geven.
 
@@ -207,7 +211,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -224,7 +228,8 @@ Met vriendelijke groet,
 
 {{ ORGANIZATION_NAME }}
 
-_Dit bericht is automatisch gegenereerd_"""
+_Dit bericht is automatisch gegenereerd_""" # noqa
+
         expected = """Geachte melder,
 
 Bevestig uw e-mailadres {{ my_signals_url }} om in te loggen op uw meldingenoverzicht. In uw meldingenoverzicht vindt u al uw meldingen van de afgelopen 12 maanden terug. En u ziet status updates.
@@ -236,7 +241,7 @@ Met vriendelijke groet,
 
 {{ ORGANIZATION_NAME }}
 
-Dit bericht is automatisch gegenereerd"""
+Dit bericht is automatisch gegenereerd""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -270,7 +275,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 Bedankt voor uw reactie. U krijgt binnen 3 werkdagen weer bericht van ons.
@@ -300,7 +306,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -323,7 +329,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 Op {{ created_at|date:"j F Y" }} hebt u een melding gedaan bij de gemeente. Wij hebben meer informatie nodig. Wilt u alstublieft binnen 5 dagen onze vragen beantwoorden?
@@ -342,7 +349,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -367,7 +374,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze e-mail leest u de stand van zaken van uw melding.
@@ -388,7 +396,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -427,7 +435,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 U bent niet tevreden over wat wij met uw melding hebben gedaan. Dat spijt ons. Wij gaan opnieuw aan het werk.
@@ -462,7 +471,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -487,7 +496,8 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
+
         expected = """Geachte melder,
 
 Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze e-mail leest u meer over wat wij aan het doen zijn.
@@ -508,7 +518,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -563,7 +573,8 @@ Wat is uw e-mailadres?
 Ja, ik geef de gemeente Amsterdam toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
 {% else %}
 Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
-{% endif %}"""
+{% endif %}""" # noqa
+
         expected = """Geachte melder,
 
 Dank voor uw melding. Fijn dat u zich betrokken voelt bij de stad.
@@ -612,7 +623,7 @@ Melding doorsturen
 Ja, ik geef de gemeente Amsterdam toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
 {% else %}
 Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
-{% endif %}"""
+{% endif %}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
 
@@ -643,7 +654,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
         expected = """Geachte melder,
 
 Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze mail vertellen wij u wat wij hebben kunnen doen.
@@ -670,6 +681,6 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-{{ ORGANIZATION_NAME }}"""
+{{ ORGANIZATION_NAME }}""" # noqa
 
         assert expected == strip_markdown_html(markdown.markdown(md))
