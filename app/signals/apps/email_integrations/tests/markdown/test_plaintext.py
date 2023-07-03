@@ -629,9 +629,9 @@ Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een m
 
 **Bent u tevreden met de afhandeling van uw melding?**
 
-[![Ja, ik ben tevreden](https://acc.meldingen.amsterdam.nl/assets/images/happy.png " Ja, ik ben tevreden")Ja, ik ben tevreden]({{ positive_feedback_url }})
+[![Ja, ik ben tevreden](https://acc.meldingen.amsterdam.nl/assets/images/happy.png " Ja, ik ben tevreden") Ja, ik ben tevreden]({{ positive_feedback_url }})
 
-[![Nee, ik ben niet tevreden](https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png " Nee, ik ben niet tevreden")Nee, ik ben niet tevreden]({{ negative_feedback_url }})
+[![Nee, ik ben niet tevreden](https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png " Nee, ik ben niet tevreden") Nee, ik ben niet tevreden]({{ negative_feedback_url }})
 
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
