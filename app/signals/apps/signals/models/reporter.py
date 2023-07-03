@@ -1,16 +1,30 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from typing import Final
+
 from django.contrib.gis.db import models
+from django_fsm import ConcurrentTransitionMixin, FSMField
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
-class Reporter(CreatedUpdatedModel):
+class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     """
-    Privacy sensitive information on reporter.
+    Privacy-sensitive information on reporter.
 
     This information will be anonymized after X time
     """
+    REPORTER_STATE_NEW: Final = 'new'
+    REPORTER_STATE_VERIFICATION_EMAIL_SENT: Final = 'verification_email_sent'
+    REPORTER_STATE_CANCELLED: Final = 'cancelled'
+    REPORTER_STATE_APPROVED: Final = 'approved'
+    REPORTER_STATES = (
+        (REPORTER_STATE_NEW, 'New'),
+        (REPORTER_STATE_VERIFICATION_EMAIL_SENT, 'Verification email sent'),
+        (REPORTER_STATE_CANCELLED, 'Cancelled'),
+        (REPORTER_STATE_APPROVED, 'Approved'),
+    )
+
     _signal = models.ForeignKey(
         'signals.Signal', related_name='reporters',
         null=False, on_delete=models.CASCADE
@@ -23,6 +37,9 @@ class Reporter(CreatedUpdatedModel):
     phone_anonymized = models.BooleanField(default=False)
 
     sharing_allowed = models.BooleanField(default=False)
+
+    # State managed through Django-FSM, used when a new reporter is added to a signal
+    state = FSMField(default=REPORTER_STATE_NEW, protected=True)
 
     class Meta:
         permissions = (

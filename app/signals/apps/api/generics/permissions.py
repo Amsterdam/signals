@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from django.views import View
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
+from rest_framework.request import Request
 
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
+from signals.apps.signals.models import Reporter
 
 
 class SIABasePermission(BasePermission):
@@ -127,3 +130,34 @@ class SIAUserPermissions(SIABasePermission):
         'PATCH': ['signals.sia_write', 'auth.change_user'],
         'DELETE': ['signals.sia_write', 'auth.delete_user'],
     }
+
+
+class ReporterPermission(BasePermission):
+    def has_permission(self, request: Request, view: View) -> bool:
+        """
+        If the user has the permission to view all categories, they can view all reporters of that Signal
+        OR
+        If the user has the permission to view the category of the Signal, they can view all reporters of that Signal.
+        """
+        return SignalPermissionService.has_signal_permission(
+            user=request.user,
+            signal=view.get_signal()
+        ) or SignalPermissionService.has_permission(
+            user=request.user,
+            permission='signals.sia_can_view_all_categories',
+        )
+
+    def has_object_permission(self, request: Request, view: View, obj: Reporter) -> bool:
+        """
+        If the user has the permission to view all categories, they can view a reporter of that Signal
+        OR
+        If the user has the permission to view the category of the Signal, they can view a reporter of that Signal.
+        """
+        return SignalPermissionService.has_signal_permission(
+            user=request.user,
+            signal=obj._signal
+        ) or SignalPermissionService.has_permission(
+            user=request.user,
+            permission='signals.sia_can_view_all_categories',
+            signal=obj._signal
+        )

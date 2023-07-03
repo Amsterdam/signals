@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.db.models import Q
 from django.test import TransactionTestCase
 from django.utils import timezone
@@ -29,7 +29,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         anonymize_reporter(reporter_id=reporter.pk)
 
-        reporter.refresh_from_db()
+        reporter = Reporter.objects.filter(id=reporter.id).get()
 
         self.assertIsNone(reporter.email)
         self.assertIsNone(reporter.phone)
@@ -138,7 +138,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         anonymize_reporters(days=1)
 
-        reporter.refresh_from_db()
+        reporter = Reporter.objects.filter(id=reporter.id).get()
 
         self.assertIsNone(reporter.email)
         self.assertIsNone(reporter.phone)
@@ -160,7 +160,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         anonymize_reporters(days=1)
 
-        reporter.refresh_from_db()
+        reporter = Reporter.objects.filter(id=reporter.id).get()
 
         self.assertIsNone(reporter.email)
         self.assertEqual('', reporter.phone)
@@ -182,7 +182,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         anonymize_reporters(days=1)
 
-        reporter.refresh_from_db()
+        reporter = Reporter.objects.filter(id=reporter.id).get()
 
         self.assertIsNone(reporter.email)
         self.assertIsNone(reporter.phone)
@@ -204,7 +204,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         anonymize_reporters(days=1)
 
-        reporter.refresh_from_db()
+        reporter = Reporter.objects.filter(id=reporter.id).get()
 
         self.assertEqual('', reporter.email)
         self.assertIsNone(reporter.phone)

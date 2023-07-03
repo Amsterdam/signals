@@ -22,6 +22,7 @@ django-silk
 django-storages
 drf_amsterdam
 drf-extensions
+django-fsm
 drf_spectacular-sidecar
 drf-spectacular
 elasticsearch-dsl>=7.0.0,<8.0.0

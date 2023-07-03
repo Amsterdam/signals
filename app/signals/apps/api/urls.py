@@ -28,6 +28,7 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
 from signals.apps.api.views.status_message import (
     StatusMessagesCategoryPositionViewSet,
     StatusMessagesViewSet
@@ -62,6 +63,9 @@ private_router = SignalsRouter()
 private_signals = private_router.register(r'private/signals', PrivateSignalViewSet, basename='private-signals')
 private_signals.register(r'attachments', PrivateSignalAttachmentsViewSet, basename='private-signals-attachments',
                          parents_query_lookups=['_signal__pk'])
+private_signals.register(r'reporters', PrivateSignalReporterViewSet, basename='private-signals-reporters',
+                         parents_query_lookups=['_signal_id'])
+
 private_router.register(r'private/me/filters', StoredSignalFilterViewSet, basename='stored-signal-filters')
 private_router.register(r'private/users', UserViewSet, basename='user')
 private_router.register(r'private/roles', RoleViewSet, basename='group')
