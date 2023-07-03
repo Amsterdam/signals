@@ -7,7 +7,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from signals.apps.api.filters.signal_reporter import ReporterFilterSet
 from signals.apps.api.generics.permissions import ReporterPermission
 from signals.apps.api.serializers.signal_reporter import SignalReporterSerializer
-from signals.apps.signals.models import Reporter
+from signals.apps.signals.models import Reporter, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -20,3 +20,14 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
 
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (ReporterPermission, )
+
+    def get_signal(self) -> Signal:
+        """
+        Used to return the signal instance for the current request. This is used
+        to create a new Reporter instance. However, this functionality is not
+        implemented yet. Currently, a dummy Reporter instance is returned.
+
+        TODO: Correctly implement the logic needed to create new Reporter
+              instances.
+        """
+        return self.get_queryset().distinct().first()._signal
