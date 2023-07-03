@@ -139,11 +139,12 @@ class ReporterPermission(BasePermission):
         OR
         If the user has the permission to view the category of the Signal, they can view all reporters of that Signal.
         """
-        return SignalPermissionService.has_permission(
+        return SignalPermissionService.has_signal_permission(
             user=request.user,
-            permission='signals.sia_can_view_all_categories'
-        ) or SignalPermissionService.has_signal_permission(
-            user=request.user
+            signal=view.get_signal()
+        ) or SignalPermissionService.has_permission(
+            user=request.user,
+            permission='signals.sia_can_view_all_categories',
         )
 
     def has_object_permission(self, request: Request, view: View, obj: Reporter) -> bool:
@@ -152,11 +153,11 @@ class ReporterPermission(BasePermission):
         OR
         If the user has the permission to view the category of the Signal, they can view a reporter of that Signal.
         """
-        return SignalPermissionService.has_permission(
-                user=request.user,
-                permission='signals.sia_can_view_all_categories',
-                signal=obj._signal
-        ) or SignalPermissionService.has_signal_permission(
+        return SignalPermissionService.has_signal_permission(
             user=request.user,
+            signal=obj._signal
+        ) or SignalPermissionService.has_permission(
+            user=request.user,
+            permission='signals.sia_can_view_all_categories',
             signal=obj._signal
         )
