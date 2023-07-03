@@ -210,3 +210,32 @@ Met vriendelijke groet,
 {{ ORGANIZATION_NAME }}"""
 
         assert expected == strip_markdown_html(markdown.markdown(md))
+
+    def test_my_signals_token_requested(self):
+        md = """Geachte melder,
+
+[Bevestig uw e-mailadres]({{ my_signals_url }}) om in te loggen op uw meldingenoverzicht. In uw meldingenoverzicht vindt u al uw meldingen van de afgelopen 12 maanden terug. En u ziet status updates.
+
+**Meer weten?**  
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00.
+
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}
+
+_Dit bericht is automatisch gegenereerd_"""
+        expected = """Geachte melder,
+
+Bevestig uw e-mailadres {{ my_signals_url }} om in te loggen op uw meldingenoverzicht. In uw meldingenoverzicht vindt u al uw meldingen van de afgelopen 12 maanden terug. En u ziet status updates.
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}
+
+Dit bericht is automatisch gegenereerd"""
+
+        assert expected == strip_markdown_html(markdown.markdown(md))
