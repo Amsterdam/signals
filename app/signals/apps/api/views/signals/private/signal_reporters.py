@@ -24,10 +24,6 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
     def get_signal(self) -> Signal:
         """
         Used to return the signal instance for the current request. This is used
-        to create a new Reporter instance. However, this functionality is not
-        implemented yet. Currently, a dummy Reporter instance is returned.
-
-        TODO: Correctly implement the logic needed to create new Reporter
-              instances.
+        to check the permissions for the current request.
         """
         return self.get_queryset().distinct().first()._signal

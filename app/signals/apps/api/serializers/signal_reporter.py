@@ -1,20 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from rest_framework.fields import BooleanField, HiddenField
+from rest_framework.fields import BooleanField
 from rest_framework.serializers import ModelSerializer
 
+from signals.apps.api.generics.exceptions import NotImplementedException
 from signals.apps.signals.models import Reporter
 
 
-class ParentSignalDefault:
-    requires_context = True
-
-    def __call__(self, serializer_field):
-        return serializer_field.context['view'].get_signal()
-
-
 class SignalReporterSerializer(ModelSerializer):
-    _signal = HiddenField(default=ParentSignalDefault())
     allows_contact = BooleanField(source='signal.allows_contact', read_only=True)
 
     class Meta:
@@ -28,7 +21,6 @@ class SignalReporterSerializer(ModelSerializer):
             'state',
             'created_at',
             'updated_at',
-            '_signal',
         )
         read_only_fields = (
             'id',
@@ -59,4 +51,4 @@ class SignalReporterSerializer(ModelSerializer):
         TODO: Correctly implement the logic needed to create new Reporter
               instances.
         """
-        return Reporter(**validated_data, pk=0)
+        raise NotImplementedException('Creating new Reporter instances is not yet implemented.')

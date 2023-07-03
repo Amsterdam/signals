@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.contrib.auth.models import Permission
 from django.test.utils import freeze_time
 from django.utils import timezone
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED
+from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_501_NOT_IMPLEMENTED
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.factories import ReporterFactory, SignalFactory
@@ -46,12 +46,9 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         self.assertEqual(len(response_json['results']), 5)
 
     def test_create(self) -> None:
-        """
-        TODO: Implement logic for creating a new Reporter instance.
-        """
         signal = SignalFactory.create()
 
         response = self.client.post(f'/signals/v1/private/signals/{signal.pk}/reporters/',
                                     data={'email': 'test@example.com',
                                           'phone': '0612345678', })
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        self.assertEqual(response.status_code, HTTP_501_NOT_IMPLEMENTED)
