@@ -80,7 +80,7 @@ def _handle_tag_children(element: Tag) -> str:
     for child in element.children:
         if isinstance(child, str) and child != '\n':
             if previous and previous.name == 'br':
-                text += child.strip()
+                text += child.lstrip()
             else:
                 text += child
         elif isinstance(child, Tag):

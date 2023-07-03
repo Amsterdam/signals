@@ -220,7 +220,7 @@ eat: it was a [hobbit-hole][1], and that means comfort.
 \-  
 \.  
 \!  
-\|  
+\|
 
 This **word** is bold. This <em>word</em> is italic.
 
