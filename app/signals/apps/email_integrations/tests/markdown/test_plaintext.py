@@ -511,3 +511,110 @@ Met vriendelijke groet,
 {{ ORGANIZATION_NAME }}"""
 
         assert expected == strip_markdown_html(markdown.markdown(md))
+
+    def test_signal_created(self):
+        md = """Geachte melder,
+
+Dank voor uw melding. Fijn dat u zich betrokken voelt bij de stad.
+
+**Uw melding**  
+{{ text }}
+ 
+Nummer: {{ formatted_signal_id }}  
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
+
+**Wat doen we met uw melding?**  
+{{ handling_message }}
+
+**Volg zelf uw meldingen online**  
+U kunt nu ook online uw meldingen volgen. Wij doen een proef met de app Yivi. We zoeken enthousiaste Amsterdammers die dit willen uitproberen. Ga naar [Meldingen openbare ruimte online volgen](https://mijn.amsterdam.nl/inloggen-met-yivi?utm_source=melding-doen-activatie-yivi-inlog&utm_medium=email&utm_campaign=yivi-login&utm_content=link-in-aanmeldingsmail-20230501) om het uit te proberen.
+
+**Meer weten?**  
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}
+
+*Dit bericht is automatisch gemaakt met de informatie uit uw melding.*
+
+____________________________________________________________________________________________________
+
+#### U gaf ook nog deze informatie
+
+**Vragen**  
+{% for label, answers in extra_properties.items %}{{ label }}  
+*{% for answer in answers %}{{ answer}}{% if not forloop.last %}, {% endif %}{% endfor %}*  
+{% endfor %}
+ 
+**Uw contactgegevens**  
+Om uw privacy te beschermen hebben wij uw gegevens onherkenbaar gemaakt voor anderen.
+{% if reporter_phone %}
+Wat is uw telefoonnummer?  
+{{ reporter_phone}}
+{% endif %}{% if reporter_email %}
+Wat is uw e-mailadres?  
+{{ reporter_email}}  
+{% endif %}
+
+**Melding doorsturen**  
+{% if reporter_sharing_allowed %}
+Ja, ik geef de gemeente Amsterdam toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
+{% else %}
+Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
+{% endif %}"""
+        expected = """Geachte melder,
+
+Dank voor uw melding. Fijn dat u zich betrokken voelt bij de stad.
+
+Uw melding
+{{ text }}
+
+Nummer: {{ formatted_signal_id }}
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
+
+Wat doen we met uw melding?
+{{ handling_message }}
+
+Volg zelf uw meldingen online
+U kunt nu ook online uw meldingen volgen. Wij doen een proef met de app Yivi. We zoeken enthousiaste Amsterdammers die dit willen uitproberen. Ga naar Meldingen openbare ruimte online volgen https://mijn.amsterdam.nl/inloggen-met-yivi?utm_source=melding-doen-activatie-yivi-inlog&utm_medium=email&utm_campaign=yivi-login&utm_content=link-in-aanmeldingsmail-20230501 om het uit te proberen.
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}
+
+Dit bericht is automatisch gemaakt met de informatie uit uw melding.
+
+U gaf ook nog deze informatie
+
+Vragen
+{% for label, answers in extra_properties.items %}{{ label }}
+{% for answer in answers %}{{ answer}}{% if not forloop.last %}, {% endif %}{% endfor %}
+{% endfor %}
+
+Uw contactgegevens
+Om uw privacy te beschermen hebben wij uw gegevens onherkenbaar gemaakt voor anderen.
+{% if reporter_phone %}
+Wat is uw telefoonnummer?
+{{ reporter_phone}}
+{% endif %}{% if reporter_email %}
+Wat is uw e-mailadres?
+{{ reporter_email}}
+{% endif %}
+
+Melding doorsturen
+{% if reporter_sharing_allowed %}
+Ja, ik geef de gemeente Amsterdam toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
+{% else %}
+Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
+{% endif %}"""
+
+        html = markdown.markdown(md)
+        print(html)
+
+        assert expected == strip_markdown_html(html)
