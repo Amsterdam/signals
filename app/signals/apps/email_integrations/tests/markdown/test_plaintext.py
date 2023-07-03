@@ -91,7 +91,7 @@ Met vriendelijke groet,
 Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.  
 
 **Bent u tevreden met de afhandeling van uw melding?**  
-{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}  
+{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}
 
 {% if feedback_is_satisfied %}**Waarom bent u tevreden?** {% else %} **Waarom bent u niet tevreden?** {% endif %}  
 {% if feedback_text %} {{ feedback_text }}{% else %}{% for f_text in feedback_text_list %}{{ f_text }}{% endfor %}
@@ -108,7 +108,7 @@ Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
@@ -166,7 +166,7 @@ Bent u tevreden met de afhandeling van uw melding?
 {% else %}
 {% for f_text in feedback_text_list %}{{ f_text }}  {% endfor %}
 {%endif %}
-{{ feedback_text_extra }}  
+{{ feedback_text_extra }}
 
 
 **Gegevens van uw melding**  
@@ -246,7 +246,7 @@ Dit bericht is automatisch gegenereerd"""
 Bedankt voor uw reactie. U krijgt binnen 3 werkdagen weer bericht van ons.
 
 **Bent u tevreden met de afhandeling van uw melding?**  
-{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}  
+{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}
 
 {% if feedback_is_satisfied %}**Waarom bent u tevreden?** {% else %} **Waarom bent u niet tevreden?** {% endif %}  
 {% if feedback_text %} {{ feedback_text }} {% else %}{% for f_text in feedback_text_list %} {{ f_text }}{% endfor %}
@@ -263,7 +263,7 @@ Bedankt voor uw reactie. U krijgt binnen 3 werkdagen weer bericht van ons.
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
@@ -316,7 +316,7 @@ Op {{ created_at|date:"j F Y" }} hebt u een melding gedaan bij de gemeente. Wij 
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}   
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
@@ -360,7 +360,7 @@ Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een m
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
@@ -420,7 +420,7 @@ Bent u tevreden met de afhandeling van uw melding?
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %} 
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
@@ -443,7 +443,7 @@ Bent u tevreden met de afhandeling van uw melding?
 {% if feedback_text %}
 {{ feedback_text }}
 {% else %}
-{% for f_text in feedback_text_list %}{{ f_text }}
+{% for f_text in feedback_text_list %}  {{ f_text }}
 {% endfor %}
 {% endif %}
 
@@ -480,7 +480,7 @@ Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een m
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
 Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
-Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
 
 **Meer weten?**  
 Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
