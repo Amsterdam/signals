@@ -614,7 +614,4 @@ Ja, ik geef de gemeente Amsterdam toestemming om mijn melding door te sturen naa
 Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.
 {% endif %}"""
 
-        html = markdown.markdown(md)
-        print(html)
-
-        assert expected == strip_markdown_html(html)
+        assert expected == strip_markdown_html(markdown.markdown(md))
