@@ -615,3 +615,61 @@ Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te stur
 {% endif %}"""
 
         assert expected == strip_markdown_html(markdown.markdown(md))
+
+    def test_signal_handled(self):
+        md = """Geachte melder,
+
+Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze mail vertellen wij u wat wij hebben kunnen doen.
+
+**U liet ons het volgende weten**  
+{{ text }}
+
+**Wat hebben wij kunnen doen?**  
+{{ status_text }}
+
+**Bent u tevreden met de afhandeling van uw melding?**
+
+[![Ja, ik ben tevreden](https://acc.meldingen.amsterdam.nl/assets/images/happy.png " Ja, ik ben tevreden")Ja, ik ben tevreden]({{ positive_feedback_url }})
+
+[![Nee, ik ben niet tevreden](https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png " Nee, ik ben niet tevreden")Nee, ik ben niet tevreden]({{ negative_feedback_url }})
+
+**Gegevens van uw melding**  
+Nummer: {{ formatted_signal_id }}  
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur  
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
+
+**Meer weten?**  
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+        expected = """Geachte melder,
+
+Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze mail vertellen wij u wat wij hebben kunnen doen.
+
+U liet ons het volgende weten
+{{ text }}
+
+Wat hebben wij kunnen doen?
+{{ status_text }}
+
+Bent u tevreden met de afhandeling van uw melding?
+
+Ja, ik ben tevreden Ja, ik ben tevreden {{ positive_feedback_url }}
+
+Nee, ik ben niet tevreden Nee, ik ben niet tevreden {{ negative_feedback_url }}
+
+Gegevens van uw melding
+Nummer: {{ formatted_signal_id }}
+Gemeld op: {{ created_at|date:"j F Y, H.i" }} uur
+Plaats: {% if address %}{{ address|format_address:"O hlT, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: {{ formatted_signal_id }}.
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}"""
+
+        assert expected == strip_markdown_html(markdown.markdown(md))
