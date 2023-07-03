@@ -10,7 +10,7 @@ from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     """
-    Privacy sensitive information on reporter.
+    Privacy-sensitive information on reporter.
 
     This information will be anonymized after X time
     """
