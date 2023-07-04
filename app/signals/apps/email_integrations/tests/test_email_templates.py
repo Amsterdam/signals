@@ -707,6 +707,68 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 </html>
 """ # noqa
 
+    def test_optional(self):
+        with freeze_time('2023-07-04 13:37'):
+            signal = SignalFactory.create(
+                reporter__email='test@example.com',
+                reporter__phone='0123456789',
+                status__state=workflow.BEHANDELING,
+                status__send_email=True,
+            )
+
+        MailService.status_mail(signal=signal)
+
+        assert mail.outbox[0].body == f"""Geachte melder,
+
+Op 4 juli 2023 om 15.37 uur hebt u een melding gedaan bij de gemeente. In deze e-mail leest u de stand van zaken van uw melding.
+
+U liet ons het volgende weten
+{signal.text}
+
+Stand van zaken
+{signal.status.text}
+
+Gegevens van uw melding
+Nummer: SIG-{signal.id}
+Gemeld op: 4 juli 2023, 15.37 uur
+Plaats: Sesamstraat 666, 1011 AA Ergens
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {signal.id}</title>
+</head>
+<body>
+    <p>Geachte melder,</p>
+<p>Op 4 juli 2023 om 15.37 uur hebt u een melding gedaan bij de gemeente. In deze e-mail leest u de stand van zaken van uw melding.</p>
+<p><strong>U liet ons het volgende weten</strong><br />
+{signal.text}</p>
+<p><strong>Stand van zaken</strong><br />
+{signal.status.text}</p>
+<p><strong>Gegevens van uw melding</strong><br />
+Nummer: SIG-{signal.id}<br />
+Gemeld op: 4 juli 2023, 15.37 uur<br />
+Plaats: Sesamstraat 666, 1011 AA Ergens</p>
+<p><strong>Meer weten?</strong><br />
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+""" # noqa
+
     def test_reaction_requested(self):
         with freeze_time('2023-07-04 13:37'):
             signal = SignalFactory.create(
@@ -737,7 +799,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
 Met vriendelijke groet,
 
-Gemeente Amsterdam"""
+Gemeente Amsterdam""" # noqa
 
         body, mime_type = mail.outbox[0].alternatives[0]
         self.assertEqual(mime_type, 'text/html')
@@ -765,4 +827,4 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 <p>Gemeente Amsterdam</p>
 </body>
 </html>
-"""
+""" # noqa
