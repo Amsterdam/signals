@@ -63,7 +63,7 @@ class DataWarehouseDiskCleaner:
         return removed
 
     @staticmethod
-    def clean_up(data_root, keep_n_days=30, dry_run=False):
+    def clean_up(data_root, keep_n_days=7, dry_run=False):
         """
         Clean-up CSV dumps and Zip archives under the `data_root` directory.
         """

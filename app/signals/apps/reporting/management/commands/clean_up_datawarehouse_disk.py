@@ -8,7 +8,7 @@ from signals.apps.reporting.utils import _get_storage_backend
 
 class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
-        parser.add_argument('--keep-n-days', dest='keep_n_days', type=int, default=30,
+        parser.add_argument('--keep-n-days', dest='keep_n_days', type=int, default=7,
                             help='Number of days to retain data for.')
         parser.add_argument('--dry-run', dest='dry_run', action='store_true', default=False,
                             help='Perform dry run without deleting data files.')
