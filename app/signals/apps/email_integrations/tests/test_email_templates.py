@@ -10,6 +10,8 @@ from freezegun import freeze_time
 from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.services import MailService
+from signals.apps.feedback.models import Feedback
+from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
 
 
@@ -129,9 +131,9 @@ Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een m
 
 **Bent u tevreden met de afhandeling van uw melding?**
 
-[![Ja, ik ben tevreden](https://acc.meldingen.amsterdam.nl/assets/images/happy.png " Ja, ik ben tevreden") Ja, ik ben tevreden]({{ positive_feedback_url }})
+[![Ja, ik ben tevreden](https://acc.meldingen.amsterdam.nl/assets/images/happy.png) Ja, ik ben tevreden]({{ positive_feedback_url }})
 
-[![Nee, ik ben niet tevreden](https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png " Nee, ik ben niet tevreden") Nee, ik ben niet tevreden]({{ negative_feedback_url }})
+[![Nee, ik ben niet tevreden](https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png) Nee, ik ben niet tevreden]({{ negative_feedback_url }})
 
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
@@ -500,6 +502,78 @@ Om uw privacy te beschermen hebben wij uw gegevens onherkenbaar gemaakt voor and
 t**t@******e.com</p>
 <p><strong>Melding doorsturen</strong></p>
 <p>Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te sturen naar andere organisaties als de melding niet voor de gemeente is bestemd.</p>
+</body>
+</html>
+""" # noqa
+
+    def test_signal_handled(self):
+        with freeze_time('2023-07-04 13:37'):
+            signal = SignalFactory.create(
+                reporter__email='test@example.com',
+                reporter__phone='0123456789',
+                status__state=workflow.AFGEHANDELD,
+            )
+
+        MailService.status_mail(signal=signal)
+
+        feedback = Feedback.objects.filter(_signal=signal).get()
+
+        assert mail.outbox[0].body == f"""Geachte melder,
+
+Op 4 juli 2023 om 15.37 uur hebt u een melding gedaan bij de gemeente. In deze mail vertellen wij u wat wij hebben kunnen doen.
+
+U liet ons het volgende weten
+{signal.text}
+
+Wat hebben wij kunnen doen?
+{signal.status.text}
+
+Bent u tevreden met de afhandeling van uw melding?
+
+Ja, ik ben tevreden Ja, ik ben tevreden http://dummy_link/kto/ja/{feedback.token}
+
+Nee, ik ben niet tevreden Nee, ik ben niet tevreden http://dummy_link/kto/nee/{feedback.token}
+
+Gegevens van uw melding
+Nummer: SIG-{signal.id}
+Gemeld op: 4 juli 2023, 15.37 uur
+Plaats: Sesamstraat 666, 1011 AA Ergens
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {signal.id}</title>
+</head>
+<body>
+    <p>Geachte melder,</p>
+<p>Op 4 juli 2023 om 15.37 uur hebt u een melding gedaan bij de gemeente. In deze mail vertellen wij u wat wij hebben kunnen doen.</p>
+<p><strong>U liet ons het volgende weten</strong><br />
+{signal.text}</p>
+<p><strong>Wat hebben wij kunnen doen?</strong><br />
+{signal.status.text}</p>
+<p><strong>Bent u tevreden met de afhandeling van uw melding?</strong></p>
+<p><a href="http://dummy_link/kto/ja/{feedback.token}"><img alt="Ja, ik ben tevreden" src="https://acc.meldingen.amsterdam.nl/assets/images/happy.png" /> Ja, ik ben tevreden</a></p>
+<p><a href="http://dummy_link/kto/nee/{feedback.token}"><img alt="Nee, ik ben niet tevreden" src="https://acc.meldingen.amsterdam.nl/assets/images/unhappy.png" /> Nee, ik ben niet tevreden</a></p>
+<p><strong>Gegevens van uw melding</strong><br />
+Nummer: SIG-{signal.id}<br />
+Gemeld op: 4 juli 2023, 15.37 uur<br />
+Plaats: Sesamstraat 666, 1011 AA Ergens</p>
+<p><strong>Meer weten?</strong><br />
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
 </body>
 </html>
 """ # noqa
