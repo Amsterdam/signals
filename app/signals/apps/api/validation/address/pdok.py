@@ -1,19 +1,18 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from django.http import QueryDict
 from requests import get
 from requests.exceptions import RequestException
 
-from signals.apps.api.app_settings import SIGNALS_API_PDOK_API_URL
 from signals.apps.api.validation.address.base import (
     AddressValidationUnavailableException,
     BaseAddressValidation
 )
-from signals.settings import DEFAULT_PDOK_MUNICIPALITIES
+from signals.settings import DEFAULT_PDOK_MUNICIPALITIES, PDOK_LOCATIESERVER_SUGGEST_ENDPOINT
 
 
 class PDOKAddressValidation(BaseAddressValidation):
-    address_validation_url = f'{SIGNALS_API_PDOK_API_URL}/locatieserver/v3/suggest'
+    address_validation_url = PDOK_LOCATIESERVER_SUGGEST_ENDPOINT
 
     def _search_result_to_address(self, result):
         mapping = {

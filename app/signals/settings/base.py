@@ -407,6 +407,8 @@ API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE = os.getenv(
 API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO = os.getenv('API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO', 'Interne melding')
 
 # Default pdok municipalities
+PDOK_LOCATIESERVER_SUGGEST_ENDPOINT = os.getenv('PDOK_LOCATIESERVER_SUGGEST_ENDPOINT',
+                                                'https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest')
 DEFAULT_PDOK_MUNICIPALITIES = os.getenv('DEFAULT_PDOK_MUNICIPALITIES',
                                         'Amsterdam,Amstelveen,Weesp,Ouder-Amstel').split(',')
 
