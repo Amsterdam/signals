@@ -58,6 +58,7 @@ class TestEmailTemplates(TestCase):
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {evil_signal.id} '
                          f'alert("something evil");\n{settings.ORGANIZATION_NAME}', mail.outbox[0].body)
 
+
 class TestCompleteTemplates(TestCase):
     TEMPLATES: Final = (
         (
@@ -425,7 +426,7 @@ Dank voor uw melding. Fijn dat u zich betrokken voelt bij de stad.
 Uw melding
 {signal.text}
 
-Nummer: SIG-1
+Nummer: SIG-{signal.id}
 Gemeld op: 4 juli 2023, 15.37 uur
 Plaats: Sesamstraat 666, 1011 AA Ergens
 
@@ -436,7 +437,7 @@ Volg zelf uw meldingen online
 U kunt nu ook online uw meldingen volgen. Wij doen een proef met de app Yivi. We zoeken enthousiaste Amsterdammers die dit willen uitproberen. Ga naar Meldingen openbare ruimte online volgen https://mijn.amsterdam.nl/inloggen-met-yivi?utm_source=melding-doen-activatie-yivi-inlog&utm_medium=email&utm_campaign=yivi-login&utm_content=link-in-aanmeldingsmail-20230501 om het uit te proberen.
 
 Meer weten?
-Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-1.
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.
 
 Met vriendelijke groet,
 
@@ -476,7 +477,7 @@ Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te stur
 <p>Dank voor uw melding. Fijn dat u zich betrokken voelt bij de stad.</p>
 <p><strong>Uw melding</strong><br />
 {signal.text}</p>
-<p>Nummer: SIG-1<br />
+<p>Nummer: SIG-{signal.id}<br />
 Gemeld op: 4 juli 2023, 15.37 uur<br />
 Plaats: Sesamstraat 666, 1011 AA Ergens</p>
 <p><strong>Wat doen we met uw melding?</strong><br />
@@ -484,7 +485,7 @@ Test handling message (child category)</p>
 <p><strong>Volg zelf uw meldingen online</strong><br />
 U kunt nu ook online uw meldingen volgen. Wij doen een proef met de app Yivi. We zoeken enthousiaste Amsterdammers die dit willen uitproberen. Ga naar <a href="https://mijn.amsterdam.nl/inloggen-met-yivi?utm_source=melding-doen-activatie-yivi-inlog&amp;utm_medium=email&amp;utm_campaign=yivi-login&amp;utm_content=link-in-aanmeldingsmail-20230501">Meldingen openbare ruimte online volgen</a> om het uit te proberen.</p>
 <p><strong>Meer weten?</strong><br />
-Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-1.</p>
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.</p>
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 <p><em>Dit bericht is automatisch gemaakt met de informatie uit uw melding.</em></p>
