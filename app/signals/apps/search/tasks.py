@@ -27,6 +27,30 @@ def save_to_elastic(signal_id):
 
 
 @app.task
+def clear_index():
+    log.info('clear_index - start')
+
+    if not SignalDocument.ping():
+        raise Exception('Elastic cluster is unreachable')
+
+    SignalDocument.clear_index()
+
+    log.info('clear_index - done!')
+
+
+@app.task
+def init_index():
+    log.info('init_index - start')
+
+    if not SignalDocument.ping():
+        raise Exception('Elastic cluster is unreachable')
+
+    SignalDocument.init()
+
+    log.info('init_index - done!')
+
+
+@app.task
 def rebuild_index():
     log.info('rebuild_index - start')
 
