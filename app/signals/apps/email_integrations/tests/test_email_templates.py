@@ -470,7 +470,7 @@ Nee, ik geef de gemeente Amsterdam geen toestemming om mijn melding door te stur
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding 1</title>
+    <title>Uw melding {signal.id}</title>
 </head>
 <body>
     <p>Geachte melder,</p>
