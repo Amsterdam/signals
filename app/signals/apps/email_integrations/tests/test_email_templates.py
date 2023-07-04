@@ -11,6 +11,7 @@ from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback
+from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
 
@@ -705,3 +706,63 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 </body>
 </html>
 """ # noqa
+
+    def test_reaction_requested(self):
+        with freeze_time('2023-07-04 13:37'):
+            signal = SignalFactory.create(
+                reporter__email='test@example.com',
+                reporter__phone='0123456789',
+                status__state=workflow.REACTIE_GEVRAAGD,
+            )
+
+        MailService.status_mail(signal=signal)
+
+        session = Session.objects.filter(_signal=signal).get()
+
+        assert mail.outbox[0].body == f"""Geachte melder,
+
+Op 4 juli 2023 hebt u een melding gedaan bij de gemeente. Wij hebben meer informatie nodig. Wilt u alstublieft binnen 5 dagen onze vragen beantwoorden?
+Beantwoord de vragen http://dummy_link/incident/reactie/{session.uuid}
+
+U liet ons het volgende weten
+{signal.text}
+
+Gegevens van uw melding
+Nummer: SIG-{signal.id}
+Gemeld op: 4 juli 2023, 15.37 uur
+Plaats: Sesamstraat 666, 1011 AA Ergens
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam"""
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {signal.id}</title>
+</head>
+<body>
+    <p>Geachte melder,</p>
+<p>Op 4 juli 2023 hebt u een melding gedaan bij de gemeente. Wij hebben meer informatie nodig. Wilt u alstublieft binnen 5 dagen onze vragen beantwoorden?<br />
+<a href="http://dummy_link/incident/reactie/{session.uuid}">Beantwoord de vragen</a></p>
+<p><strong>U liet ons het volgende weten</strong><br />
+{signal.text}</p>
+<p><strong>Gegevens van uw melding</strong><br />
+Nummer: SIG-{signal.id}<br />
+Gemeld op: 4 juli 2023, 15.37 uur<br />
+Plaats: Sesamstraat 666, 1011 AA Ergens</p>
+<p><strong>Meer weten?</strong><br />
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+"""
