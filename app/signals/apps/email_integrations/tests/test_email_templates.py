@@ -1106,3 +1106,61 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 </body>
 </html>
 """ # noqa
+
+    def test_forward_to_external_reaction_received(self):
+        with freeze_time('2023-07-04 13:37'):
+            signal = SignalFactory.create(
+                reporter__email='test@example.com',
+                reporter__phone='0123456789',
+                status__state=workflow.AFGEHANDELD,
+            )
+
+        reaction_text = 'external reaction test...'
+
+        MailService.system_mail(
+            signal=signal,
+            action_name='forward_to_external_reaction_received',
+            reaction_text=reaction_text,
+            email_override='tester@example.com',
+        )
+
+        assert mail.outbox[0].body == f"""Geachte behandelaar,
+
+Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
+
+U liet ons het volgende weten:
+{reaction_text}
+
+Gegevens van de melding
+- Nummer: SIG-{signal.id}
+- Gemeld op: 4 juli 2023 15:37
+- Plaats: 
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {signal.id}</title>
+</head>
+<body>
+    <p>Geachte behandelaar,</p>
+<p>Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.</p>
+<p>U liet ons het volgende weten:<br />
+{reaction_text}</p>
+<p>Gegevens van de melding
+- Nummer: SIG-{signal.id}
+- Gemeld op: 4 juli 2023 15:37
+- Plaats: </p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+""" # noqa
