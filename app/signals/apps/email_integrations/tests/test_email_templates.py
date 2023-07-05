@@ -5,6 +5,7 @@ from typing import Final
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
+from django.utils.timezone import now
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.factories import EmailTemplateFactory
@@ -12,6 +13,8 @@ from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.feedback.models import Feedback
+from signals.apps.my_signals.factories import TokenFactory
+from signals.apps.my_signals.mail import send_token_mail
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
@@ -385,6 +388,7 @@ U liet ons het volgende weten:
 {{ reaction_text }}
 
 Gegevens van de melding
+
 - Nummer: {{ formatted_signal_id }}
 - Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
 - Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
@@ -1132,6 +1136,7 @@ U liet ons het volgende weten:
 {reaction_text}
 
 Gegevens van de melding
+
 - Nummer: SIG-{signal.id}
 - Gemeld op: 4 juli 2023 15:37
 - Plaats: 
@@ -1155,12 +1160,55 @@ Gemeente Amsterdam""" # noqa
 <p>Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.</p>
 <p>U liet ons het volgende weten:<br />
 {reaction_text}</p>
-<p>Gegevens van de melding
-- Nummer: SIG-{signal.id}
-- Gemeld op: 4 juli 2023 15:37
-- Plaats: </p>
+<p>Gegevens van de melding</p>
+<ul>
+<li>Nummer: SIG-{signal.id}</li>
+<li>Gemeld op: 4 juli 2023 15:37</li>
+<li>Plaats: </li>
+</ul>
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
+</body>
+</html>
+""" # noqa
+
+    def test_my_signal_token(self):
+        with freeze_time(now()):
+            token = TokenFactory.create()
+
+        send_token_mail(token)
+
+        assert mail.outbox[0].body == f"""Geachte melder,
+
+Bevestig uw e-mailadres http://dummy_link/mijn-meldingen/{token.key} om in te loggen op uw meldingenoverzicht. In uw meldingenoverzicht vindt u al uw meldingen van de afgelopen 12 maanden terug. En u ziet status updates.
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam
+
+Dit bericht is automatisch gegenereerd""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding </title>
+</head>
+<body>
+    <p>Geachte melder,</p>
+<p><a href="http://dummy_link/mijn-meldingen/{token.key}">Bevestig uw e-mailadres</a> om in te loggen op uw meldingenoverzicht. In uw meldingenoverzicht vindt u al uw meldingen van de afgelopen 12 maanden terug. En u ziet status updates.</p>
+<p><strong>Meer weten?</strong><br />
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08:00 tot 18:00.</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+<p><em>Dit bericht is automatisch gegenereerd</em></p>
 </body>
 </html>
 """ # noqa
