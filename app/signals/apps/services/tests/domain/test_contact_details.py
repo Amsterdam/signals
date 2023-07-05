@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
-
-import mistune
+# Copyright (C) 2021 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+import markdown
 from django.test import TestCase
 
-from signals.apps.email_integrations.markdown.renderers import PlaintextRenderer
+from signals.apps.email_integrations.markdown.plaintext import strip_markdown_html
 from signals.apps.services.domain.contact_details import ContactDetailsService
 
 
@@ -23,9 +22,6 @@ class TestContactDetailsService(TestCase):
         ('0612345678', '*******678'),
     ]
 
-    def setUp(self):
-        self.render_plaintext = mistune.create_markdown(renderer=PlaintextRenderer())
-
     def test_obscure_email(self):
         for email, obscured_email in self.email_cases:
             self.assertEqual(ContactDetailsService.obscure_email(email, False), obscured_email)
@@ -33,8 +29,11 @@ class TestContactDetailsService(TestCase):
     def test_obscure_email_for_markdown(self):
         for email, obscured_email in self.email_cases:
             encoded = ContactDetailsService.obscure_email(email, True)
-            # paragraphs get \n\n appended, hence the slice below
-            self.assertEqual(self.render_plaintext(encoded)[:-2], obscured_email)
+
+            self.assertEqual(
+                strip_markdown_html(markdown.markdown(encoded)),
+                obscured_email
+            )
 
     def test_obscure_phone(self):
         for phone, obscured_phone in self.phone_cases:
@@ -43,5 +42,8 @@ class TestContactDetailsService(TestCase):
     def test_obscure_phone_for_markdown(self):
         for phone, obscured_phone in self.phone_cases:
             encoded = ContactDetailsService.obscure_phone(phone, True)
-            # paragraphs get \n\n appended, hence the slice below
-            self.assertEqual(self.render_plaintext(encoded)[:-2], obscured_phone)
+
+            self.assertEqual(
+                strip_markdown_html(markdown.markdown(encoded)),
+                obscured_phone
+            )

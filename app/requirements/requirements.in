@@ -1,5 +1,6 @@
 Arpeggio
 azure-storage-blob
+beautifulsoup4
 cairocffi
 CairoSVG
 Celery
@@ -31,7 +32,6 @@ flower
 jsonschema
 lxml
 Markdown
-mistune<3
 mozilla-django-oidc
 networkx
 opencensus-ext-azure
