@@ -349,9 +349,9 @@ Met vriendelijke groet,
 Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.  
 
 **Bent u tevreden met de afhandeling van uw melding?**  
-{% if feedback_is_satisfied %} Ja, ik ben tevreden met de afhandeling van mijn melding {% else%} Nee, Ik ben niet tevreden met de afhandeling van mijn melding {% endif %}
+{% if feedback_is_satisfied %}Ja, ik ben tevreden met de afhandeling van mijn melding{% else%}Nee, Ik ben niet tevreden met de afhandeling van mijn melding{% endif %}
 
-{% if feedback_is_satisfied %}**Waarom bent u tevreden?** {% else %} **Waarom bent u niet tevreden?** {% endif %}  
+{% if feedback_is_satisfied %}**Waarom bent u tevreden?**{% else %}**Waarom bent u niet tevreden?**{% endif %}  
 {% if feedback_text %} {{ feedback_text }}{% else %}{% for f_text in feedback_text_list %}{{ f_text }}{% endfor %}
 {%endif %}
 
@@ -361,7 +361,7 @@ Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.
 {% endif %}
 
 **Contact**  
-{% if feedback_allows_contact %} Ja, bel of e-mail mij over deze melding of over mijn reactie. {% else %} Nee, bel of e-mail mij niet meer over deze melding of over mijn reactie. {% endif %}
+{% if feedback_allows_contact %}Ja, bel of e-mail mij over deze melding of over mijn reactie.{% else %}Nee, bel of e-mail mij niet meer over deze melding of over mijn reactie.{% endif %}
 
 **Gegevens van uw melding**  
 Nummer: {{ formatted_signal_id }}  
@@ -1021,6 +1021,87 @@ U kunt de melding gelijk inzien en oppakken. Als de melding verwerkt, ontvangen 
 <p><a href="http://dummy_link/incident/extern/{session.uuid}">Bekijk de actie</a></p>
 <p>Nummer: SIG-{signal.id}</p>
 <p>Met vriendelijke groet,  </p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+""" # noqa
+
+    def test_feedback_received(self):
+        with freeze_time('2023-07-04 13:37'):
+            signal = SignalFactory.create(
+                reporter__email='test@example.com',
+                reporter__phone='0123456789',
+                status__state=workflow.AFGEHANDELD,
+                status__email_override='tester@example.com'
+            )
+
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=True,
+            is_satisfied=True,
+            text='Some text about how happy I am.',
+            text_list=('Some more text', 'A little more', 'And even more textual events'),
+            text_extra='Bonus text',
+        )
+
+        MailService.system_mail(signal=signal, action_name='feedback_received', feedback=feedback)
+
+        assert mail.outbox[0].body == f"""Geachte melder,
+
+Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.  
+
+Bent u tevreden met de afhandeling van uw melding?
+Ja, ik ben tevreden met de afhandeling van mijn melding
+
+Waarom bent u tevreden?
+Some text about how happy I am.
+
+Wilt u ons verder nog iets laten weten?
+Bonus text
+
+Contact
+Ja, bel of e-mail mij over deze melding of over mijn reactie.
+
+Gegevens van uw melding
+Nummer: SIG-{signal.id}
+Gemeld op: 4 juli 2023, 15.37 uur
+Plaats: Sesamstraat 666, 1011 AA Ergens
+
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {signal.id}</title>
+</head>
+<body>
+    <p>Geachte melder,</p>
+<p>Bedankt voor uw reactie. U hoort binnen 3 werkdagen weer bericht van ons.  </p>
+<p><strong>Bent u tevreden met de afhandeling van uw melding?</strong><br />
+Ja, ik ben tevreden met de afhandeling van mijn melding</p>
+<p><strong>Waarom bent u tevreden?</strong><br />
+ Some text about how happy I am.</p>
+<p><strong>Wilt u ons verder nog iets laten weten?</strong><br />
+Bonus text</p>
+<p><strong>Contact</strong><br />
+Ja, bel of e-mail mij over deze melding of over mijn reactie.</p>
+<p><strong>Gegevens van uw melding</strong><br />
+Nummer: SIG-{signal.id}<br />
+Gemeld op: 4 juli 2023, 15.37 uur<br />
+Plaats: Sesamstraat 666, 1011 AA Ergens</p>
+<p><strong>Meer weten?</strong><br />
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00. Geef dan ook het nummer van uw melding door: SIG-{signal.id}.</p>
+<p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>
 </html>
