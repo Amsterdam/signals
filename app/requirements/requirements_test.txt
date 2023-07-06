@@ -149,7 +149,7 @@ deprecated==1.2.14
     #   jwcrypto
 distlib==0.3.6
     # via virtualenv
-django==3.2.19
+django==3.2.20
     # via
     #   -r requirements/requirements.txt
     #   datapunt-authorization-django
@@ -228,7 +228,7 @@ drf-extensions==0.7.1
     #   drf-amsterdam
 drf-spectacular==0.26.3
     # via -r requirements/requirements.txt
-drf-spectacular-sidecar==2023.6.1
+drf-spectacular-sidecar==2023.7.1
     # via -r requirements/requirements.txt
 elasticsearch==7.17.9
     # via
@@ -322,7 +322,7 @@ kombu==5.3.1
     # via
     #   -r requirements/requirements.txt
     #   celery
-lxml==4.9.2
+lxml==4.9.3
     # via
     #   -r requirements/requirements.txt
     #   xmlunittest
@@ -388,7 +388,7 @@ packaging==23.1
     #   pyproject-api
     #   pytest
     #   tox
-pillow==9.5.0
+pillow==10.0.0
     # via
     #   -r requirements/requirements.txt
     #   cairosvg
@@ -410,7 +410,7 @@ prometheus-client==0.17.0
     # via
     #   -r requirements/requirements.txt
     #   flower
-prompt-toolkit==3.0.38
+prompt-toolkit==3.0.39
     # via
     #   -r requirements/requirements.txt
     #   click-repl
@@ -455,7 +455,7 @@ pyopenssl==23.2.0
     # via
     #   -r requirements/requirements.txt
     #   josepy
-pypdf==3.11.1
+pypdf==3.12.0
     # via -r requirements/requirements.txt
 pyphen==0.14.0
     # via
@@ -598,7 +598,7 @@ tox==4.6.3
     # via -r requirements/requirements_test.in
 types-cryptography==3.3.23.2
     # via -r requirements/requirements.txt
-typing-extensions==4.6.3
+typing-extensions==4.7.1
     # via
     #   -r requirements/requirements.txt
     #   azure-core
