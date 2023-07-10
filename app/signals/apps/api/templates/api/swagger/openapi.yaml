@@ -5331,6 +5331,10 @@ components:
           description: The topic a standard answer belongs to
           type: string
           example: Hoe heeft de gemeente u geholpen?
+        open_answer:
+          description: If a standard answer is an open answer
+          type: boolean
+          example: False
 
     V1StatusMessage:
       description: Status message

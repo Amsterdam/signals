@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.utils import merge_texts, validate_answers
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -38,54 +38,49 @@ class FeedbackSerializer(serializers.ModelSerializer):
             'text_extra': {'write_only': True},
         }
 
-    def validate(self, attrs):
-        """
-        Validate if either text of text_list is filled in
-        """
-        if attrs.get('text') or attrs.get('text_list'):
-            return attrs
+    def validate(self, attrs: dict) -> dict:
+        # Attrs should have a text AND/OR a text_list if both are not present raise an error
+        if not attrs.get('text') and not attrs.get('text_list'):
+            raise ValidationError({'non_field_errors': ['Either text or text_list must be filled in']})
 
-        raise ValidationError({
-            "non_field_errors": [
-                "Either text or text_list must be filled in"
-            ]
-        })
+        # Set the submitted_at field to now
+        attrs['submitted_at'] = timezone.now()
 
-    def update(self, instance, validated_data):
-        # TODO: consider whether using a StandardAnswer while overriding the
-        # is_satisfied field should be considered an error condition and return
-        # an HTTP 400.
-        validated_data['submitted_at'] = timezone.now()
+        # Merge the text and text_list to only text_list
+        text = attrs.pop('text', None)
+        text_list = attrs.get('text_list', [])
+        if text:
+            text_list.append(text)
+        attrs['text_list'] = list(set(text_list))
 
-        # Check whether the relevant Signal instance should possibly be
-        # reopened (i.e. transition to VERZOEK_TOT_HEROPENEN state).
-        is_satisfied = validated_data['is_satisfied']
+        # Call the super validate method
+        return super().validate(attrs)
 
-        # @TODO: When text field is depricated the following can be removed
-        validated_data = merge_texts(validated_data)
-        instance.text = None
-        instance.text_list = validated_data['text_list']
-
-        reopen = False
-        if not is_satisfied:
-            reopen = validate_answers(validated_data)
-
-        # Reopen the Signal (melding) if need be.
-        if reopen:
-            signal = instance._signal
-
-            # Only allow a request to reopen when in state workflow.AFGEHANDELD
-            if signal.status.state == workflow.AFGEHANDELD:
-                payload = {
-                    'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
-                    'state': workflow.VERZOEK_TOT_HEROPENEN,
-                }
-                Signal.actions.update_status(payload, signal)
-
+    def update(self, instance: Feedback, validated_data: dict) -> Feedback:
         instance = super().update(instance, validated_data)
-        # trigger the mail to be after the instance update to have the new data
-        if not is_satisfied and instance._signal.allows_contact:
-            MailService.system_mail(signal=instance._signal,
-                                    action_name='feedback_received',
-                                    feedback=instance)
+
+        # Check if the Signal needs to be reopened
+        if instance._signal.status.state != workflow.AFGEHANDELD:
+            # The signal is not in the handled state, so no need to reopen
+            return instance
+
+        if validated_data['is_satisfied']:
+            # The feedback is positive, so no need to reopen
+            return instance
+
+        q_filter = Q()
+        for text in validated_data.get('text_list', []):
+            q_filter.add(Q(text=text), Q.OR)
+
+        sa_qs = StandardAnswer.objects.filter(q_filter)
+        if sa_qs.count() < len(validated_data['text_list']) or sa_qs.filter(reopens_when_unhappy=True).exists():
+            # A custom answer is given OR an answer that requires reopening is given
+            payload = {'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
+                       'state': workflow.VERZOEK_TOT_HEROPENEN}
+            Signal.actions.update_status(data=payload, signal=instance._signal)
+
+        if instance._signal.allows_contact:
+            # Send the mail to the reporter if the reporter allows contact
+            MailService.system_mail(signal=instance._signal, action_name='feedback_received', feedback=instance)
+
         return instance
