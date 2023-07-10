@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
 
 from signals.apps.email_integrations.actions import SignalCreatedAction
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Note
@@ -13,7 +14,7 @@ from signals.apps.signals.models import Note
 
 class TestSignalCreatedActionExtraProperties(TestCase):
     state = workflow.GEMELD
-    action = SignalCreatedAction()
+    action = SignalCreatedAction(EmailTemplateRenderer())
 
     def setUp(self):
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_CREATED,
