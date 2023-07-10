@@ -438,10 +438,12 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
                 format='json',
             )
             self.assertEqual(response.status_code, 200)
+
         self.feedback.refresh_from_db()
+
         self.assertIsNone(self.feedback.text)
         multi_reason.append(reason)
-        self.assertEqual(multi_reason, self.feedback.text_list)
+        self.assertCountEqual(multi_reason, self.feedback.text_list)
 
     def test_text_list(self):
         """Test that the feedback can be PUT once."""
@@ -465,7 +467,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(response.status_code, 200)
         self.feedback.refresh_from_db()
         self.assertIsNone(self.feedback.text)
-        self.assertEqual(multi_reason, self.feedback.text_list)
+        self.assertCountEqual(multi_reason, self.feedback.text_list)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)

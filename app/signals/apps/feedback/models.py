@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 import secrets
 import uuid
 from datetime import timedelta
@@ -45,6 +45,13 @@ class StandardAnswer(models.Model):
 
     topic = models.ForeignKey(
         StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
+
+    open_answer = models.BooleanField(default=False,
+                                      help_text='Als deze optie is aangevinkt, '
+                                                'dan wordt er een open antwoord'
+                                                ' verwacht van de melder en is '
+                                                'de opgegeven text een default '
+                                                'waarde.')
 
     def __str__(self):
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'
@@ -96,7 +103,7 @@ class Feedback(models.Model):
 
 def _get_description_of_receive_feedback(feedback_token):
     """
-    Given a history entry for submission of feedback create descriptive text.
+    Given a history entry for submission of feedback, create descriptive text.
     """
     feedback = Feedback.objects.get(token=feedback_token)
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 import factory
 from django.utils import timezone
 from factory import fuzzy
@@ -48,6 +48,3 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
 
     is_satisfied = fuzzy.FuzzyChoice([True, False])
     allows_contact = fuzzy.FuzzyChoice([True, False])
-    text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
-    text_list = [fuzzy.FuzzyText(), fuzzy.FuzzyText(), fuzzy.FuzzyText()]
-    text_extra = fuzzy.FuzzyChoice([None, 'Daarom is waarom.'])
