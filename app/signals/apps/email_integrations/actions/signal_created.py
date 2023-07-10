@@ -1,24 +1,23 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
-import logging
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
+import typing
 
 from signals.apps.email_integrations.actions.abstract import AbstractAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalCreatedRule
 from signals.apps.services.domain.contact_details import ContactDetailsService
-
-logger = logging.getLogger(__name__)
+from signals.apps.signals.models import Signal
 
 
 class SignalCreatedAction(AbstractAction):
-    rule = SignalCreatedRule()
+    rule: typing.Callable[[Signal], bool] = SignalCreatedRule()
 
-    key = EmailTemplate.SIGNAL_CREATED
-    subject = 'Bedankt voor uw melding {formatted_signal_id}'
+    key: str = EmailTemplate.SIGNAL_CREATED
+    subject: str = 'Bedankt voor uw melding {formatted_signal_id}'
 
-    note = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
+    note: str = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
         if signal.reporter:
@@ -41,7 +40,7 @@ class SignalCreatedAction(AbstractAction):
 
         return context
 
-    def _extra_properties_context(self, extra_properties):
+    def _extra_properties_context(self, extra_properties: list) -> dict:
         """
         Renders the extra properties of the signals as a dict of key-value pairs so that they can be rendered in the
         email template.
@@ -59,7 +58,7 @@ class SignalCreatedAction(AbstractAction):
                 context[extra_property['label']].append(self._get_answer_from_extra_property(extra_property['answer']))
         return context
 
-    def _get_answer_from_extra_property(self, extra_property):  # noqa C901
+    def _get_answer_from_extra_property(self, extra_property: typing.Union[str, dict]) -> str: # noqa C901
         """
         Returns the first option that is available in the extra property and not empty as the answer.
         Defaults to '-' if no option is available.

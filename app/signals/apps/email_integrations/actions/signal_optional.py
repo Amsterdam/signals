@@ -1,23 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
-import logging
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
+import typing
 
 from signals.apps.email_integrations.actions.abstract import AbstractAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalOptionalRule
-
-logger = logging.getLogger(__name__)
+from signals.apps.signals.models import Signal
 
 
 class SignalOptionalAction(AbstractAction):
-    rule = SignalOptionalRule()
+    rule: typing.Callable[[Signal], bool] = SignalOptionalRule()
 
-    key = EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL
-    subject = 'Meer over uw melding {formatted_signal_id}'
+    key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL
+    subject: str = 'Meer over uw melding {formatted_signal_id}'
 
-    note = 'De statusupdate is per e-mail verzonden aan de melder'
+    note: str = 'De statusupdate is per e-mail verzonden aan de melder'
 
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         return {
             'afhandelings_text': signal.status.text
         }

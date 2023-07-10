@@ -1,23 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
-import logging
+# Copyright (C) 2023 Gemeente Amsterdam
+import typing
 
 from signals.apps.email_integrations.actions.abstract import AbstractAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalHandledNegativeRule
-
-logger = logging.getLogger(__name__)
+from signals.apps.signals.models import Signal
 
 
 class SignalHandledNegativeAction(AbstractAction):
-    rule = SignalHandledNegativeRule()
+    rule: typing.Callable[[Signal], bool] = SignalHandledNegativeRule()
 
-    key = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
-    subject = 'Meer over uw melding {formatted_signal_id}'
+    key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
+    subject: str = 'Meer over uw melding {formatted_signal_id}'
 
-    note = 'Automatische e-mail bij afhandelen heropenen negatieve feedback'
+    note: str = 'Automatische e-mail bij afhandelen heropenen negatieve feedback'
 
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         """
         Add the extra feedback essences to the email template
         """
