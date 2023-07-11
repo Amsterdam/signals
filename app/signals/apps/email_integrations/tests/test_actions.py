@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 from datetime import timedelta
 from unittest import mock
@@ -25,6 +25,7 @@ from signals.apps.email_integrations.actions import (
     SignalScheduledAction
 )
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.questionnaires.models import Session
@@ -257,7 +258,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
     - The status GEMELD is set only once
     """
     state = workflow.GEMELD
-    action = SignalCreatedAction()
+    action = SignalCreatedAction(EmailTemplateRenderer())
 
     def test_signal_set_state_second_time(self):
         """
@@ -504,7 +505,7 @@ class TestSignalHandledAction(ActionTestMixin, TestCase):
     - The previous state is not VERZOEK_TOT_HEROPENEN
     """
     state = workflow.AFGEHANDELD
-    action = SignalHandledAction()
+    action = SignalHandledAction(EmailTemplateRenderer())
 
     def test_signal_set_state_second_time(self):
         """
@@ -570,7 +571,7 @@ class TestSignalHandledAction(ActionTestMixin, TestCase):
 
 
 class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
-    action = SignalHandledNegativeAction()
+    action = SignalHandledNegativeAction(EmailTemplateRenderer())
     state = workflow.AFGEHANDELD
     prev_state = workflow.VERZOEK_TOT_HEROPENEN
     signal = None
@@ -716,7 +717,7 @@ class TestSignalScheduledAction(ActionTestMixin, TestCase):
     """
     state = workflow.INGEPLAND
     send_email = True
-    action = SignalScheduledAction()
+    action = SignalScheduledAction(EmailTemplateRenderer())
 
 
 class TestSignalReopenedAction(ActionTestMixin, TestCase):
@@ -725,7 +726,7 @@ class TestSignalReopenedAction(ActionTestMixin, TestCase):
 
     - The status is HEROPEND
     """
-    action = SignalReopenedAction()
+    action = SignalReopenedAction(EmailTemplateRenderer())
     state = workflow.HEROPEND
 
     def test_get_additional_context(self):
@@ -790,7 +791,7 @@ class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
     - The status is REACTIE_GEVRAAGD
     """
     state = workflow.REACTIE_GEVRAAGD
-    action = SignalReactionRequestAction()
+    action = SignalReactionRequestAction(EmailTemplateRenderer())
 
     def test_send_email(self):
         """
@@ -812,7 +813,7 @@ class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
     """
     state = workflow.REACTIE_ONTVANGEN
     send_email = True
-    action = SignalReactionRequestReceivedAction()
+    action = SignalReactionRequestReceivedAction(EmailTemplateRenderer())
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
@@ -840,7 +841,7 @@ class TestSignalOptionalAction(TestCase):
     - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
     - send_email must be True
     """
-    action = SignalOptionalAction()
+    action = SignalOptionalAction(EmailTemplateRenderer())
 
     def test_statuses(self):
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
@@ -907,7 +908,7 @@ class TestSignalOptionalAction(TestCase):
 
 class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
     state = workflow.DOORGEZET_NAAR_EXTERN
-    action = SignalForwardToExternalAction()
+    action = SignalForwardToExternalAction(EmailTemplateRenderer())
     send_email = True
 
     def test_send_email(self):
@@ -1035,7 +1036,7 @@ class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
 
 class TestSignalForwardToExternalActionFallbackTemplate(TestCase):
     state = workflow.DOORGEZET_NAAR_EXTERN
-    action = SignalForwardToExternalAction()
+    action = SignalForwardToExternalAction(EmailTemplateRenderer())
     send_email = True
 
     def test_send_email(self):
@@ -1073,7 +1074,7 @@ class TestSignalCreatedActionNoTemplate(TestCase):
     - The status GEMELD is set only once
     """
     state = workflow.GEMELD
-    action = SignalCreatedAction()
+    action = SignalCreatedAction(EmailTemplateRenderer())
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
@@ -1102,7 +1103,7 @@ class TestSignalStatusActions(TestCase):
 class TestAbstractSystemAction(TestCase):
 
     def test_call_invalid_kwargs(self):
-        action = MailService._system_actions.get('feedback_received')()
+        action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         self.assertRaises(TypeError, action, signal='fake_test_signal')
 
 
@@ -1122,13 +1123,13 @@ class TestSignalSystemActions(TestCase):
         Mail actions from the _system_actions in MailService dont have a rule and always return True
         """
         for key, action in MailService._system_actions.items():
-            self.assertTrue(action().rule('fake_signal'))
+            self.assertTrue(action(EmailTemplateRenderer()).rule('fake_signal'))
 
     def test_send_system_email_with_context(self):
         """
         Check if the email with context is send to the user
         """
-        action = MailService._system_actions.get('feedback_received')()
+        action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
 
         text = 'my text _1234567'
@@ -1149,7 +1150,7 @@ class TestSignalSystemActions(TestCase):
         self.assertEqual(Note.objects.count(), 1)
 
     def test_send_system_email_dry_run(self):
-        action = MailService._system_actions.get('feedback_received')()
+        action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         signal = SignalFactory()
         feedback = FeedbackFactory.create(
             token=uuid.uuid4(), _signal=signal)
@@ -1168,7 +1169,7 @@ class TestSignalSystemActions(TestCase):
             _signal=signal
         )
 
-        action = MailService._system_actions.get('feedback_received')()
+        action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         action(signal=signal, feedback=feedback)
         result = action.get_additional_context(signal)
 
@@ -1186,7 +1187,7 @@ class TestSignalSystemActions(TestCase):
         """
         FeedbackReceivedAction is disabled in settings
         """
-        action = MailService._system_actions.get('feedback_received')()
+        action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
 
         text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
@@ -1198,7 +1199,7 @@ class TestSignalSystemActions(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_forward_to_external_reaction_received_send_mail(self):
-        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+        action = MailService._system_actions.get('forward_to_external_reaction_received')(EmailTemplateRenderer())
 
         signal = SignalFactory.create(
             status__state=workflow.DOORGEZET_NAAR_EXTERN,
@@ -1214,7 +1215,7 @@ class TestSignalSystemActions(TestCase):
         self.assertIn('fixed!', mail.outbox[0].body)
 
     def test_forward_to_external_reaction_received_context(self):
-        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+        action = MailService._system_actions.get('forward_to_external_reaction_received')(EmailTemplateRenderer())
 
         signal = SignalFactory.create(
             status__state=workflow.DOORGEZET_NAAR_EXTERN,
@@ -1236,7 +1237,7 @@ class TestSignalSystemActions(TestCase):
 
 class TestSignalForwardToExternalReactionReceivedActionFallbackTemplate(TestCase):
     def test_forward_to_external_reaction_received_send_mail(self):
-        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+        action = MailService._system_actions.get('forward_to_external_reaction_received')(EmailTemplateRenderer())
 
         signal = SignalFactory.create(
             status__state=workflow.DOORGEZET_NAAR_EXTERN,

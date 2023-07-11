@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
-import logging
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
+import typing
 
 from signals.apps.email_integrations.actions.abstract import AbstractAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalScheduledRule
-
-logger = logging.getLogger(__name__)
+from signals.apps.signals.models import Signal
 
 
 class SignalScheduledAction(AbstractAction):
-    rule = SignalScheduledRule()
+    rule: typing.Callable[[Signal], bool] = SignalScheduledRule()
 
-    key = EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND
-    subject = 'Meer over uw melding {formatted_signal_id}'
+    key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND
+    subject: str = 'Meer over uw melding {formatted_signal_id}'
 
-    note = 'Automatische e-mail bij inplannen is verzonden aan de melder.'
+    note: str = 'Automatische e-mail bij inplannen is verzonden aan de melder.'

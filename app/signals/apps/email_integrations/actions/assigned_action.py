@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Delta10 B.V.
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam, Delta10 B.V.
 import logging
 from email.utils import formataddr
 
@@ -11,7 +11,7 @@ from django.template import Context, Template, loader
 from signals.apps.email_integrations.actions.abstract import AbstractSystemAction
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.signals.models import Department
+from signals.apps.signals.models import Department, Signal
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +23,15 @@ class AssignedAction(AbstractSystemAction):
     This e-mail action is triggered when a signal is assigned to a
     user or the users' department
     """
+    _required_call_kwargs: list[str] = ('recipient', 'assigned_to')
 
-    _required_call_kwargs = ('recipient', 'assigned_to')
-
-    key = EmailTemplate.SIGNAL_ASSIGNED
-    subject = (
+    key: str = EmailTemplate.SIGNAL_ASSIGNED
+    subject: str = (
         "Melding {{ formatted_signal_id }} is toegewezen aan "
         "{% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %}"
     )
 
-    note = None
-
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         recipient = self.kwargs['recipient']
         assigned_to = self.kwargs['assigned_to']
 
@@ -45,7 +42,7 @@ class AssignedAction(AbstractSystemAction):
             'assigned_to_department': assigned_to if isinstance(assigned_to, Department) else None
         }
 
-    def get_recipient_list(self, signal):
+    def get_recipient_list(self, signal: Signal) -> list[str]:
         """
         Get the recipient from keyword arguments
         """
@@ -53,21 +50,12 @@ class AssignedAction(AbstractSystemAction):
             formataddr((self.kwargs['recipient'].get_full_name(), self.kwargs['recipient'].email))
         ]
 
-    def render_mail_data(self, context):
+    def render_mail_data(self, context: dict) -> tuple[str, str, str]:
         """
         Renders the subject, text message body and html message body
         """
         try:
-            email_template = EmailTemplate.objects.get(key=self.key)
-
-            rendered_context = {
-                'subject': Template(email_template.title).render(Context(context)),
-                'body': Template(email_template.body).render(Context(context, autoescape=False))
-            }
-
-            subject = Template(email_template.title).render(Context(context, autoescape=False))
-            message = loader.get_template('email/_base.txt').render(rendered_context)
-            html_message = loader.get_template('email/_base.html').render(rendered_context)
+            return self._render(self.key, context)
         except EmailTemplate.DoesNotExist:
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
@@ -77,7 +65,7 @@ class AssignedAction(AbstractSystemAction):
 
         return subject, message, html_message
 
-    def send_mail(self, signal, dry_run=False):
+    def send_mail(self, signal: Signal, dry_run: bool = False) -> int:
         """
         Send the email to the reporter
         """

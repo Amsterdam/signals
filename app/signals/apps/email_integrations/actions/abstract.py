@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
+import typing
 from abc import ABC
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.template import Context, Template, loader
+from django.template import loader
 
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
 
@@ -22,29 +24,33 @@ class AbstractAction(ABC):
     The derived class action must implement a custom Rule. For example the SignalCreatedAction uses the
     SignalCreatedRule to determine if it should trigger and send the Signal created email.
     """
+    _render: EmailTemplateRenderer
 
     # A rule class based on the AbstractRule
-    rule = None
+    rule: typing.Callable[[Signal], bool]
 
     # The key of the email template. Is used to retrieve the corresponding EmailTemplate from the database
     # If there is no EmailTemplate with this key a fallback email template is used.
     # The fallback email templates:
     # - email/signal_default.txt
     # - email/signal_default.html)
-    key = None
+    key: str
 
     # The subject of the email
-    subject = None
-    from_email = settings.DEFAULT_FROM_EMAIL
+    subject: str
+    from_email: str = settings.DEFAULT_FROM_EMAIL
 
     # Body of email
-    fallback_txt_template = 'email/signal_default.txt'
-    fallback_html_template = 'email/signal_default.html'
+    fallback_txt_template: str = 'email/signal_default.txt'
+    fallback_html_template: str = 'email/signal_default.html'
 
     # Will be used to create a note on the Signal after the email has been sent
-    note = None
+    note: typing.Optional[str] = None
 
-    def __call__(self, signal, dry_run=False):
+    def __init__(self, renderer: EmailTemplateRenderer):
+        self._render = renderer
+
+    def __call__(self, signal: Signal, dry_run: bool = False) -> bool:
         if self.rule(signal):
             if dry_run:
                 return True
@@ -55,40 +61,31 @@ class AbstractAction(ABC):
 
         return False
 
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         """
         Overwrite this function if additional email context is needed.
         """
         return {}
 
-    def get_context(self, signal, dry_run=False):
+    def get_context(self, signal: Signal, dry_run: bool = False) -> dict:
         """
         Email context
         """
         context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
         return context
 
-    def get_recipient_list(self, signal):
+    def get_recipient_list(self, signal: Signal) -> list[str]:
         """
         Email address, override if we do not want to mail the reporter
         """
         return [signal.reporter.email]
 
-    def render_mail_data(self, context):
+    def render_mail_data(self, context: dict) -> tuple[str, str, str]:
         """
         Renders the subject, text message body and html message body
         """
         try:
-            email_template = EmailTemplate.objects.get(key=self.key)
-
-            rendered_context = {
-                'subject': Template(email_template.title).render(Context(context)),
-                'body': Template(email_template.body).render(Context(context, autoescape=False))
-            }
-
-            subject = Template(email_template.title).render(Context(context, autoescape=False))
-            message = loader.get_template('email/_base.txt').render(rendered_context)
-            html_message = loader.get_template('email/_base.html').render(rendered_context)
+            return self._render(self.key, context)
         except EmailTemplate.DoesNotExist:
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
@@ -98,7 +95,7 @@ class AbstractAction(ABC):
 
         return subject, message, html_message
 
-    def send_mail(self, signal, dry_run=False):
+    def send_mail(self, signal: Signal, dry_run: bool = False) -> int:
         """
         Send the email to the reporter
         """
@@ -118,19 +115,19 @@ class AbstractAction(ABC):
         return send_mail(subject=subject, message=message, from_email=self.from_email,
                          recipient_list=self.get_recipient_list(signal), html_message=html_message)
 
-    def add_note(self, signal):
+    def add_note(self, signal: Signal):
         if self.note:
             Signal.actions.create_note({'text': self.note}, signal=signal)
 
 
 class AbstractSystemAction(AbstractAction):
-    _required_call_kwargs = None
+    _required_call_kwargs: list[str]
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    rule = lambda self, signal: True  # noqa: E731
+    rule: typing.Callable[[Signal], bool] = lambda self, signal: True
 
-    def __call__(self, signal, dry_run=False, **kwargs):
+    def __call__(self, signal: Signal, dry_run: bool = False, **kwargs) -> bool:
         """
         check if the required parameters are in the kwargs
         """

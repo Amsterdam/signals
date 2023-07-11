@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
@@ -16,6 +16,8 @@ from signals.apps.email_integrations.actions import (
     SignalReopenedAction,
     SignalScheduledAction
 )
+from signals.apps.email_integrations.actions.abstract import AbstractAction, AbstractSystemAction
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals.models import Signal
 
 
@@ -23,27 +25,27 @@ class MailService:
 
     # Status actions are used when signals change status and are verified with
     # the rule parameters inside the actions
-    _status_actions = (
-        SignalCreatedAction(),
-        SignalHandledAction(),
-        SignalScheduledAction(),
-        SignalReopenedAction(),
-        SignalOptionalAction(),
-        SignalReactionRequestAction(),
-        SignalReactionRequestReceivedAction(),
-        SignalHandledNegativeAction(),
-        SignalForwardToExternalAction(),  # PS-261
+    _status_actions: list[AbstractAction] = (
+        SignalCreatedAction(EmailTemplateRenderer()),
+        SignalHandledAction(EmailTemplateRenderer()),
+        SignalScheduledAction(EmailTemplateRenderer()),
+        SignalReopenedAction(EmailTemplateRenderer()),
+        SignalOptionalAction(EmailTemplateRenderer()),
+        SignalReactionRequestAction(EmailTemplateRenderer()),
+        SignalReactionRequestReceivedAction(EmailTemplateRenderer()),
+        SignalHandledNegativeAction(EmailTemplateRenderer()),
+        SignalForwardToExternalAction(EmailTemplateRenderer()),  # PS-261
     )
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
-    _system_actions = {
+    _system_actions: dict[str, type[AbstractSystemAction]] = {
         'feedback_received': FeedbackReceivedAction,
         'forward_to_external_reaction_received': ForwardToExternalReactionReceivedAction,
         'assigned': AssignedAction,
     }
 
     @classmethod
-    def status_mail(cls, signal, dry_run=False) -> bool:
+    def status_mail(cls, signal: Union[int, Signal], dry_run: bool = False) -> bool:
         """
         Send a mail based on the update status from a signal
         """
@@ -57,11 +59,11 @@ class MailService:
         return False
 
     @classmethod
-    def system_mail(cls, signal: Union[str, Signal], action_name: str, dry_run=False, **kwargs) -> bool:
+    def system_mail(cls, signal: Union[int, Signal], action_name: str, dry_run: bool = False, **kwargs) -> bool:
         """
         Send a specific mail trigger based on the trigger name
         """
-        action = cls._system_actions.get(action_name)()
+        action = cls._system_actions.get(action_name)(EmailTemplateRenderer())
         if not action:
             raise NotImplementedError(f'{action_name} is not implemented')
 
