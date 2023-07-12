@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from typing import Final
+from unittest.mock import Mock
 
 from django.conf import settings
 from django.core import mail
@@ -10,6 +11,7 @@ from freezegun import freeze_time
 
 from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.feedback.models import Feedback
@@ -17,7 +19,10 @@ from signals.apps.my_signals.factories import TokenFactory
 from signals.apps.my_signals.mail import send_token_mail
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
+from signals.apps.signals.email_verification.reporter_verification import ReporterVerifier
 from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.models import Reporter
+from signals.apps.signals.tokens.token_generator import TokenGenerator
 
 
 class TestEmailTemplates(TestCase):
@@ -413,6 +418,20 @@ Met vriendelijke groet,
 {{ ORGANIZATION_NAME }}
 
 _Dit bericht is automatisch gegenereerd_""" # noqa
+        ),
+        (
+            EmailTemplate.VERIFY_EMAIL_REPORTER,
+            """Beste melder,
+
+Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.
+
+[{{ verification_url }}]({{ verification_url }})
+
+Alvast bedankt!
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}""" # noqa
         ),
     )
 
@@ -1209,6 +1228,50 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 <p><em>Dit bericht is automatisch gegenereerd</em></p>
+</body>
+</html>
+""" # noqa
+
+    def test_verification_email(self):
+        email = 'hellokitty69@hotmail.com'
+        reporter = Reporter()
+        reporter.email = email
+
+        token = 'my_url_safe_token_full_of_nice_characters'
+        generator = Mock(return_value=token)
+
+        verify = ReporterVerifier(EmailTemplateRenderer(), generator)
+        verify(reporter)
+
+        assert mail.outbox[0].body == f"""Beste melder,
+
+Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.
+
+http://dummy_link/verify_email/{token} http://dummy_link/verify_email/{token}
+
+Alvast bedankt!
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == f"""
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding </title>
+</head>
+<body>
+    <p>Beste melder,</p>
+<p>Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.</p>
+<p><a href="http://dummy_link/verify_email/{token}">http://dummy_link/verify_email/{token}</a></p>
+<p>Alvast bedankt!</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
 </body>
 </html>
 """ # noqa
