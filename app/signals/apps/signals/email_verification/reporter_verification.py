@@ -25,7 +25,7 @@ class ReporterVerifier:
             self,
             email_template_renderer: EmailTemplateRenderer,
             token_generator: TokenGenerator,
-            from_email = settings.DEFAULT_FROM_EMAIL,
+            from_email: str = settings.DEFAULT_FROM_EMAIL,
     ):
         self._render_email_template = email_template_renderer
         self._generate_token = token_generator
