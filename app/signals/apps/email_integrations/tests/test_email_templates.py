@@ -19,7 +19,7 @@ from signals.apps.my_signals.factories import TokenFactory
 from signals.apps.my_signals.mail import send_token_mail
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
-from signals.apps.signals.email_verification.reporter_verification import ReporterVerifier
+from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Reporter
 

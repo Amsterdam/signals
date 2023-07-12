@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from signals.apps.signals.email_verification.reporter_verification import (
+from signals.apps.email_integrations.email_verification.reporter_verification import (
     FailedToSendVerificationMailException,
     ReporterVerifier
 )
