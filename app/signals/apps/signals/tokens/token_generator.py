@@ -2,7 +2,10 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from secrets import token_urlsafe
 
+from django.utils.deconstruct import deconstructible
 
+
+@deconstructible
 class TokenGenerator:
     """This class should be used whenever a secure token of some sort needs
     to be generated within the application.

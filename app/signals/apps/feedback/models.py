@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
-import secrets
-import uuid
 from datetime import timedelta
 
 from django.contrib.contenttypes.fields import GenericRelation
@@ -11,11 +9,7 @@ from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.managers import FeedbackManager
-
-
-def generate_token():
-    """Use secrets module of Python to generate a UUID object."""
-    return uuid.UUID(hex=secrets.token_hex(16))
+from signals.apps.signals.tokens.token_generator import TokenGenerator
 
 
 class StandardAnswerTopic(models.Model):
@@ -64,7 +58,8 @@ class StandardAnswer(models.Model):
 
 class Feedback(models.Model):
     # Bookkeeping
-    token = models.UUIDField(db_index=True, primary_key=True, default=generate_token)
+    token = models.CharField(max_length=120, primary_key=True, default=TokenGenerator())
+
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, related_name='feedback')
     created_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(editable=False, null=True)
