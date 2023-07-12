@@ -19,7 +19,7 @@ class TestReporterVerifier:
     MESSAGE: typing.Final[str] = 'message'
     HTML_MESSAGE: typing.Final[str] = 'html_message'
 
-    @patch('signals.apps.signals.email_verification.reporter_verification.send_mail')
+    @patch('signals.apps.email_integrations.email_verification.reporter_verification.send_mail')
     def test_send_verification_mail(self, send_mail: MagicMock):
         send_mail.return_value = 1
         renderer = Mock(return_value=(self.SUBJECT, self.MESSAGE, self.HTML_MESSAGE))
