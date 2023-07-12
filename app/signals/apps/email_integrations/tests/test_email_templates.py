@@ -9,6 +9,9 @@ from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 
+from signals.apps.email_integrations.email_verification.reporter_verification import (
+    ReporterVerifier
+)
 from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
@@ -19,7 +22,6 @@ from signals.apps.my_signals.factories import TokenFactory
 from signals.apps.my_signals.mail import send_token_mail
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
-from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Reporter
 
