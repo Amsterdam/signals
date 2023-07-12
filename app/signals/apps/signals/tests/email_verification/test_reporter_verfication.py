@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
 import typing
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from signals.apps.signals.email_verification.reporter_verification import ReporterVerifier, \
-    FailedToSendVerificationMailException
+from signals.apps.signals.email_verification.reporter_verification import (
+    FailedToSendVerificationMailException,
+    ReporterVerifier
+)
 from signals.apps.signals.models import Reporter
 
 
