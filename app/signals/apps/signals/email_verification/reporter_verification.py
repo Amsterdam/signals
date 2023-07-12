@@ -17,16 +17,19 @@ class ReporterVerifier:
     """This class attempts to send a verification email to a reporter.
     The verification email contains a link that can be clicked by the reporter to verify their
     email address."""
+    from_email: str
     _render_email_template: EmailTemplateRenderer
     _generate_token: TokenGenerator
 
     def __init__(
             self,
             email_template_renderer: EmailTemplateRenderer,
-            token_generator: TokenGenerator
+            token_generator: TokenGenerator,
+            from_email = settings.DEFAULT_FROM_EMAIL,
     ):
         self._render_email_template = email_template_renderer
         self._generate_token = token_generator
+        self.from_email = from_email
 
     def __call__(self, reporter: Reporter) -> None:
         """Sends the actual verification email or raises `FailedToSendVerificationMailException`
@@ -51,7 +54,7 @@ class ReporterVerifier:
         )
 
         sent = send_mail(
-            from_email=settings.DEFAULT_FROM_EMAIL,
+            from_email=self.from_email,
             recipient_list=[reporter.email],
             subject=subject,
             message=message,
