@@ -22,7 +22,6 @@ from signals.apps.signals import workflow
 from signals.apps.signals.email_verification.reporter_verification import ReporterVerifier
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Reporter
-from signals.apps.signals.tokens.token_generator import TokenGenerator
 
 
 class TestEmailTemplates(TestCase):
