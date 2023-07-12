@@ -53,13 +53,10 @@ class ReporterVerifier:
             context
         )
 
-        sent = send_mail(
+        send_mail(
             from_email=self.from_email,
             recipient_list=[reporter.email],
             subject=subject,
             message=message,
             html_message=html_message,
-        ) > 0
-
-        if not sent:
-            raise FailedToSendVerificationMailException('Mail was not sent!')
+        )

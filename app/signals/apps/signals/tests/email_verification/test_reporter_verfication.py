@@ -50,19 +50,3 @@ class TestReporterVerifier:
             reporter_verifier(Reporter())
 
         assert str(e_info.value) == 'Reporter has no email address!'
-
-    @patch('signals.apps.signals.email_verification.reporter_verification.send_mail')
-    def test_raises_exception_when_mail_was_not_sent(self, send_mail: MagicMock):
-        send_mail.return_value = 0
-
-        renderer = Mock(return_value=(self.SUBJECT, self.MESSAGE, self.HTML_MESSAGE))
-        token_generator = Mock()
-        reporter_verifier = ReporterVerifier(renderer, token_generator, self.FROM_EMAIL)
-
-        reporter = Reporter()
-        reporter.email = self.EMAIL
-
-        with pytest.raises(FailedToSendVerificationMailException) as e_info:
-            reporter_verifier(reporter)
-
-        assert str(e_info.value) == 'Mail was not sent!'
