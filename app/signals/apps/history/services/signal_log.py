@@ -4,7 +4,7 @@ import pytz
 from django.conf import settings
 from django.utils import timezone
 
-from signals.apps.feedback.models import Feedback, _get_description_of_receive_feedback
+from signals.apps.feedback.models import Feedback
 from signals.apps.history.models import Log
 from signals.apps.questionnaires.models import Questionnaire, Session
 from signals.apps.signals.models import (
@@ -171,7 +171,7 @@ class SignalLogService:
         feedback.history_log.create(
             action=Log.ACTION_CREATE,
             extra='Feedback ontvangen',
-            description=_get_description_of_receive_feedback(feedback.token),
+            description=feedback.get_description(),
             created_by=None,
             created_at=feedback.submitted_at,
             _signal=feedback._signal,

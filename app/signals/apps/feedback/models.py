@@ -19,7 +19,7 @@ class StandardAnswerTopic(models.Model):
                                 help_text='De volgorde van de antwoorden '
                                           'onderwerpen voor het KTP proces.')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -37,8 +37,7 @@ class StandardAnswer(models.Model):
                                           'Bij een selectie van een onderwerp is de volgorde van het '
                                           'antwoord binnen het geselecteerde onderwerp.')
 
-    topic = models.ForeignKey(
-        StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
+    topic = models.ForeignKey(StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
 
     open_answer = models.BooleanField(default=False,
                                       help_text='Als deze optie is aangevinkt, '
@@ -47,7 +46,7 @@ class StandardAnswer(models.Model):
                                                 'de opgegeven text een default '
                                                 'waarde.')
 
-    def __str__(self):
+    def __str__(self) -> str:
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'
         return f'{pos_neg} : {self.text}'
 
@@ -80,7 +79,7 @@ class Feedback(models.Model):
         ordering = ('_signal', '-created_at')
 
     @property
-    def is_too_late(self):
+    def is_too_late(self) -> bool:
         """
         Feedback still on time
         """
@@ -89,30 +88,36 @@ class Feedback(models.Model):
         return timezone.now() > self.created_at + open_period
 
     @property
-    def is_filled_out(self):
+    def is_filled_out(self) -> bool:
         """
         Feedback form already filled out and submitted.
         """
         return self.submitted_at is not None
 
+    def get_description(self) -> str:
+        """
+        Description is used for logging a description of the feedback in the history log.
+        """
+        if self.is_satisfied:
+            description = 'Ja, de melder is tevreden'
+        else:
+            description = 'Nee, de melder is ontevreden'
 
-def _get_description_of_receive_feedback(feedback_token):
-    """
-    Given a history entry for submission of feedback, create descriptive text.
-    """
-    feedback = Feedback.objects.get(token=feedback_token)
+        if self.text_list:
+            why = ',\n'.join(self.text_list)
+        elif self.text:
+            why = self.text
+        else:
+            why = 'Geen Feedback'
 
-    # Craft a message for UI
-    desc = 'Ja, de melder is tevreden\n' if feedback.is_satisfied else \
-        'Nee, de melder is ontevreden\n'
+        description = f'{description}\n' \
+                      f'Waarom: {why}' \
 
-    text = ",\n". join(feedback.text_list) if feedback.text_list else feedback.text or "Geen Feedback"
-    desc += 'Waarom: {}'.format(text)
+        if self.text_extra:
+            description = f'{description}\n' \
+                          f'Toelichting: {self.text_extra}'
 
-    if feedback.text_extra:
-        desc += '\nToelichting: {}'.format(feedback.text_extra)
+        description = f'{description}\n' \
+                      f'Toestemming contact opnemen: {"Ja" if self.allows_contact else "Nee"}'
 
-    yes_no = 'Ja' if feedback.allows_contact else 'Nee'
-    desc += f'\nToestemming contact opnemen: {yes_no}'
-
-    return desc
+        return description
