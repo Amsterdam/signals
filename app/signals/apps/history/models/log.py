@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
-import uuid
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.signal_departments import SignalDepartments
@@ -57,7 +54,7 @@ class Log(models.Model):
         ordering = ('-created_at',)
         index_together = (('content_type', 'object_pk',),)
 
-    def __str__(self):
+    def __str__(self) -> str:
         representation = f'{self.action} on {self.content_type.name} #{self.object_pk}'
         if self._signal:
             representation = f'{representation}, on signal #{self._signal_id}'
@@ -67,7 +64,7 @@ class Log(models.Model):
     #
     # To keep the history endpoint intact the following functions are defined to mimic the history view in the database
 
-    def translate_content_type(self, content_type_name):
+    def translate_content_type(self, content_type_name) -> str:
         """
         Present for backwards compatibility
         """
@@ -88,14 +85,14 @@ class Log(models.Model):
         return content_type_name
 
     @staticmethod
-    def translate_what_to_action(what):
+    def translate_what_to_action(what) -> str:
         """
         Present for backwards compatibility
         """
         return what[:what.find('_')]
 
     @staticmethod
-    def translate_what_to_content_type(what):
+    def translate_what_to_content_type(what) -> str:
         """
         Present for backwards compatibility
         """
@@ -115,7 +112,7 @@ class Log(models.Model):
         return content_type
 
     @property
-    def identifier(self):
+    def identifier(self) -> str:
         """
         "identifier" in the style of the signals_history_view
         Present for backwards compatibility
@@ -123,7 +120,7 @@ class Log(models.Model):
         return f'{self.what}_{self.object_pk}'
 
     @property
-    def what(self):
+    def what(self) -> str:
         """
         "what" in the style of the signals_history_view
         Present for backwards compatibility
@@ -132,14 +129,14 @@ class Log(models.Model):
         return f'{self.action}_{translated_content_type}'.upper()
 
     @property
-    def who(self):
+    def who(self) -> str:
         """
         "who" in the style of the signals_history_view
         Present for backwards compatibility
         """
         return self.created_by or 'Signalen systeem'
 
-    def get_action(self):  # noqa C901
+    def get_action(self) -> str:  # noqa C901
         """
         "get_action" copied from History
         Present for backwards compatibility
@@ -181,7 +178,7 @@ class Log(models.Model):
             action = 'Actie onbekend.'
         return action
 
-    def get_description(self):
+    def get_description(self) -> str:
         """
         "get_description" copied from History
         Present for backwards compatibility
@@ -190,7 +187,7 @@ class Log(models.Model):
         if what == 'UPDATE_LOCATION':
             description = _get_description_of_update_location(int(self.object_pk))
         elif what == 'RECEIVE_FEEDBACK':
-            description = _get_description_of_receive_feedback(uuid.UUID(self.object_pk))
+            description = self.object.get_description()
         elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
         elif what == 'UPDATE_SLA' and self.description is None:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 
 from datetime import timedelta
 
@@ -8,7 +8,6 @@ from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.factories import FeedbackFactory
-from signals.apps.feedback.models import _get_description_of_receive_feedback
 
 
 class TestFeedbackModel(TestCase):
@@ -37,10 +36,7 @@ class TestFeedbackModel(TestCase):
     def test_is_not_filled_out(self):
         self.assertFalse(self.feedback.is_filled_out)
 
-
-class TestDescriptionReceived(TestCase):
-
-    def test__get_description_of_receive_feedback(self):
+    def test_get_description(self):
         feedback = FeedbackFactory.create(
             is_satisfied=True,
             text=None,
@@ -48,12 +44,11 @@ class TestDescriptionReceived(TestCase):
             text_extra='extra_text',
             allows_contact=True,
         )
-        response = _get_description_of_receive_feedback(feedback.token)
+        response = feedback.get_description()
         validate_text = "Ja, de melder is tevreden\nWaarom: my,\ntest,\nlist\nToelichting: extra_text\n" \
                         "Toestemming contact opnemen: Ja"
         self.assertEqual(response, validate_text)
 
-    def test__get_description_of_receive_feedback_no_satisfied(self):
         feedback = FeedbackFactory.create(
             is_satisfied=False,
             text="My Text",
@@ -61,7 +56,7 @@ class TestDescriptionReceived(TestCase):
             text_extra=None,
             allows_contact=False,
         )
-        response = _get_description_of_receive_feedback(feedback.token)
+        response = feedback.get_description()
         validate_text = "Nee, de melder is ontevreden\nWaarom: My Text\n" \
                         "Toestemming contact opnemen: Nee"
         self.assertEqual(response, validate_text)
