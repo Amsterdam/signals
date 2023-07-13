@@ -93,20 +93,22 @@ class Location(CreatedUpdatedModel):
         )
         return to_transform
 
+    def get_description(self) -> str:
+        """
+        Description is used for logging a description of a location in the history log.
+        """
+        if self.stadsdeel:
+            description = f'Stadsdeel: {self.get_stadsdeel_display()}'
+        else:
+            description = ''
 
-def _get_description_of_update_location(location_id):
-    """Get descriptive text for location update history entries."""
-    location = Location.objects.get(id=location_id)
+        if self.address:
+            address_formatter = AddressFormatter(address=self.address)
+            description = f'{description}\n' \
+                          f'{address_formatter.format("O hlT")}\n' \
+                          f'{address_formatter.format("W")}'
+        else:
+            description = f'{description}Locatie is gepind op de kaart\n' \
+                          f'{self.geometrie[0]}, {self.geometrie[1]}'
 
-    # Craft a message for UI
-    desc = f'Stadsdeel: {location.get_stadsdeel_display()}' if location.stadsdeel else ''
-
-    # Deal with address text or coordinates
-    if location.address and isinstance(location.address, dict):
-        # openbare_ruimte huisnummerhuisletter-huisummer_toevoeging woonplaats
-        address_formatter = AddressFormatter(address=location.address)
-        desc = f'{desc}\n{address_formatter.format("O hlT")}\n{address_formatter.format("W")}'
-    else:
-        desc = f'{desc}Locatie is gepind op de kaart\n{location.geometrie[0]}, {location.geometrie[1]}'
-
-    return desc
+        return description

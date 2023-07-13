@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.signal_departments import SignalDepartments
 from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
@@ -185,7 +184,7 @@ class Log(models.Model):
         """
         what = self.what
         if what == 'UPDATE_LOCATION':
-            description = _get_description_of_update_location(int(self.object_pk))
+            description = self.object.get_description()
         elif what == 'RECEIVE_FEEDBACK':
             description = self.object.get_description()
         elif what == 'CHILD_SIGNAL_CREATED':
