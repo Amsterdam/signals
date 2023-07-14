@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-import datetime
 import typing
 from unittest.mock import MagicMock, Mock, patch
 
