@@ -22,8 +22,7 @@ from signals.apps.my_signals.factories import TokenFactory
 from signals.apps.my_signals.mail import send_token_mail
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory, StatusFactory
-from signals.apps.signals.models import Reporter
+from signals.apps.signals.factories import ReporterFactory, SignalFactory, StatusFactory
 
 
 class TestEmailTemplates(TestCase):
@@ -1235,8 +1234,11 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
 
     def test_verification_email(self):
         email = 'hellokitty69@hotmail.com'
-        reporter = Reporter()
-        reporter.email = email
+        reporter = ReporterFactory.create(
+            email_verification_token=None,
+            email_verification_token_expires=None,
+            email=email
+        )
 
         token = 'my_url_safe_token_full_of_nice_characters'
         generator = Mock(return_value=token)
