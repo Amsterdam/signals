@@ -41,6 +41,10 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
     # State managed through Django-FSM, used when a new reporter is added to a signal
     state = FSMField(default=REPORTER_STATE_NEW, protected=True)
 
+    email_verification_token = models.CharField(max_length=120, null=True, db_index=True)
+    email_verification_token_expires = models.DateTimeField(null=True)
+    email_verified = models.BooleanField(default=False)
+
     class Meta:
         permissions = (
             ('sia_can_view_contact_details', 'Inzien van contactgegevens melder (in melding)'),
