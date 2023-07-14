@@ -28,6 +28,7 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.views.email_verification import EmailVerificationView
 from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
 from signals.apps.api.views.status_message import (
     StatusMessagesCategoryPositionViewSet,
@@ -103,6 +104,7 @@ urlpatterns = [
         re_path(r'signals/(?P<uuid>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
+        path('verify-email', EmailVerificationView.as_view(), name='email-verification'),
     ])),
 
     # Private additions

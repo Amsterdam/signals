@@ -1213,6 +1213,22 @@ paths:
           schema:
             type: string
 
+  /signals/v1/public/verify-email:
+    post:
+      description: Verify the token for reporter email verification.
+      requestBody:
+        description: Serialized signal data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1VerifyEmail'
+      responses:
+        '200':
+          description: Verification of the token was successful.
+        '400':
+          description: Token could not found or is expired.
+
   /signals/user/auth/me:
     get:
       description: Information about the currently authenticated user.
@@ -5637,6 +5653,15 @@ components:
             - cancelled
             - approved
           example: approved
+
+    V1VerifyEmail:
+      description: The email verification token
+      type: object
+      properties:
+        token:
+          description: The actual token
+          type: string
+          example: Hka5mJjizL4M-Ywp32d_-X8NGC_d1b4CRMTFoQQf0i4
 
   securitySchemes:
     OAuth2:
