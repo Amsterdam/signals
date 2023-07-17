@@ -290,7 +290,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         # Feedback requested and request still open => uploads allowed.
         with freeze_time(now + timedelta(seconds=3600)):
-            feedback = Feedback.actions.request_feedback(signal)
+            feedback = Feedback.objects.create(_signal=signal)
             data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
             self.assertEqual(response.status_code, 201)
@@ -332,11 +332,11 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         with freeze_time(now + timedelta(seconds=1800)):
             # First feedback object that we leave open.
-            Feedback.actions.request_feedback(signal)
+            Feedback.objects.create(_signal=signal)
 
         with freeze_time(now + timedelta(seconds=3600)):
             # Second feedback object (closed state)
-            feedback2 = Feedback.actions.request_feedback(signal)
+            feedback2 = Feedback.objects.create(_signal=signal)
             feedback2.submitted_at = now + timedelta(seconds=7200)
             feedback2.save()
 

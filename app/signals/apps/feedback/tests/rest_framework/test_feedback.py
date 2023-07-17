@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datetime import timedelta
 
-from django.conf import settings
 from django.core import mail
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -15,7 +14,6 @@ from signals.apps.feedback.factories import (
 )
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
-from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
@@ -517,23 +515,3 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
         ]
         response_order = [[item['text'], item['topic']] for item in response.json()['results']]
         self.assertEqual(expected_order, response_order)
-
-
-class TestUtils(TestCase):
-    def setUp(self):
-        self.feedback = FeedbackFactory()
-
-    def test_link_generation_with_environment_set_frontend_url_set(self):
-        test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
-                              'https://random.net', ]
-        for test_frontend_url in test_frontend_urls:
-            with override_settings(FRONTEND_URL=test_frontend_url):
-                pos_url, neg_url = get_feedback_urls(self.feedback)
-
-                self.assertIn(test_frontend_url, pos_url)
-                self.assertIn(test_frontend_url, neg_url)
-
-    def test_link_generation_no_environment_set(self):
-        pos_url, neg_url = get_feedback_urls(self.feedback)
-        self.assertEqual(f'{settings.FRONTEND_URL}/kto/ja/{self.feedback.token}', pos_url)
-        self.assertEqual(f'{settings.FRONTEND_URL}/kto/nee/{self.feedback.token}', neg_url)

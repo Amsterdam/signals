@@ -2,13 +2,13 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
-from signals.apps.feedback.managers import FeedbackManager
 from signals.apps.signals.tokens.token_generator import TokenGenerator
 
 
@@ -70,9 +70,6 @@ class Feedback(models.Model):
     text_list = ArrayField(models.TextField(max_length=1000, blank=True), null=True, blank=True)
     text_extra = models.TextField(max_length=1000, null=True, blank=True)
 
-    objects = models.Manager()
-    actions = FeedbackManager()
-
     history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     class Meta:
@@ -121,3 +118,9 @@ class Feedback(models.Model):
                       f'Toestemming contact opnemen: {"Ja" if self.allows_contact else "Nee"}'
 
         return description
+
+    def get_frontend_positive_feedback_url(self):
+        return f'{settings.FRONTEND_URL}/kto/ja/{self.token}'
+
+    def get_frontend_negative_feedback_url(self):
+        return f'{settings.FRONTEND_URL}/kto/nee/{self.token}'
