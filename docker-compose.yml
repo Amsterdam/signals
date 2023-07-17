@@ -4,6 +4,8 @@ services:
   api:
     build:
       context: .
+      args:
+        - DEV_DEPS=1
     ports:
       - "8000:8000"
     depends_on:

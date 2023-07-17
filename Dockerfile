@@ -52,6 +52,13 @@ RUN set -eux; \
     chown signals /app/static; \
     chown signals /app/media
 
+ARG DEV_DEPS=0
+RUN set -eux; \
+    if [ $DEV_DEPS -ne 0 ]; then \
+        pip install pip-tools; \
+        pip-sync requirements/requirements.txt requirements/requirements_dev.txt; \
+    fi
+
 USER signals
 
 RUN SECRET_KEY=$DJANGO_SECRET_KEY python manage.py collectstatic --no-input
