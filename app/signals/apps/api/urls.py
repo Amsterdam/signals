@@ -34,7 +34,6 @@ from signals.apps.api.views.status_message import (
     StatusMessagesCategoryPositionViewSet,
     StatusMessagesViewSet
 )
-from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.rest_framework.views import SearchView, StatusMessageSearchView
 from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
@@ -47,10 +46,7 @@ from signals.apps.users.rest_framework.views import (
 # Public API
 public_router = SignalsRouter()
 public_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
-public_router.register(r'public/feedback/standard_answers', StandardAnswerViewSet, basename='feedback-standard-answers')
-public_router.register(r'public/feedback/forms', FeedbackViewSet, basename='feedback-forms')
 public_router.register(r'public/areas', PublicAreasViewSet, basename='public-areas')
-
 public_categories = public_router.register(r'public/terms/categories', PublicCategoryViewSet,
                                            basename='public-maincategory')
 public_categories.register(r'sub_categories', PublicCategoryViewSet, basename='public-subcategory',
@@ -144,6 +140,8 @@ urlpatterns = [
                 name='private-signal-context-near-geography'),
     ])),
 
+    # Feedback
+    path('v1/', include('signals.apps.feedback.urls')),
     # Reporting
     path('v1/', include('signals.apps.reporting.urls')),
     # Questionnaires

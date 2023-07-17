@@ -4,23 +4,26 @@ from datetime import timedelta
 
 from django.core import mail
 from django.test import override_settings
+from django.urls import include, path
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.api.views import NamespaceView
 from signals.apps.feedback.factories import (
     FeedbackFactory,
     StandardAnswerFactory,
     StandardAnswerTopicFactory
 )
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.routers import feedback_router
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
 from signals.test.utils import SignalsBaseApiTestCase
 
-# We want to keep these tests confined to the reusable application itself, see:
-# https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration
+urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
+    path('', include('signals.apps.feedback.urls')),
+]
 
 
 class NameSpace:
@@ -28,7 +31,7 @@ class NameSpace:
 
 
 test_urlconf = NameSpace()
-test_urlconf.urlpatterns = feedback_router.urls
+test_urlconf.urlpatterns = urlpatterns
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
@@ -81,18 +84,18 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.assertEqual(Feedback.objects.count(), 3)
 
     def test_404_if_no_feedback_requested(self):
-        response = self.client.get('/forms/DIT_IS_GEEN_token/')
+        response = self.client.get('/public/feedback/forms/DIT_IS_GEEN_token/')
         self.assertEqual(response.status_code, 404)
 
     def test_410_gone_too_late(self):
         token = self.feedback_expired.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(token))
+            response = self.client.get('/public/feedback/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 410)  # faalt!
             self.assertEqual(response.json()['detail'], 'too late')
 
-            response = self.client.put('/forms/{}/'.format(token), data={})
+            response = self.client.put('/public/feedback/forms/{}/'.format(token), data={})
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'too late')
 
@@ -101,11 +104,11 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         token = self.feedback_received.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(token))
+            response = self.client.get('/public/feedback/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'filled out')
 
-            response = self.client.put('/forms/{}/'.format(token), data={})
+            response = self.client.put('/public/feedback/forms/{}/'.format(token), data={})
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'filled out')
 
@@ -114,7 +117,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         token = self.feedback.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(token))
+            response = self.client.get('/public/feedback/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {'signal_id': f'{self.feedback._signal.uuid}'})
 
@@ -133,7 +136,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -158,7 +161,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -175,7 +178,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -195,7 +198,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -215,7 +218,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -243,7 +246,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             }
 
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -274,7 +277,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             }
 
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -299,7 +302,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -320,7 +323,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -342,7 +345,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -364,7 +367,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         }
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -384,7 +387,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         }
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -407,7 +410,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         }
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -431,7 +434,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -458,7 +461,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(token),
+                '/public/feedback/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -486,7 +489,7 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
             is_visible=True, is_satisfied=False, topic=None)
 
     def test_setup(self):
-        response = self.client.get('/standard_answers/')
+        response = self.client.get('/public/feedback/standard_answers/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(StandardAnswer.objects.count(), 5)
         self.assertEqual(response.json()['count'], 3)
@@ -504,7 +507,7 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
         self.standard_answer_4.is_visible = True
         self.standard_answer_3.save()
         self.standard_answer_4.save()
-        response = self.client.get('/standard_answers/')
+        response = self.client.get('/public/feedback/standard_answers/')
         expected_order = [
             [self.standard_answer_2.text, self.topic_1.description],
             [self.standard_answer_1.text, self.topic_1.description],
