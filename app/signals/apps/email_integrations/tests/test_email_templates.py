@@ -443,7 +443,17 @@ neem dan z.s.m. contact met ons op.
 
 Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
 
-Met vriendelijk groet,
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}""" # noqa
+        ),
+        (
+            EmailTemplate.CONFIRM_REPORTER_UPDATED,
+            """Beste melder,
+
+Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.
+
+Met vriendelijke groet,
 
 {{ ORGANIZATION_NAME }}""" # noqa
         ),
@@ -1308,7 +1318,7 @@ neem dan z.s.m. contact met ons op.
 
 Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
 
-Met vriendelijk groet,
+Met vriendelijke groet,
 
 Gemeente Amsterdam""" # noqa
 
@@ -1327,8 +1337,43 @@ Gemeente Amsterdam""" # noqa
 <p>Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
 neem dan z.s.m. contact met ons op.</p>
 <p>Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.</p>
-<p>Met vriendelijk groet,</p>
+<p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>
 </html>
 """ # noqa
+
+    def test_confirm_reporter_updated(self):
+        email = 'caleb.bradham@pepsi.com'
+        reporter = ReporterFactory.create(email=email)
+
+        mail_reporter = ReporterMailer(EmailTemplateRenderer())
+
+        mail_reporter(reporter, EmailTemplate.CONFIRM_REPORTER_UPDATED)
+
+        assert mail.outbox[0].body == """Beste melder,
+
+Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == """
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding </title>
+</head>
+<body>
+    <p>Beste melder,</p>
+<p>Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.</p>
+<p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+"""  # noqa
