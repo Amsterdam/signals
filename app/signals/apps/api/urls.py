@@ -104,7 +104,7 @@ urlpatterns = [
         re_path(r'signals/(?P<uuid>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
-        path('verify-email', EmailVerificationView.as_view(), name='email-verification'),
+        path('reporter/verify-email', EmailVerificationView.as_view(), name='email-verification'),
     ])),
 
     # Private additions
