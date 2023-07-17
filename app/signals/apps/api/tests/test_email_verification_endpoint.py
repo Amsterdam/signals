@@ -10,7 +10,7 @@ from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestEmailVerificationEndpoint(SignalsBaseApiTestCase):
-    PATH: typing.Final[str] = '/signals/v1/public/verify-email'
+    PATH: typing.Final[str] = '/signals/v1/public/reporter/verify-email'
     TOKEN: typing.Final[str] = 'some_random_token_string'
 
     def test_token_does_not_exist(self):
