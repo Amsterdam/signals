@@ -3,7 +3,7 @@
 
 from datetime import timedelta
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
@@ -60,3 +60,19 @@ class TestFeedbackModel(TestCase):
         validate_text = "Nee, de melder is ontevreden\nWaarom: My Text\n" \
                         "Toestemming contact opnemen: Nee"
         self.assertEqual(response, validate_text)
+
+    def test_get_frontend_positive_feedback_url(self):
+        test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
+                              'https://random.net', ]
+        for test_frontend_url in test_frontend_urls:
+            with override_settings(FRONTEND_URL=test_frontend_url):
+                self.assertEqual(f'{test_frontend_url}/kto/ja/{self.feedback.token}',
+                                 self.feedback.get_frontend_positive_feedback_url())
+
+    def test_get_frontend_negative_feedback_url(self):
+        test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
+                              'https://random.net', ]
+        for test_frontend_url in test_frontend_urls:
+            with override_settings(FRONTEND_URL=test_frontend_url):
+                self.assertEqual(f'{test_frontend_url}/kto/nee/{self.feedback.token}',
+                                 self.feedback.get_frontend_negative_feedback_url())

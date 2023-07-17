@@ -14,7 +14,6 @@ from rest_framework.exceptions import NotFound
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.feedback.models import Feedback
-from signals.apps.feedback.utils import get_feedback_urls as get_feedback_urls_no_questionnaires
 from signals.apps.questionnaires.services.feedback_request import (
     create_session_for_feedback_request,
     get_feedback_urls
@@ -33,28 +32,39 @@ from signals.apps.signals.tests.valid_locations import STADHUIS
 
 def create_feedback_and_mail_context(signal: Signal, dry_run=False) -> dict:
     """
-    Util functions to create the feedback object and create the context needed for the mail
+    If the 'dry_run' parameter is set to True, it returns a dictionary containing placeholder URLs for negative and
+    positive feedback.
+
+    If the feature flag 'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' is present in the settings and its value is True, the
+    function creates a session for feedback requests and retrieves the actual negative and positive feedback URLs. The
+    function then returns a dictionary with these URLs.
+
+    If the feature flag is not present or is False, the function uses the Feedback class to request feedback from the
+    signal object. It retrieves the frontend URLs for negative and positive feedback from the feedback object and
+    returns them in a dictionary.
+
+    The function does one of the above three things depending on the conditions specified.
     """
-    # Note: While the questionnaires app support for feedback requests is under
-    # development we support both the "new" flow and the "old". Implementation
-    # can be switched using the appropriate feature flag.
 
     if dry_run:
-        # Dry run mode, doe not create feedback but make a dummy link for email preview
-        positive_feedback_url = f'{settings.FRONTEND_URL}/kto/ja/00000000-0000-0000-0000-000000000000'
-        negative_feedback_url = f'{settings.FRONTEND_URL}/kto/nee/00000000-0000-0000-0000-000000000000'
-    else:
-        if ('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' in settings.FEATURE_FLAGS and
-                settings.FEATURE_FLAGS['API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK']):
-            session = create_session_for_feedback_request(signal)
-            positive_feedback_url, negative_feedback_url = get_feedback_urls(session)
-        else:
-            feedback = Feedback.actions.request_feedback(signal)
-            positive_feedback_url, negative_feedback_url = get_feedback_urls_no_questionnaires(feedback)
+        return {
+            'negative_feedback_url': f'{settings.FRONTEND_URL}/kto/nee/00000000-0000-0000-0000-000000000000',
+            'positive_feedback_url': f'{settings.FRONTEND_URL}/kto/ja/00000000-0000-0000-0000-000000000000',
+        }
 
+    if ('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' in settings.FEATURE_FLAGS and
+            settings.FEATURE_FLAGS['API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK']):
+        session = create_session_for_feedback_request(signal)
+        positive_feedback_url, negative_feedback_url = get_feedback_urls(session)
+        return {
+            'negative_feedback_url': negative_feedback_url,
+            'positive_feedback_url': positive_feedback_url,
+        }
+
+    feedback = Feedback.objects.create(_signal=signal)
     return {
-        'negative_feedback_url': negative_feedback_url,
-        'positive_feedback_url': positive_feedback_url,
+        'negative_feedback_url': feedback.get_frontend_negative_feedback_url(),
+        'positive_feedback_url': feedback.get_frontend_positive_feedback_url(),
     }
 
 
@@ -234,7 +244,7 @@ def trigger_mail_action_for_email_preview(signal, status_data):
     for action in MailService._status_actions:
         # Execute the rule associated with the action
         if action.rule.validate(signal, status):
-            # action found now render the subject, message and html_message and break the loop
+            # action found, now render the subject, message and html_message and break the loop
             email_context = action.get_context(signal, dry_run=True)
 
             # overwrite the status context
