@@ -1213,7 +1213,7 @@ paths:
           schema:
             type: string
 
-  /signals/v1/public/verify-email:
+  /signals/v1/public/reporter/verify-email:
     post:
       description: Verify the token for reporter email verification.
       requestBody:
