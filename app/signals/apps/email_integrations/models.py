@@ -23,6 +23,7 @@ class EmailTemplate(CreatedUpdatedModel):
     MY_SIGNAL_TOKEN: typing.Final[str] = 'my_signal_token'
     SIGNAL_ASSIGNED: typing.Final[str] = 'signal_assigned'
     VERIFY_EMAIL_REPORTER: typing.Final[str] = 'verify_email_reporter'
+    NOTIFY_CURRENT_REPORTER: typing.Final[str] = 'notify_current_reporter'
 
     KEYS_CHOICES: typing.Final = [
         (SIGNAL_CREATED, 'Send mail signal created'),
@@ -38,7 +39,8 @@ class EmailTemplate(CreatedUpdatedModel):
         (SIGNAL_FEEDBACK_RECEIVED, 'Send mail signal feedback received'),
         (SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED, 'Send mail forwarded to external reaction received'),
         (MY_SIGNAL_TOKEN, 'Send mail when a My Signals token has been requested'),
-        (VERIFY_EMAIL_REPORTER, 'Send mail to verify the email address of a reporter')
+        (VERIFY_EMAIL_REPORTER, 'Send mail to verify the email address of a reporter'),
+        (NOTIFY_CURRENT_REPORTER, 'Send mail to current reporter that a change of contact information is requested'),
     ]
 
     key = models.CharField(max_length=100, choices=KEYS_CHOICES, db_index=True, unique=True)

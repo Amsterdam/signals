@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 
+from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
 from signals.apps.email_integrations.email_verification.reporter_verification import (
     ReporterVerifier
 )
@@ -430,6 +431,19 @@ Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om
 Alvast bedankt!
 
 Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}""" # noqa
+        ),
+        (
+            EmailTemplate.NOTIFY_CURRENT_REPORTER,
+            """Beste melder,
+
+Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
+neem dan z.s.m. contact met ons op.
+
+Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
+
+Met vriendelijk groet,
 
 {{ ORGANIZATION_NAME }}""" # noqa
         ),
@@ -1243,7 +1257,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
         token = 'my_url_safe_token_full_of_nice_characters'
         generator = Mock(return_value=token)
 
-        verify = ReporterVerifier(EmailTemplateRenderer(), generator)
+        verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), generator)
         verify(reporter)
 
         assert mail.outbox[0].body == f"""Beste melder,
@@ -1274,6 +1288,46 @@ Gemeente Amsterdam""" # noqa
 <p><a href="http://dummy_link/verify_email/{token}">http://dummy_link/verify_email/{token}</a></p>
 <p>Alvast bedankt!</p>
 <p>Met vriendelijke groet,</p>
+<p>Gemeente Amsterdam</p>
+</body>
+</html>
+""" # noqa
+
+    def test_notify_current_reporter(self):
+        email = 'bill.mates@outlook.com'
+        reporter = ReporterFactory.create(email=email)
+
+        mail_reporter = ReporterMailer(EmailTemplateRenderer())
+
+        mail_reporter(reporter, EmailTemplate.NOTIFY_CURRENT_REPORTER)
+
+        assert mail.outbox[0].body == """Beste melder,
+
+Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
+neem dan z.s.m. contact met ons op.
+
+Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
+
+Met vriendelijk groet,
+
+Gemeente Amsterdam""" # noqa
+
+        body, mime_type = mail.outbox[0].alternatives[0]
+        self.assertEqual(mime_type, 'text/html')
+
+        assert body == """
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding </title>
+</head>
+<body>
+    <p>Beste melder,</p>
+<p>Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
+neem dan z.s.m. contact met ons op.</p>
+<p>Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.</p>
+<p>Met vriendelijk groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>
 </html>
