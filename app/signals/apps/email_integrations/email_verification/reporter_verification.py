@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from datetime import timedelta
+
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from signals import settings
 from signals.apps.email_integrations.models import EmailTemplate
@@ -44,8 +47,17 @@ class ReporterVerifier:
         if not reporter.email:
             raise FailedToSendVerificationMailException('Reporter has no email address!')
 
+        token = self._generate_token()
+
+        reporter.email_verification_token = token
+        reporter.email_verified = False
+        reporter.email_verification_token_expires = timezone.now() + timedelta(
+            hours=settings.EMAIL_VERIFICATION_TOKEN_HOURS_VALID
+        )
+        reporter.save()
+
         context = {
-            'verification_url': f'{settings.FRONTEND_URL}/verify_email/{self._generate_token()}',
+            'verification_url': f'{settings.FRONTEND_URL}/verify_email/{token}',
             'ORGANIZATION_NAME': settings.ORGANIZATION_NAME
         }
         subject, message, html_message = self._render_email_template(

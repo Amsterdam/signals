@@ -471,3 +471,5 @@ if DRF_SPECTACULAR_ENABLED:
             'signals.apps.my_signals.rest_framework.authentication.MySignalsTokenAuthentication'
         ],
     }
+
+EMAIL_VERIFICATION_TOKEN_HOURS_VALID = os.getenv('EMAIL_VERIFICATION_TOKEN_HOURS_VALID', 24)
