@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 
+from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
 from signals.apps.email_integrations.email_verification.reporter_verification import (
     ReporterVerifier
 )
@@ -1243,7 +1244,7 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
         token = 'my_url_safe_token_full_of_nice_characters'
         generator = Mock(return_value=token)
 
-        verify = ReporterVerifier(EmailTemplateRenderer(), generator)
+        verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), generator)
         verify(reporter)
 
         assert mail.outbox[0].body == f"""Beste melder,
