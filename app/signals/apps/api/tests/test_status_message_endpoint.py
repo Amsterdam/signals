@@ -400,7 +400,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['state'])
 
-    def test_categories_are_ignored_in_create(self):
+    def test_categories_are_not_ignored_in_create(self):
         response = self.client.post(
             self.PATH,
             {
@@ -427,7 +427,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertEqual(self.STATE, body['state'])
         self.assertIn('categories', body)
-        self.assertListEqual([], body['categories'])
+        self.assertCountEqual([4, 5, 6], body['categories'])
         self.assertIn('updated_at', body)
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
@@ -586,7 +586,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['state'])
 
-    def test_categories_are_ignored_in_put(self):
+    def test_categories_not_are_ignored_in_put(self):
         title = 'put title'
         text = 'put text'
         active = False
@@ -618,7 +618,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertEqual(state, body['state'])
         self.assertIn('categories', body)
-        self.assertListEqual([], body['categories'])
+        self.assertCountEqual([4, 5, 6], body['categories'])
         self.assertIn('updated_at', body)
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
@@ -715,7 +715,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['state'])
 
-    def test_categories_are_ignored_in_patch(self):
+    def test_categories_not_are_ignored_in_patch(self):
         response = self.client.patch(
             self.PATH + str(self.status_message.pk),
             {'categories': [4, 5, 6]},
@@ -736,7 +736,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('state', body)
         self.assertEqual(self.STATE, body['state'])
         self.assertIn('categories', body)
-        self.assertListEqual([], body['categories'])
+        self.assertCountEqual([4, 5, 6], body['categories'])
         self.assertIn('updated_at', body)
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
@@ -795,6 +795,43 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['count'],
                          StatusMessage.objects.filter(state__in=['o', 'b', ], active=True).count())
+
+    def test_update_categories_in_patch(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'categories': [4, 5, 6]},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('categories', body)
+        self.assertCountEqual([4, 5, 6], body['categories'])
+
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'categories': [4, 6, 8]},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('categories', body)
+        self.assertCountEqual([4, 6, 8], body['categories'])
+
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'categories': [9]},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('categories', body)
+        self.assertCountEqual([9], body['categories'])
 
 
 class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):

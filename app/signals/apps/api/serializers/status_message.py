@@ -8,9 +8,47 @@ from signals.apps.signals.models import Category, StatusMessage, StatusMessageCa
 
 
 class StatusMessageSerializer(serializers.ModelSerializer):
+    categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
+
     class Meta:
         model = StatusMessage
         fields = ['id', 'title', 'text', 'active', 'state', 'categories', 'updated_at', 'created_at']
+
+    def _update_categories(self, instance: StatusMessage, categories_data: dict) -> StatusMessage:
+        """
+        Update the categories of the status message.
+        """
+        if categories_data is not None:
+            current_categories = instance.categories.all()
+            current_category_ids = set(category.id for category in current_categories)
+            new_category_ids = set(category.id for category in categories_data)
+
+            categories_to_add = Category.objects.filter(id__in=new_category_ids - current_category_ids)
+            categories_to_remove = current_categories.filter(id__in=current_category_ids - new_category_ids)
+
+            for category in categories_to_add:
+                StatusMessageCategory.objects.create(status_message=instance, category=category, position=0)
+
+            for category in categories_to_remove:
+                instance.categories.remove(category)
+
+        return instance
+
+    def create(self, validated_data: dict) -> StatusMessage:
+        """
+        Create a new StatusMessage instance and set all categories.
+        """
+        categories_data = validated_data.pop('categories', None)
+        instance = super().create(validated_data)
+        return self._update_categories(instance, categories_data)
+
+    def update(self, instance: StatusMessage, validated_data: dict) -> StatusMessage:
+        """
+        Update a StatusMessage instance and set all categories.
+        """
+        categories_data = validated_data.pop('categories', None)
+        instance = super().update(instance, validated_data)
+        return self._update_categories(instance, categories_data)
 
 
 class CurrentCategoryDefault:
