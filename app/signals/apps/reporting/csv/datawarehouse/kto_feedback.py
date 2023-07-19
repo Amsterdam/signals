@@ -2,11 +2,10 @@
 # Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import os
 
-from django.db.models import CharField, TextField, Value
+from django.db.models import CharField, F, Func, TextField, Value
 from django.db.models.functions import Cast, Coalesce, NullIf
 
 from signals.apps.feedback.models import Feedback
-from signals.apps.reporting.csv.datawarehouse.utils import ToJsonB
 from signals.apps.reporting.csv.utils import map_choices, queryset_to_csv_file, reorder_csv
 
 
@@ -37,7 +36,8 @@ def create_kto_feedback_csv(location: str) -> str:
                        Value('', output_field=CharField())),
         _is_satisfied=map_choices('is_satisfied', [(True, 'True'), (False, 'False')]),
         _allows_contact=map_choices('allows_contact', [(True, 'True'), (False, 'False')]),
-        _text_list=ToJsonB('text_list', output_field=TextField(), function_kwargs={'indent': 4, 'ensure_ascii': False}),
+        _text_list=Func(F('text_list'), function='to_jsonb', output_field=TextField(),
+                        function_kwargs={'indent': 4, 'ensure_ascii': False}),
     ).filter(submitted_at__isnull=False)
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, file_name))
