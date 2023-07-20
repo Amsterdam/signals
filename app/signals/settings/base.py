@@ -110,6 +110,7 @@ MIDDLEWARE = [
 if os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES:
     MIDDLEWARE.append('signals.apps.api.middleware.SessionLoginMiddleware')
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
     SESSION_COOKIE_SAMESITE = 'None'
     CORS_ALLOW_CREDENTIALS = True
 
