@@ -291,6 +291,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False) in TRUE_VALUES
+EMAIL_TIMEOUT = os.getenv('EMAIL_TIMEOUT', 5)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True) in TRUE_VALUES
 CELERY_EMAIL_BACKEND = os.getenv('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
