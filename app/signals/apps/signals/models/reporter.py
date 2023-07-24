@@ -6,8 +6,6 @@ from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
-from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
-from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.tokens.token_generator import TokenGenerator
@@ -117,6 +115,10 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         Use this method to transition to the 'verification_email_sent' state.
         """
+        # Import here to prevent circular import
+        from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
+        from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
+
         verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), TokenGenerator())
         verify(self)
 
