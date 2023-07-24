@@ -6,7 +6,11 @@ from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
+from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
+from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
+from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
+from signals.apps.signals.tokens.token_generator import TokenGenerator
 
 
 class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
@@ -77,6 +81,20 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         return False
 
+    def includes_email(self) -> bool:
+        """
+        Used as state machine transition condition to check if email is available.
+        """
+        return self.email is not None and self.email != ''
+
+
+    def email_changed(self) -> bool:
+        """
+        Used as state machine transition condition to check if email changed from the
+        previous approved reporter.
+        """
+        return self._signal.reporter.email != self.email
+
     @transition(
         field='state',
         source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
@@ -88,6 +106,19 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         Use this method to transition to the 'cancelled' state.
         """
         self.email_verification_token = None
+
+    @transition(
+        field='state',
+        source=(REPORTER_STATE_NEW, ),
+        target=REPORTER_STATE_VERIFICATION_EMAIL_SENT,
+        conditions=(includes_email, is_not_original, email_changed),
+    )
+    def verify_email(self) -> None:
+        """
+        Use this method to transition to the 'verification_email_sent' state.
+        """
+        verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), TokenGenerator())
+        verify(self)
 
     def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
