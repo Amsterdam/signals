@@ -3,7 +3,8 @@
 from typing import Final
 
 from django.contrib.gis.db import models
-from django_fsm import ConcurrentTransitionMixin, FSMField
+from django.core.exceptions import MultipleObjectsReturned
+from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
@@ -51,20 +52,44 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         )
 
     @property
-    def is_anonymized(self):
+    def is_anonymized(self) -> bool:
         """
         Checks if an anonymous reporter is anonymized?
         """
         return self.is_anonymous and (self.email_anonymized or self.phone_anonymized)
 
     @property
-    def is_anonymous(self):
+    def is_anonymous(self) -> bool:
         """
         Checks if a reporter is anonymous
         """
         return not self.email and not self.phone
 
-    def anonymize(self, always_call_save=False):
+    def is_not_original(self) -> bool:
+        """
+        Used as state machine transition condition to check if the reporter within this
+        context is not the original (first) reporter.
+        """
+        try:
+            Reporter.objects.filter(_signal=self._signal).get()
+        except MultipleObjectsReturned:
+            return True
+
+        return False
+
+    @transition(
+        field='state',
+        source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
+        target=REPORTER_STATE_CANCELLED,
+        conditions=(is_not_original, ),
+    )
+    def cancel(self) -> None:
+        """
+        Use this method to transition to the 'cancelled' state.
+        """
+        self.email_verification_token = None
+
+    def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
         if not self.email_anonymized and self.email:
             self.email_anonymized = True
@@ -77,7 +102,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         if call_save or always_call_save:
             self.save()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """
         Make sure that the email and phone are set to none while saving the Reporter
         """
