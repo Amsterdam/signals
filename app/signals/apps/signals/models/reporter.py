@@ -52,14 +52,14 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         )
 
     @property
-    def is_anonymized(self):
+    def is_anonymized(self) -> bool:
         """
         Checks if an anonymous reporter is anonymized?
         """
         return self.is_anonymous and (self.email_anonymized or self.phone_anonymized)
 
     @property
-    def is_anonymous(self):
+    def is_anonymous(self) -> bool:
         """
         Checks if a reporter is anonymous
         """
@@ -88,7 +88,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         Use this method to transition to the 'cancelled' state.
         """
 
-    def anonymize(self, always_call_save=False):
+    def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
         if not self.email_anonymized and self.email:
             self.email_anonymized = True
@@ -101,7 +101,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         if call_save or always_call_save:
             self.save()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """
         Make sure that the email and phone are set to none while saving the Reporter
         """
