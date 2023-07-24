@@ -16,7 +16,7 @@ class StandardAnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StandardAnswer
-        fields = ('is_satisfied', 'text', 'topic')
+        fields = ('is_satisfied', 'text', 'topic', 'open_answer', )
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
