@@ -22,6 +22,9 @@ class TestReporterStateMachine(TestCase):
         new.save()
 
         new.cancel()
+        new.save()
+
+        self.assertEqual(new.state, Reporter.REPORTER_STATE_CANCELLED)
 
     def test_cannot_transition_from_new_to_cancelled_when_original_reporter(self) -> None:
         new = Reporter()
@@ -36,6 +39,10 @@ class TestReporterStateMachine(TestCase):
         new = ReporterFactory.create(state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT, _signal=original._signal)
 
         new.cancel()
+        new.save()
+
+        self.assertEqual(new.state, Reporter.REPORTER_STATE_CANCELLED)
+        self.assertIsNone(new.email_verification_token)
 
     def test_cannot_transition_from_approved_to_cancelled(self) -> None:
         original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)

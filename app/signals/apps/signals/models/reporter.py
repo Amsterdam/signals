@@ -87,6 +87,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         Use this method to transition to the 'cancelled' state.
         """
+        self.email_verification_token = None
 
     def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
