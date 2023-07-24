@@ -3,7 +3,8 @@
 from typing import Final
 
 from django.contrib.gis.db import models
-from django_fsm import ConcurrentTransitionMixin, FSMField
+from django.core.exceptions import MultipleObjectsReturned
+from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
@@ -63,6 +64,29 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         Checks if a reporter is anonymous
         """
         return not self.email and not self.phone
+
+    def is_not_original(self) -> bool:
+        """
+        Used as state machine transition condition to check if the reporter within this
+        context is not the original (first) reporter.
+        """
+        try:
+            Reporter.objects.filter(_signal=self._signal).get()
+        except MultipleObjectsReturned:
+            return True
+
+        return False
+
+    @transition(
+        field='state',
+        source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
+        target=REPORTER_STATE_CANCELLED,
+        conditions=(is_not_original, ),
+    )
+    def cancel(self) -> None:
+        """
+        Use this method to transition to the 'cancelled' state.
+        """
 
     def anonymize(self, always_call_save=False):
         call_save = False
