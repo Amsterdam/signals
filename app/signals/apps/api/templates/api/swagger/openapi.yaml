@@ -1368,6 +1368,91 @@ paths:
         - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/categories/{id}/icon/:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the category
+        required: true
+        schema:
+          type: integer
+    get:
+      responses:
+        '200':
+          description: The current icon set for the category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  icon:
+                    type: string
+                    format: uri
+                    example: /signals/media/images/2023/07/24/icon.jpg
+
+        '401':
+          description: Not authenticated, may be caused by expired token
+        '403':
+          description: Forbidden, user not authorized
+        '404':
+          description: Category not found
+    patch:
+      description: Update the category icon
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                icon:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Updated the category icon
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized
+      security:
+        - OAuth2:
+            - SIG/ALL
+    put:
+      description: Update the category icon
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                icon:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Updated the category icon
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized
+      security:
+        - OAuth2:
+            - SIG/ALL
+    delete:
+      description: Delete the category icon
+      responses:
+        '200':
+          description: Deleted the category icon
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized
+      security:
+        - OAuth2:
+            - SIG/ALL
+
   /signals/v1/private/terms/categories/{main_slug}/status-message-templates/:
     parameters:
       - name: main_slug

@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2023 Gemeente Amsterdam
+import os
+
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 
 from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory
+from signals.apps.signals.factories.category import CategoryWithIconFactory
 from signals.apps.signals.models import CategoryDepartment
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -271,7 +276,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self._assert_category_data(category=category, data=response.json())
 
         # Patch SLO 5 times without changing any data to the SLO
-        for _ in range(5):
+        for x in range(5):
             data = {'new_sla': {'n_days': 5, 'use_calendar_days': True}}
             response = self.client.patch(url, data=data, format='json')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -483,7 +488,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         body = response.json()
-        print(body)
+
         self.assertIn('results', body)
         parent = None
         for category in body['results']:
@@ -494,3 +499,120 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertIsNotNone(parent)
         self.assertIn('configuration', parent)
         self.assertDictEqual(parent['configuration'], configuration)
+
+
+class TestPrivateCategoryIconEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        """
+        Add the correct permission to the user.
+        Create a parent category with no icon.
+        Create a child category with an icon.
+        Get the content of 2 test files (gif and png).
+        """
+        sia_category_write_permission = Permission.objects.get(codename='sia_category_write')
+        self.sia_read_write_user.user_permissions.add(sia_category_write_permission)
+
+        self.parent_category = ParentCategoryFactory.create()
+        self.category = CategoryWithIconFactory.create(parent=self.parent_category)
+
+        gif_filename = os.path.join(os.path.dirname(__file__), 'test-data', 'test.gif')
+        with open(gif_filename, 'rb') as gif_file:
+            self.gif_content = gif_file.read()
+
+        jpg_filename = os.path.join(os.path.dirname(__file__), 'test-data', 'test.jpg')
+        with open(jpg_filename, 'rb') as jpg_file:
+            self.jpg_content = jpg_file.read()
+
+    def test_add_update_icon(self):
+        """
+        The following 2 cases are tested:
+         - Add an icon (category has no icon)
+         - Replace an icon (category already has an icon)
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.assertEqual(self.parent_category.icon, None)
+        endpoint = f'/signals/v1/private/categories/{self.parent_category.pk}/icon'
+        data = {'icon': SimpleUploadedFile('image.gif', self.gif_content, content_type='image/gif')}
+        response = self.client.put(endpoint, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.parent_category.refresh_from_db()
+        self.assertNotEqual(self.parent_category.icon, None)
+        self.assertEqual(self.parent_category.icon.read(), self.gif_content)
+
+        original_category_icon_name = self.category.icon.name
+        self.assertIsNotNone(self.category.icon)
+        endpoint = f'/signals/v1/private/categories/{self.category.pk}/icon'
+        data = {'icon': SimpleUploadedFile('image.jpg', self.jpg_content, content_type='image/jpeg')}
+        response = self.client.patch(endpoint, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.category.refresh_from_db()
+        self.assertNotEqual(self.category.icon.name, original_category_icon_name)
+        self.assertEqual(self.category.icon.read(), self.jpg_content)
+
+    def test_add_update_icon_required(self):
+        """
+        The icon is required when adding/updating
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.assertEqual(self.parent_category.icon, None)
+        endpoint = f'/signals/v1/private/categories/{self.parent_category.pk}/icon'
+        data = {}
+        response = self.client.put(endpoint, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(_('No file was submitted.'), response.json()['icon'])
+
+        self.assertIsNotNone(self.category.icon)
+        endpoint = f'/signals/v1/private/categories/{self.parent_category.pk}/icon'
+        data = {'icon': ''}
+        response = self.client.put(endpoint, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(_('The submitted data was not a file. Check the encoding type on the form.'),
+                      response.json()['icon'])
+
+    def test_delete_icon(self):
+        """
+        The following 2 cases are tested:
+         - Delete the icon (category had no icon)
+         - Delete the icon (category already had an icon)
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.assertEqual(self.parent_category.icon, None)
+        endpoint = f'/signals/v1/private/categories/{self.parent_category.pk}/icon'
+        response = self.client.delete(endpoint)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.parent_category.refresh_from_db()
+        self.assertIn(self.parent_category.icon, [None, ''])
+
+        self.assertNotEqual(self.category.icon, None)
+        endpoint = f'/signals/v1/private/categories/{self.category.pk}/icon'
+        response = self.client.delete(endpoint)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.category.refresh_from_db()
+        self.assertIn(self.category.icon, [None, ''])
+
+    def test_unauthorized(self):
+        """
+        User must log in to perform a CRUD operation on the category icon
+        """
+        self.client.logout()
+
+        endpoint = f'/signals/v1/private/categories/{self.parent_category.pk}/icon'
+        data = {'icon': SimpleUploadedFile('image.gif', self.gif_content, content_type='image/gif')}
+        response = self.client.put(endpoint, data=data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.delete(endpoint)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        endpoint = f'/signals/v1/private/categories/{self.category.pk}/icon'
+        response = self.client.patch(endpoint, data={'icon': ''})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        endpoint = f'/signals/v1/private/categories/{self.category.pk}/icon'
+        response = self.client.delete(endpoint)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

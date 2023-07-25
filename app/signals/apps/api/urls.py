@@ -28,6 +28,7 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.views.category import PrivateCategoryIconViewSet
 from signals.apps.api.views.email_verification import EmailVerificationView
 from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
 from signals.apps.api.views.status_message import (
@@ -138,6 +139,13 @@ urlpatterns = [
                 name='private-signal-context-reporter'),
         re_path(r'signals/(?P<pk>\d+)/context/near/geography/?$', SignalContextViewSet.as_view({'get': 'near'}),
                 name='private-signal-context-near-geography'),
+
+        re_path(r'categories/(?P<category_id>\d+)/icon',
+                PrivateCategoryIconViewSet.as_view({'get': 'retrieve',
+                                                    'put': 'update',
+                                                    'patch': 'update',
+                                                    'delete': 'destroy'}),
+                name='private-category-icon')
     ])),
 
     # Feedback
