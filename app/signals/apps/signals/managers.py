@@ -85,7 +85,12 @@ class SignalManager(models.Manager):
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
         status = Status.objects.create(**status_data, _signal_id=signal.pk)
         category_assignment = CategoryAssignment.objects.create(**category_assignment_data, _signal_id=signal.pk)
+
+        # Original reporters should be transitioned to the approved state immediately.
         reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
+        reporter.approve()
+        reporter.save()
+
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
         type_data = type_data or {}  # If type_data is None a Type is created with the default "SIGNAL" value
