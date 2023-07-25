@@ -8,7 +8,7 @@ amqp==5.1.1
     # via kombu
 arpeggio==2.0.2
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   textx
 asgiref==3.7.2
     # via django
@@ -26,10 +26,10 @@ azure-core==1.28.0
 azure-identity==1.13.0
     # via opencensus-ext-azure
 azure-storage-blob==12.17.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 beautifulsoup4==4.12.2
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   o365
 billiard==4.1.0
     # via celery
@@ -37,21 +37,21 @@ cachetools==5.3.1
     # via google-auth
 cairocffi==1.6.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   cairosvg
     #   weasyprint
 cairosvg==2.7.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   weasyprint
 celery==5.3.1
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-celery-beat
     #   django-celery-email
     #   django-celery-results
     #   flower
-certifi==2023.5.7
+certifi==2023.7.22
     # via
     #   elasticsearch
     #   requests
@@ -64,7 +64,7 @@ charset-normalizer==3.2.0
     # via requests
 click==8.1.5
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   celery
     #   click-didyoumean
     #   click-plugins
@@ -78,7 +78,7 @@ click-repl==0.3.0
     # via celery
 coreapi==2.3.3
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-rest-swagger
     #   openapi-codec
 coreschema==0.0.4
@@ -100,7 +100,7 @@ cssselect2==0.7.0
     #   cairosvg
     #   weasyprint
 datapunt-authorization-django==1.3.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 defusedxml==0.7.1
     # via
     #   cairosvg
@@ -109,7 +109,7 @@ deprecated==1.2.14
     # via jwcrypto
 django==3.2.20
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   datapunt-authorization-django
     #   django-appconf
     #   django-celery-beat
@@ -130,34 +130,34 @@ django==3.2.20
 django-appconf==1.0.5
     # via django-celery-email
 django-celery-beat==2.5.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-celery-email==3.0.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-celery-results==2.5.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-cors-headers==4.2.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-extensions==3.2.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-filter==23.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-fsm==2.8.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-markdownx==4.0.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-o365mail==1.1.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-rest-swagger==2.2.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-silk==5.0.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-storages==1.13.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-timezone-field==5.1
     # via django-celery-beat
 djangorestframework==3.14.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-rest-swagger
     #   djangorestframework-csv
     #   djangorestframework-gis
@@ -167,27 +167,27 @@ djangorestframework==3.14.0
 djangorestframework-csv==2.1.1
     # via drf-amsterdam
 djangorestframework-gis==1.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 djangorestframework-xml==2.0.0
     # via drf-amsterdam
 drf-amsterdam==0.4.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 drf-extensions==0.7.1
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   drf-amsterdam
 drf-spectacular==0.26.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 drf-spectacular-sidecar==2023.7.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 elasticsearch==7.17.9
     # via elasticsearch-dsl
 elasticsearch-dsl==7.4.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 flex==6.14.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 flower==2.0.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 google-api-core==2.11.1
     # via opencensus
 google-auth==2.22.0
@@ -216,7 +216,7 @@ jsonpointer==2.4
     # via flex
 jsonschema==4.18.3
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   drf-spectacular
 jsonschema-specifications==2023.6.1
     # via jsonschema
@@ -225,15 +225,15 @@ jwcrypto==1.5.0
 kombu==5.3.1
     # via celery
 lxml==4.9.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 markdown==3.4.3
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-markdownx
 markupsafe==2.1.3
     # via jinja2
 mozilla-django-oidc==3.0.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 msal==1.22.0
     # via
     #   azure-identity
@@ -241,7 +241,7 @@ msal==1.22.0
 msal-extensions==1.0.0
     # via azure-identity
 networkx==3.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 o365==2.0.27
     # via django-o365mail
 oauthlib==3.2.2
@@ -258,18 +258,18 @@ opencensus==0.11.2
 opencensus-context==0.1.3
     # via opencensus
 opencensus-ext-azure==1.1.9
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opencensus-ext-django==0.8.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opencensus-ext-logging==0.1.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opencensus-ext-postgresql==0.1.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opencensus-ext-requests==0.8.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pillow==10.0.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   cairosvg
     #   django-markdownx
     #   weasyprint
@@ -287,7 +287,7 @@ psutil==5.9.5
     # via opencensus-ext-azure
 psycopg2-binary==2.9.6
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   opencensus-ext-postgresql
 pyasn1==0.5.0
     # via
@@ -304,20 +304,20 @@ pyjwt[crypto]==2.7.0
 pyopenssl==23.2.0
     # via josepy
 pypdf==3.12.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pyphen==0.14.0
     # via weasyprint
 python-crontab==3.0.0
     # via django-celery-beat
 python-dateutil==2.8.2
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   celery
     #   elasticsearch-dsl
     #   o365
     #   python-crontab
 python-magic==0.4.27
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pytz==2023.3
     # via
     #   django
@@ -332,14 +332,14 @@ pyyaml==6.0
     #   drf-spectacular
     #   flex
 raven==6.10.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 referencing==0.29.1
     # via
     #   jsonschema
     #   jsonschema-specifications
 requests==2.31.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   azure-core
     #   coreapi
     #   datapunt-authorization-django
@@ -385,7 +385,7 @@ strict-rfc3339==0.7
 stringcase==1.2.0
     # via o365
 textx==3.1.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 tinycss2==1.2.1
     # via
     #   cairosvg
@@ -394,7 +394,7 @@ tinycss2==1.2.1
 tornado==6.3.2
     # via flower
 types-cryptography==3.3.23.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 typing-extensions==4.7.1
     # via
     #   azure-core
@@ -418,7 +418,7 @@ urllib3==1.26.16
     #   google-auth
     #   requests
 uwsgi==2.0.21
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 validate-email==1.3
     # via flex
 vine==5.0.0
@@ -429,7 +429,7 @@ vine==5.0.0
 wcwidth==0.2.6
     # via prompt-toolkit
 weasyprint==52.5
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 webencodings==0.5.1
     # via
     #   cssselect2
