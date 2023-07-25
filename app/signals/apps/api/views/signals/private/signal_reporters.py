@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from rest_framework.exceptions import NotFound
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -26,4 +27,8 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
         Used to return the signal instance for the current request. This is used
         to check the permissions for the current request.
         """
-        return self.get_queryset().distinct().first()._signal
+        reporter = self.get_queryset().distinct().first()
+        if not reporter:
+            raise NotFound()
+
+        return reporter._signal

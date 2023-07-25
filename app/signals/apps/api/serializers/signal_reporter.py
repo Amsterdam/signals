@@ -3,12 +3,12 @@
 from rest_framework.fields import BooleanField
 from rest_framework.serializers import ModelSerializer
 
-from signals.apps.api.generics.exceptions import NotImplementedException
-from signals.apps.signals.models import Reporter
+from signals.apps.signals.models import Reporter, Signal
 
 
 class SignalReporterSerializer(ModelSerializer):
-    allows_contact = BooleanField(source='signal.allows_contact', read_only=True)
+    allows_contact = BooleanField(source='_signal.allows_contact', read_only=True)
+    sharing_allowed = BooleanField(required=True)
 
     class Meta:
         model = Reporter
@@ -26,7 +26,6 @@ class SignalReporterSerializer(ModelSerializer):
             'id',
             'email_verified',
             'allows_contact',
-            'sharing_allowed',
             'state',
             'created_at',
             'updated_at',
@@ -42,13 +41,15 @@ class SignalReporterSerializer(ModelSerializer):
 
         return serialized
 
-    def create(self, validated_data):
-        """
-        Currently, this method is not implemented. It should create a new
-        Reporter instance. However, all state machine logic still needs to
-        be implemented. Therefore, a dummy Reporter instance is returned.
+    def create(self, validated_data: dict) -> Reporter:
+        signal_id = self.context['view'].kwargs.get('parent_lookup__signal_id')
+        signal = Signal.objects.get(pk=signal_id)
 
-        TODO: Correctly implement the logic needed to create new Reporter
-              instances.
-        """
-        raise NotImplementedException('Creating new Reporter instances is not yet implemented.')
+        reporter = Reporter()
+        reporter.email = validated_data.get('email')
+        reporter.phone = validated_data.get('phone')
+        reporter.sharing_allowed = validated_data.get('sharing_allowed')
+        reporter._signal = signal
+        reporter.save()
+
+        return reporter
