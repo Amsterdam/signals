@@ -85,7 +85,6 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         return self.email is not None and self.email != ''
 
-
     def email_changed(self) -> bool:
         """
         Used as state machine transition condition to check if email changed from the
@@ -116,8 +115,12 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         Use this method to transition to the 'verification_email_sent' state.
         """
         # Import here to prevent circular import
-        from signals.apps.email_integrations.email_verification.reporter_mailer import ReporterMailer
-        from signals.apps.email_integrations.email_verification.reporter_verification import ReporterVerifier
+        from signals.apps.email_integrations.email_verification.reporter_mailer import (
+            ReporterMailer
+        )
+        from signals.apps.email_integrations.email_verification.reporter_verification import (
+            ReporterVerifier
+        )
 
         verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), TokenGenerator())
         verify(self)
