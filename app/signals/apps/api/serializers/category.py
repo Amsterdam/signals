@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
@@ -128,6 +128,7 @@ class PrivateCategorySerializer(HALSerializer):
             'public_name',
             'is_public_accessible',
             'configuration',
+            'icon',
         )
         read_only_fields = (
             'slug',
@@ -212,3 +213,11 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
 
     def get_description(self, log: Log) -> None:
         return None  # No description implemented yet
+
+
+class PrivateCategoryIconSerializer(serializers.ModelSerializer):
+    icon = serializers.FileField(allow_empty_file=False, required=True)
+
+    class Meta:
+        model = Category
+        fields = ('icon', )

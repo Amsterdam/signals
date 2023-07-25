@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from django.utils import timezone
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema, extend_schema_view
 from rest_framework.decorators import action
-from rest_framework.mixins import UpdateModelMixin
+from rest_framework.mixins import DestroyModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
 
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
@@ -14,7 +15,11 @@ from signals.apps.api.serializers import (
     ParentCategoryHALSerializer,
     PrivateCategorySerializer
 )
-from signals.apps.api.serializers.category import PrivateCategoryHistoryHalSerializer
+from signals.apps.api.serializers.category import (
+    PrivateCategoryHistoryHalSerializer,
+    PrivateCategoryIconSerializer
+)
+from signals.apps.history.models import Log
 from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category
 from signals.auth.backend import JWTAuthBackend
@@ -91,3 +96,31 @@ class PrivateCategoryViewSet(UpdateModelMixin, DetailSerializerMixin, ReadOnlyMo
         category = self.get_object()
         serializer = PrivateCategoryHistoryHalSerializer(category.history_log.all(), many=True)
         return Response(serializer.data)
+
+
+@extend_schema_view(
+    update=extend_schema(
+        request={
+            'multipart/form-data': PrivateCategoryIconSerializer
+        }
+    )
+)
+class PrivateCategoryIconViewSet(RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet):
+    lookup_url_kwarg = 'category_id'
+    queryset = Category.objects.all()
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (SIAPermissions & ModelWritePermissions, )
+    serializer_class = PrivateCategoryIconSerializer
+
+    def perform_update(self, serializer: PrivateCategoryIconSerializer):
+        instance = serializer.save()
+        HistoryLogService.log_update(instance=instance, user=self.request.user)
+
+    def perform_destroy(self, instance: Category):
+        instance.icon.delete()
+        instance.history_log.create(
+            action=Log.ACTION_UPDATE,
+            created_by=self.request.user.username,
+            created_at=timezone.now(),
+            data={'icon': ''}
+        )
