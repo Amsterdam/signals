@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django_fsm import TransitionNotAllowed
 from rest_framework.fields import BooleanField
 from rest_framework.serializers import ModelSerializer
 
@@ -50,6 +51,13 @@ class SignalReporterSerializer(ModelSerializer):
         reporter.phone = validated_data.get('phone')
         reporter.sharing_allowed = validated_data.get('sharing_allowed')
         reporter._signal = signal
+        reporter.save()
+
+        try:
+            reporter.verify_email()
+        except TransitionNotAllowed:
+            reporter.cancel()
+
         reporter.save()
 
         return reporter

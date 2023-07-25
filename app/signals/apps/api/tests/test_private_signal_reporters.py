@@ -13,7 +13,10 @@ from rest_framework.status import (
 )
 from rest_framework.test import APITestCase
 
+from signals.apps.email_integrations.factories import EmailTemplateFactory
+from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.signals.factories import ReporterFactory, SignalFactory
+from signals.apps.signals.models import Reporter
 from signals.test.utils import SIAReadWriteUserMixin
 
 
@@ -61,6 +64,7 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
 
     def test_can_create(self) -> None:
+        EmailTemplateFactory.create(key=EmailTemplate.VERIFY_EMAIL_REPORTER)
         signal = SignalFactory.create()
 
         response = self.client.post(
@@ -68,4 +72,8 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
             data={'email': 'test@example.com', 'phone': '0612345678', 'sharing_allowed': True},
             format='json'
         )
+
         self.assertEqual(response.status_code, HTTP_201_CREATED)
+
+        reporter = response.json()
+        self.assertEqual(reporter.get('state'), Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
