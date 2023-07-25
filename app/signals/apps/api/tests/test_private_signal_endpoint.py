@@ -33,7 +33,14 @@ from signals.apps.signals.factories import (
     SourceFactory
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
-from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Note, Signal, SignalUser
+from signals.apps.signals.models import (
+    STADSDEEL_CENTRUM,
+    Attachment,
+    Note,
+    Reporter,
+    Signal,
+    SignalUser
+)
 from signals.apps.signals.tests.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
@@ -257,6 +264,8 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         # SIG-2773
         self.assertTrue(response_json['reporter']['sharing_allowed'])
+        signal = Signal.objects.get(pk=response_json['id'])
+        self.assertEqual(signal.reporter.state, Reporter.REPORTER_STATE_APPROVED)
 
         self.assertEqual(response_json['status']['user'], self.sia_read_write_user.email)
         self.assertEqual(response_json['priority']['created_by'], self.sia_read_write_user.email)
