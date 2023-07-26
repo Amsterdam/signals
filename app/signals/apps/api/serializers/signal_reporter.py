@@ -53,10 +53,22 @@ class SignalReporterSerializer(ModelSerializer):
         reporter._signal = signal
         reporter.save()
 
+        # When there is an email address available it should be verified
+        verify_email_successful = True
         try:
             reporter.verify_email()
         except TransitionNotAllowed:
-            reporter.cancel()
+            verify_email_successful = False
+
+        # When there is no email address available but the phone number has changed
+        # we can transition to approved
+        if not verify_email_successful:
+            try:
+                reporter.approve()
+            except TransitionNotAllowed:
+                # If everything fails the change request is not valid and should be
+                # cancelled
+                reporter.cancel()
 
         reporter.save()
 

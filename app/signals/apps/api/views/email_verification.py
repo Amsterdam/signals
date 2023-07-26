@@ -22,6 +22,7 @@ class EmailVerificationView(APIView):
 
         reporter = serializer.reporter
         reporter.email_verified = True
+        reporter.approve()
         reporter.save()
 
         return Response(data=validated_data)

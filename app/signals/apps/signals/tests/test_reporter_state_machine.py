@@ -131,3 +131,114 @@ class TestReporterStateMachine(TestCase):
             str(e_info.value),
             "Can't switch from state 'verification_email_sent' using method 'verify_email'"
         )
+
+    # transitions to approved
+    def test_can_transition_from_new_to_approved_when_original_reporter(self):
+        reporter = Reporter()
+        reporter._signal = SignalFactory.create(reporter=None)
+        reporter.save()
+
+        reporter.approve()
+
+    def test_can_transition_from_new_to_approved_when_email_not_included_and_phone_number_changed(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.phone = '0987654321'
+        new.save()
+
+        new.approve()
+
+    def test_cannot_transition_from_new_to_approved_when_email_not_included_and_phone_not_changed(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.phone = self.PHONE
+        new.save()
+
+        with pytest.raises(TransitionNotAllowed):
+            new.approve()
+
+    def test_can_transition_from_new_to_approved_when_email_included_but_not_changed_and_phone_changed(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.email = self.EMAIL
+        new.phone = '0987654321'
+        new.save()
+
+        new.approve()
+
+    def test_cannot_transition_from_new_to_approved_when_email_included_not_changed_and_phone_not_changed(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
+        new = Reporter()
+        new._signal = original._signal
+        new.email = self.EMAIL
+        new.phone = self.PHONE
+        new.save()
+
+        with pytest.raises(TransitionNotAllowed):
+            new.approve()
+
+    def test_can_transition_from_verification_email_sent_to_approved(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
+        new = ReporterFactory.create(
+            state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT,
+            email=self.EMAIL,
+            phone=self.PHONE,
+            _signal=original._signal,
+            email_verified=True,
+        )
+
+        new.approve()
+
+    def test_cannot_transition_from_verification_email_sent_to_approved(self):
+        original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
+        new = ReporterFactory.create(
+            state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT,
+            email=self.EMAIL,
+            phone=self.PHONE,
+            _signal=original._signal,
+            email_verified=False,
+        )
+
+        with pytest.raises(TransitionNotAllowed):
+            new.approve()
+
+    def test_cannot_transition_from_cancelled_to_approved(self):
+        reporter = ReporterFactory.create(state=Reporter.REPORTER_STATE_CANCELLED, email=self.EMAIL, phone=self.PHONE)
+
+        with pytest.raises(TransitionNotAllowed) as e_info:
+            reporter.approve()
+
+        self.assertEqual(
+            str(e_info.value),
+            "Can't switch from state 'cancelled' using method 'approve'"
+        )
+
+        with pytest.raises(TransitionNotAllowed) as e_info:
+            reporter.approve()
+
+        self.assertEqual(
+            str(e_info.value),
+            "Can't switch from state 'cancelled' using method 'approve'"
+        )
+
+    def test_cannot_transition_from_approved_to_approved(self):
+        reporter = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
+
+        with pytest.raises(TransitionNotAllowed) as e_info:
+            reporter.approve()
+
+        self.assertEqual(
+            str(e_info.value),
+            "Can't switch from state 'approved' using method 'approve'"
+        )
+
+        with pytest.raises(TransitionNotAllowed) as e_info:
+            reporter.approve()
+
+        self.assertEqual(
+            str(e_info.value),
+            "Can't switch from state 'approved' using method 'approve'"
+        )

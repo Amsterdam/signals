@@ -92,6 +92,30 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         return self._signal.reporter.email != self.email
 
+    def is_approvable(self) -> bool:
+        """
+        Used as state machine transition condition to check if transition can be approved.
+        This is less specific than the other condition methods, because there are a few "or"
+        conditions.
+        """
+        if self.state == self.REPORTER_STATE_VERIFICATION_EMAIL_SENT:
+            return self.is_email_verified()
+
+        if not self.is_not_original():
+            return True
+
+        if self._signal.reporter.phone != self.phone:
+            if self.email is None or self.email == self._signal.reporter.email:
+                return True
+
+        return False
+
+    def is_email_verified(self) -> bool:
+        """
+        Used as state machine transition condition to check if the email address is verified.
+        """
+        return self.email_verified
+
     @transition(
         field='state',
         source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
@@ -124,6 +148,17 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), TokenGenerator())
         verify(self)
+
+    @transition(
+        field='state',
+        source=(REPORTER_STATE_NEW, REPORTER_STATE_VERIFICATION_EMAIL_SENT, ),
+        target=REPORTER_STATE_APPROVED,
+        conditions=(is_approvable, )
+    )
+    def approve(self) -> None:
+        """
+        Use this method to transition to the 'approved' state.
+        """
 
     def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False

@@ -19,7 +19,7 @@ from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
-from signals.apps.signals.models import Attachment, Note, Priority, Signal, Type
+from signals.apps.signals.models import Attachment, Note, Priority, Reporter, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, STATUS_CHOICES
 from signals.test.utils import SignalsBaseApiTestCase
@@ -85,6 +85,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual("Luidruchtige vergadering", signal.text)
         self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
         self.assertEqual('SIG', signal.type_assignment.name)
+        self.assertEqual(Reporter.REPORTER_STATE_APPROVED, signal.reporter.state)
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
