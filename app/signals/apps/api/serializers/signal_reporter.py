@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django.utils import timezone
 from django_fsm import TransitionNotAllowed
 from rest_framework.fields import BooleanField
 from rest_framework.serializers import ModelSerializer
 
+from signals.apps.history.models import Log
 from signals.apps.signals.models import Reporter, Signal
 
 
@@ -57,6 +59,15 @@ class SignalReporterSerializer(ModelSerializer):
         verify_email_successful = True
         try:
             reporter.verify_email()
+            reporter.save()
+
+            reporter.history_log.create(
+                action=Log.ACTION_UPDATE,
+                created_by=self.context.get('request').user.username,
+                created_at=timezone.now(),
+                description='E-mail verificatie verzonden.',
+                _signal=signal,
+            )
         except TransitionNotAllowed:
             verify_email_successful = False
 
@@ -65,11 +76,37 @@ class SignalReporterSerializer(ModelSerializer):
         if not verify_email_successful:
             try:
                 reporter.approve()
+                reporter.save()
+
+                if reporter._signal.reporter.phone != reporter.phone:
+                    reporter.history_log.create(
+                        action=Log.ACTION_UPDATE,
+                        created_at=timezone.now(),
+                        created_by=self.context.get('request').user.username,
+                        description='Telefoonnummer is gewijzigd.',
+                    )
+
+                # This can happen when the e-mail address is removed or blanked
+                if reporter._signal.reporter.email != reporter.email:
+                    reporter.history_log.create(
+                        action=Log.ACTION_UPDATE,
+                        created_at=timezone.now(),
+                        created_by=self.context.get('request').user.username,
+                        description='E-mailadres is gewijzigd.',
+                    )
+
             except TransitionNotAllowed:
                 # If everything fails the change request is not valid and should be
                 # cancelled
                 reporter.cancel()
+                reporter.save()
 
-        reporter.save()
+                reporter.history_log.create(
+                    action=Log.ACTION_UPDATE,
+                    created_by=self.context.get('request').user.username,
+                    created_at=timezone.now(),
+                    description='Verzoek tot wijzigen contactgegevens geannuleerd.',
+                    _signal=signal,
+                )
 
         return reporter
