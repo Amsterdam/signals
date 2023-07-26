@@ -161,6 +161,7 @@ class TestReporterStateMachine(TestCase):
             new.approve()
 
     def test_can_transition_from_new_to_approved_when_email_included_but_not_changed_and_phone_changed(self):
+        EmailTemplateFactory.create(key=EmailTemplate.CONFIRM_REPORTER_UPDATED)
         original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
         new = Reporter()
         new._signal = original._signal
@@ -182,6 +183,7 @@ class TestReporterStateMachine(TestCase):
             new.approve()
 
     def test_can_transition_from_verification_email_sent_to_approved(self):
+        EmailTemplateFactory.create(key=EmailTemplate.CONFIRM_REPORTER_UPDATED)
         original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
         new = ReporterFactory.create(
             state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT,
