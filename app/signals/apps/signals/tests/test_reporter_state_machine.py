@@ -67,6 +67,7 @@ class TestReporterStateMachine(TestCase):
     # transitions to verification_email_sent
     def test_can_transition_from_new_to_verification_email_sent(self):
         EmailTemplateFactory.create(key=EmailTemplate.VERIFY_EMAIL_REPORTER)
+        EmailTemplateFactory.create(key=EmailTemplate.NOTIFY_CURRENT_REPORTER)
         original = ReporterFactory.create(state=Reporter.REPORTER_STATE_APPROVED, email=self.EMAIL, phone=self.PHONE)
         new = Reporter()
         new._signal = original._signal
