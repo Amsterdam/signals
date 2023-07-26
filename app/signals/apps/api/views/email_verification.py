@@ -2,12 +2,14 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from typing import Optional
 
+from django.utils import timezone
 from rest_framework.parsers import JSONParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from signals.apps.api.serializers.email_verification import EmailVerificationSerializer
+from signals.apps.history.models import Log
 
 
 class EmailVerificationView(APIView):
@@ -24,5 +26,25 @@ class EmailVerificationView(APIView):
         reporter.email_verified = True
         reporter.approve()
         reporter.save()
+
+        reporter.history_log.create(
+            action=Log.ACTION_UPDATE,
+            created_at=timezone.now(),
+            description='E-mailadres is geverifieerd door de melder.',
+            _signal=reporter._signal,
+        )
+
+        reporter.history_log.create(
+            action=Log.ACTION_UPDATE,
+            created_at=timezone.now(),
+            description='E-mailadres is gewijzigd.',
+        )
+
+        if reporter._signal.reporter.phone != reporter.phone:
+            reporter.history_log.create(
+                action=Log.ACTION_UPDATE,
+                created_at=timezone.now(),
+                description='Telefoonnummer is gewijzigd.',
+            )
 
         return Response(data=validated_data)
