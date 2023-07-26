@@ -6,6 +6,7 @@ from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
+from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.tokens.token_generator import TokenGenerator
@@ -146,7 +147,15 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
             ReporterVerifier
         )
 
-        verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), TokenGenerator())
+        mail_reporter = ReporterMailer(EmailTemplateRenderer())
+
+        # Let the current reporter know that a change was requested
+        current_reporter = self._signal.reporter
+        if current_reporter.email:
+            mail_reporter(current_reporter, EmailTemplate.NOTIFY_CURRENT_REPORTER)
+
+        # Send the verification email to the new reporter
+        verify = ReporterVerifier(mail_reporter, TokenGenerator())
         verify(self)
 
     @transition(
