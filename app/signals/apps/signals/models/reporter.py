@@ -168,6 +168,12 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         """
         Use this method to transition to the 'approved' state.
         """
+        if self.is_not_original() and self.email:
+            from signals.apps.email_integrations.email_verification.reporter_mailer import (
+                ReporterMailer
+            )
+            mail_reporter = ReporterMailer(EmailTemplateRenderer())
+            mail_reporter(self, EmailTemplate.CONFIRM_REPORTER_UPDATED)
 
     def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
