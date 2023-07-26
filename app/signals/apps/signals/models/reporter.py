@@ -151,7 +151,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         # Let the current reporter know that a change was requested
         current_reporter = self._signal.reporter
-        if current_reporter.email is not None and current_reporter.email != '':
+        if current_reporter.email:
             mail_reporter(current_reporter, EmailTemplate.NOTIFY_CURRENT_REPORTER)
 
         # Send the verification email to the new reporter
