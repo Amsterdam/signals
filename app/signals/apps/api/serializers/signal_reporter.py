@@ -53,6 +53,12 @@ class SignalReporterSerializer(ModelSerializer):
 
         return True
 
+    def _cancel_previous_reporters(self, signal: Signal) -> None:
+        for reporter in signal.reporters:
+            if reporter.state != Reporter.REPORTER_STATE_APPROVED:
+                reporter.cancel()
+                reporter.save()
+
     def _log_to_history(self, reporter: Reporter, description: str, signal: Signal) -> None:
         reporter.history_log.create(
             action=Log.ACTION_UPDATE,
@@ -75,6 +81,8 @@ class SignalReporterSerializer(ModelSerializer):
     def create(self, validated_data: dict) -> Reporter:
         signal_id = self.context['view'].kwargs.get('parent_lookup__signal_id')
         signal = Signal.objects.get(pk=signal_id)
+
+        self._cancel_previous_reporters(signal)
 
         reporter = Reporter()
         reporter.email = validated_data.get('email')
