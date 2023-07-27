@@ -66,7 +66,7 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
     def test_can_create(self) -> None:
         EmailTemplateFactory.create(key=EmailTemplate.VERIFY_EMAIL_REPORTER)
         EmailTemplateFactory.create(key=EmailTemplate.NOTIFY_CURRENT_REPORTER)
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
 
         response = self.client.post(
             f'/signals/v1/private/signals/{signal.pk}/reporters/',
