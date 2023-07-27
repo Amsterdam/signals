@@ -84,6 +84,7 @@ class SignalReporterSerializer(ModelSerializer):
                         created_at=timezone.now(),
                         created_by=self.context.get('request').user.username,
                         description='Telefoonnummer is gewijzigd.',
+                        _signal=signal,
                     )
 
                 # This can happen when the e-mail address is removed or blanked
@@ -93,6 +94,7 @@ class SignalReporterSerializer(ModelSerializer):
                         created_at=timezone.now(),
                         created_by=self.context.get('request').user.username,
                         description='E-mailadres is gewijzigd.',
+                        _signal=signal,
                     )
 
             except TransitionNotAllowed:
