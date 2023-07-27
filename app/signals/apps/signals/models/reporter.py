@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from typing import Final
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
@@ -33,6 +34,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         'signals.Signal', related_name='reporters',
         null=False, on_delete=models.CASCADE
     )
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=17, blank=True, null=True)

@@ -173,6 +173,8 @@ class Log(models.Model):
             action = 'Toelichting ontvangen'
         elif what == 'NOT_RECEIVED_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
             action = 'Geen toelichting ontvangen'
+        elif what == 'UPDATE_REPORTER':
+            action = 'Contactgegevens melder:'
         else:
             action = 'Actie onbekend.'
         return action
