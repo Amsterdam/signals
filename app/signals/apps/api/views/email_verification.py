@@ -38,6 +38,7 @@ class EmailVerificationView(APIView):
             action=Log.ACTION_UPDATE,
             created_at=timezone.now(),
             description='E-mailadres is gewijzigd.',
+            _signal=reporter._signal,
         )
 
         if reporter._signal.reporter.phone != reporter.phone:
@@ -45,6 +46,7 @@ class EmailVerificationView(APIView):
                 action=Log.ACTION_UPDATE,
                 created_at=timezone.now(),
                 description='Telefoonnummer is gewijzigd.',
+                _signal=reporter._signal,
             )
 
         return Response(data=validated_data)
