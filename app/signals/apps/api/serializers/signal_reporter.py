@@ -22,6 +22,7 @@ class SignalReporterSerializer(ModelSerializer):
             'allows_contact',
             'sharing_allowed',
             'state',
+            'email_verification_token_expires',
             'created_at',
             'updated_at',
         )
@@ -30,6 +31,7 @@ class SignalReporterSerializer(ModelSerializer):
             'email_verified',
             'allows_contact',
             'state',
+            'email_verification_token_expires',
             'created_at',
             'updated_at',
         )

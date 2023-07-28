@@ -947,6 +947,10 @@ paths:
                 phone:
                   description: The phone number of the reporter
                   type: string
+                sharing_allowed:
+                  description: Reporter allows their contact information to be shared (true) or not (false).
+                  type: boolean
+                  example: true
       responses:
         '400':
           description: Bad request
@@ -5738,6 +5742,11 @@ components:
             - cancelled
             - approved
           example: approved
+        email_verification_token_expires:
+          description: When the email verification expires
+          type: string
+          example: "2023-07-27T12:37:15.104Z"
+          nullable: true
 
     V1VerifyEmail:
       description: The email verification token
