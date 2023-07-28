@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django.db import transaction
 from django.utils import timezone
 from django_fsm import TransitionNotAllowed
 from rest_framework.fields import BooleanField
@@ -72,6 +73,7 @@ class SignalReporterSerializer(ModelSerializer):
 
         return serialized
 
+    @transaction.atomic()
     def create(self, validated_data: dict) -> Reporter:
         signal_id = self.context['view'].kwargs.get('parent_lookup__signal_id')
         signal = Signal.objects.get(pk=signal_id)
