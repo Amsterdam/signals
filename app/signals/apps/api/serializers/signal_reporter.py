@@ -36,6 +36,32 @@ class SignalReporterSerializer(ModelSerializer):
             'updated_at',
         )
 
+    def _verify_email(self, reporter: Reporter, signal: Signal) -> bool:
+        try:
+            reporter.verify_email()
+            reporter.save()
+
+            self._log_to_history(reporter, 'E-mail verificatie verzonden.', signal)
+        except TransitionNotAllowed:
+            return False
+
+        return True
+
+    def _cancel_previous_reporters(self, signal: Signal) -> None:
+        for reporter in signal.reporters.all():
+            if reporter.state != Reporter.REPORTER_STATE_APPROVED:
+                reporter.cancel()
+                reporter.save()
+
+    def _log_to_history(self, reporter: Reporter, description: str, signal: Signal) -> None:
+        reporter.history_log.create(
+            action=Log.ACTION_UPDATE,
+            created_by=self.context.get('request').user.username,
+            created_at=timezone.now(),
+            description=description,
+            _signal=signal,
+        )
+
     def to_representation(self, instance: Reporter) -> dict:
         serialized = super().to_representation(instance)
 
@@ -50,6 +76,8 @@ class SignalReporterSerializer(ModelSerializer):
         signal_id = self.context['view'].kwargs.get('parent_lookup__signal_id')
         signal = Signal.objects.get(pk=signal_id)
 
+        self._cancel_previous_reporters(signal)
+
         reporter = Reporter()
         reporter.email = validated_data.get('email')
         reporter.phone = validated_data.get('phone')
@@ -58,20 +86,7 @@ class SignalReporterSerializer(ModelSerializer):
         reporter.save()
 
         # When there is an email address available it should be verified
-        verify_email_successful = True
-        try:
-            reporter.verify_email()
-            reporter.save()
-
-            reporter.history_log.create(
-                action=Log.ACTION_UPDATE,
-                created_by=self.context.get('request').user.username,
-                created_at=timezone.now(),
-                description='E-mail verificatie verzonden.',
-                _signal=signal,
-            )
-        except TransitionNotAllowed:
-            verify_email_successful = False
+        verify_email_successful = self._verify_email(reporter, signal)
 
         # When there is no email address available but the phone number has changed
         # we can transition to approved
@@ -81,36 +96,21 @@ class SignalReporterSerializer(ModelSerializer):
                 reporter.save()
 
                 if reporter._signal.reporter.phone != reporter.phone:
-                    reporter.history_log.create(
-                        action=Log.ACTION_UPDATE,
-                        created_at=timezone.now(),
-                        created_by=self.context.get('request').user.username,
-                        description='Telefoonnummer is gewijzigd.',
-                        _signal=signal,
-                    )
+                    self._log_to_history(reporter, 'Telefoonnummer is gewijzigd.', signal)
 
                 # This can happen when the e-mail address is removed or blanked
                 if reporter._signal.reporter.email != reporter.email:
-                    reporter.history_log.create(
-                        action=Log.ACTION_UPDATE,
-                        created_at=timezone.now(),
-                        created_by=self.context.get('request').user.username,
-                        description='E-mailadres is gewijzigd.',
-                        _signal=signal,
-                    )
-
+                    self._log_to_history(reporter, 'E-mailadres is gewijzigd.', signal)
             except TransitionNotAllowed:
                 # If everything fails the change request is not valid and should be
                 # cancelled
                 reporter.cancel()
                 reporter.save()
 
-                reporter.history_log.create(
-                    action=Log.ACTION_UPDATE,
-                    created_by=self.context.get('request').user.username,
-                    created_at=timezone.now(),
-                    description='Verzoek tot wijzigen contactgegevens geannuleerd.',
-                    _signal=signal,
+                self._log_to_history(
+                    reporter,
+                    'Verzoek tot wijzigen contactgegevens geannuleerd.',
+                    signal
                 )
 
         return reporter
