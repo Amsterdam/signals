@@ -41,13 +41,7 @@ class SignalReporterSerializer(ModelSerializer):
             reporter.verify_email()
             reporter.save()
 
-            reporter.history_log.create(
-                action=Log.ACTION_UPDATE,
-                created_by=self.context.get('request').user.username,
-                created_at=timezone.now(),
-                description='E-mail verificatie verzonden.',
-                _signal=signal,
-            )
+            self._log_to_history(reporter, 'E-mail verificatie verzonden.', signal)
         except TransitionNotAllowed:
             return False
 
