@@ -177,6 +177,9 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
             mail_reporter = ReporterMailer(EmailTemplateRenderer())
             mail_reporter(self, EmailTemplate.CONFIRM_REPORTER_UPDATED)
 
+        self._signal.reporter = self
+        self._signal.save()
+
     def anonymize(self, always_call_save: bool = False) -> None:
         call_save = False
         if not self.email_anonymized and self.email:
