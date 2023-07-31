@@ -39,8 +39,19 @@ class _PrivateReportViewSet(GenericViewSet):
 
 
 class PrivateReportSignalsOpenPerCategoryView(_PrivateReportViewSet):
+    """
+    Count all Signals that have an "open" state and return a summary per Category.
+
+    It is also possible to filter on a period using the "start" and "end" filters (query params)
+    """
     filterset_class = SignalsOpenPerCategoryCountFilterSet
 
 
 class PrivateReportSignalsReopenRequestedPerCategory(_PrivateReportViewSet):
+    """
+    Count all Signals that are in the "reopen requested" state and return a summary per Category.
+
+    It is also possible to filter on the period the state change was made using the "start" and
+    "end" filters (query params)
+    """
     filterset_class = SignalsReopenRequestedPerCategoryCountFilterSet
