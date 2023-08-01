@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.db.models import QuerySet
+from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_field
 from rest_framework import serializers
 
 from signals.apps.api.fields import CategoryHyperlinkedIdentityField
@@ -25,11 +27,11 @@ class PrivateDepartmentSerializerList(HALSerializer):
             'can_direct',
         )
 
-    def get_category_names(self, obj):
+    def get_category_names(self, obj: Department) -> list[str, str]:
         return list(obj.category_set.filter(is_active=True).values_list('name', flat=True))
 
 
-def _get_categories_queryset():
+def _get_categories_queryset() -> QuerySet:
     return Category.objects.filter(is_active=True)
 
 
@@ -56,7 +58,8 @@ class TemporaryCategoryHALSerializer(HALSerializer):
             'handling_message',
         )
 
-    def get_departments(self, obj):
+    @extend_schema_field(_NestedPublicDepartmentSerializer(many=True))
+    def get_departments(self, obj: Category) -> dict:
         return _NestedPublicDepartmentSerializer(obj.departments.filter(categorydepartment__is_responsible=True),
                                                  many=True).data
 
@@ -90,7 +93,13 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
             'can_view',
         )
 
-    def get_category(self, obj):
+    @extend_schema_field(PolymorphicProxySerializer(
+        component_name='TmpCategory',
+        serializers=[TemporaryParentCategoryHALSerializer, TemporaryCategoryHALSerializer, ],
+        resource_type_field_name='category',
+        many=False
+    ))
+    def get_category(self, obj: CategoryDepartment) -> dict:
         """
         SIG-2287 [BE] Afdeling geeft categorie zonder main slug terug
 
@@ -126,14 +135,14 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
             'can_direct',
         )
 
-    def _save_category_department(self, instance, validated_data):
+    def _save_category_department(self, instance: Department, validated_data: dict):
         instance.category_set.clear()
         for category_department_validated_data in validated_data:
             category_department_validated_data['department'] = instance
             category_department = CategoryDepartment(**category_department_validated_data)
             category_department.save()
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Department:
         categorydepartment_set_validated_data = None
         if 'active_categorydepartment_set' in validated_data:
             categorydepartment_set_validated_data = validated_data.pop('active_categorydepartment_set')
@@ -149,7 +158,7 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
         instance.refresh_from_db()
         return instance
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Department, validated_data: dict) -> Department:
         if 'active_categorydepartment_set' in validated_data:
             self._save_category_department(
                 instance=instance,
