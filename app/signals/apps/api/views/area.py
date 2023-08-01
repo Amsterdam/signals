@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2023 Gemeente Amsterdam
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
@@ -21,8 +22,17 @@ class PublicAreasViewSet(ListModelMixin, GenericViewSet):
     serializer_class = AreaSerializer
     filterset_class = AreaFilterSet
 
-    @action(detail=False, url_path=r'geography/?$')
-    def geography(self, request):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='geopage', location=OpenApiParameter.QUERY,
+                             description='A page number within the paginated result set.', required=False, type=int),
+            OpenApiParameter(name='page_size', location=OpenApiParameter.QUERY,
+                             description='Number of results to return per page.', required=False, type=int),
+        ],
+    )
+    @action(detail=False, url_path='geography', serializer_class=AreaGeoSerializer,
+            pagination_class=LinkHeaderPagination)
+    def geography(self, *args: list, **kwargs: dict) -> Response:
         """
         Retrieve a paginated list of area geographies.
 

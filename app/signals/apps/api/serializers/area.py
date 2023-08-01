@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from datapunt_api.serializers import HALSerializer
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
@@ -34,6 +35,17 @@ class AreaSerializer(HALSerializer):
         model = Area
         fields = ('name', 'code', 'type', 'bbox', )
 
-    def get_bbox(self, obj):
+    @extend_schema_field({
+        'type': 'array',
+        'minItems': 4,
+        'maxItems': 4,
+        'items': {
+            'type': 'number',
+            'format': 'float',
+        },
+        'example': [4.728764, 52.278987, 5.068003, 52.431229],
+        'description': 'Bounding box as [min_x, min_y, max_x, max_y]',
+    })
+    def get_bbox(self, obj: Area) -> tuple[float, float, float, float]:
         if obj.geometry:
             return obj.geometry.extent
