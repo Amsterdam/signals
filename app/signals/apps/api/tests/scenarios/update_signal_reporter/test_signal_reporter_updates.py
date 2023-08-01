@@ -47,6 +47,7 @@ Met vriendelijke groet,
 {{ ORGANIZATION_NAME }}""" # noqa
 }
 
+
 @pytest.mark.django_db()
 @scenario(
     'features/update_signal_reporters.feature',
@@ -56,9 +57,11 @@ Met vriendelijke groet,
 def test_update_reporter_phone_and_email_of_signal_with_reporter_that_has_phone_and_email():
     """Update reporter phone and email of signal with reporter that has phone and email."""
 
+
 @pytest.fixture
 def api_client():
     return APIClient()
+
 
 @given('there is a read write user', target_fixture='read_write_user')
 def given_read_write_user() -> User:
@@ -82,9 +85,11 @@ def given_read_write_user() -> User:
 
     return user
 
+
 @given(parsers.parse('there is an email template with key {key}'))
 def given_email_template(key: str) -> None:
     EmailTemplateFactory.create(key=key, title=key, body=TEMPLATES.get(key))
+
 
 @given(
     parsers.parse('there is a signal with reporter phone number {phone} and email address {email}'),
@@ -96,6 +101,7 @@ def given_signal_reporter(phone: str, email: str) -> Signal:
         reporter__email=email,
         reporter__state=Reporter.REPORTER_STATE_APPROVED
     )
+
 
 @when(
     parsers.parse('I create a new reporter for the signal with phone number {phone} and email address {email}'),
@@ -116,9 +122,11 @@ def create_reporter(
         format='json',
     )
 
+
 @then(parsers.parse('the response status code should be {status_code:d}'))
 def then_status_code(status_code: int, response: Response) -> None:
     assert response.status_code == status_code
+
 
 @then(parsers.parse('the reporter with email address {email} should receive an email with template key {key}'))
 def then_email(email: str, key: str) -> None:
@@ -128,7 +136,8 @@ def then_email(email: str, key: str) -> None:
             found = True
             break
 
-    assert found == True
+    assert found
+
 
 @when(parsers.parse('I verify the token of {email}'), target_fixture='response')
 def verify_token(email: str, signal: Signal, api_client: APIClient) -> Response:
@@ -139,6 +148,7 @@ def verify_token(email: str, signal: Signal, api_client: APIClient) -> Response:
         data={'token': reporter.email_verification_token},
         format='json'
     )
+
 
 @then(parsers.parse('the reporter of the signal should have phone number {phone} and email address {email}'))
 def then_signal_updated(phone: str, email: str, signal: Signal) -> None:
