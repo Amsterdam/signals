@@ -11,6 +11,12 @@ from signals.apps.signals.models import Reporter, Signal
     target_fixture='signal',
 )
 def given_signal_reporter(phone: str, email: str) -> Signal:
+    if email == 'null':
+        email = None
+
+    if phone == 'null':
+        phone = None
+
     return SignalFactory.create(
         reporter__phone=phone,
         reporter__email=email,
