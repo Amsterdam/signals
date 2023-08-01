@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
 import pytest
-from pytest_bdd import scenario
+from pytest_bdd import scenario, scenarios
 
 from signals.apps.api.tests.scenarios.context.api import * # noqa
 from signals.apps.api.tests.scenarios.context.email import * # noqa
@@ -14,7 +14,37 @@ from signals.apps.api.tests.scenarios.context.user import * # noqa
 @scenario(
     'features/update_signal_reporters.feature',
     'Update reporter phone and email of signal with reporter that has phone and email',
-    features_base_dir='./signals/apps/api'
+    features_base_dir='./signals/apps/api',
 )
 def test_update_reporter_phone_and_email_of_signal_with_reporter_that_has_phone_and_email():
     """Update reporter phone and email of signal with reporter that has phone and email."""
+
+
+@pytest.mark.django_db()
+@scenario(
+    'features/update_signal_reporters.feature',
+    'Update reporter phone and email of signal with reporter that has only phone number',
+    features_base_dir='./signals/apps/api',
+)
+def test_update_reporter_phone_and_email_of_signal_with_reporter_that_has_only_phone_number():
+    """Update reporter phone and email of signal with reporter that has only phone number."""
+
+
+@pytest.mark.django_db()
+@scenario(
+    'features/update_signal_reporters.feature',
+    'Update reporter phone and email of signal with reporter that has only email address',
+    features_base_dir='./signals/apps/api',
+)
+def test_update_reporter_phone_and_email_of_signal_with_reporter_that_has_only_email_address():
+    """Update reporter phone and email of signal with reporter that has only email address."""
+
+
+@pytest.mark.django_db()
+@scenario(
+    'features/update_signal_reporters.feature',
+    'Update reporter phone and email of signal with reporter that has neither',
+    features_base_dir='./signals/apps/api',
+)
+def test_update_reporter_phone_and_email_of_signal_with_reporter_that_has_neither():
+    """Update reporter phone and email of signal with reporter that has neither."""
