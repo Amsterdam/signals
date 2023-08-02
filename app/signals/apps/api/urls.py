@@ -2,7 +2,6 @@
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.conf import settings
 from django.urls import include, path, re_path
-from django.views.generic.base import TemplateView
 
 from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.views import (
@@ -155,13 +154,6 @@ urlpatterns = [
     # Questionnaires
     path('v1/', include('signals.apps.questionnaires.urls')),
 ]
-
-if not settings.DRF_SPECTACULAR_ENABLED:
-    urlpatterns += [
-        # Swagger
-        path('swagger/openapi.yaml', TemplateView.as_view(template_name='api/swagger/openapi.yaml',
-                                                          extra_context={'schema_url': 'openapi-schema'})),
-    ]
 
 if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
     urlpatterns += [

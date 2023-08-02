@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from django.http import Http404
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -16,6 +17,7 @@ from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrie
 from signals.apps.questionnaires.services.utils import get_session_service
 
 
+@extend_schema(exclude=True)
 class PublicQuestionViewSet(HALViewSetRetrieve):
     lookup_field = 'retrieval_key'
     lookup_url_kwarg = 'retrieval_key'
