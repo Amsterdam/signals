@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -19,6 +20,7 @@ from signals.apps.questionnaires.rest_framework.utils import get_session_service
 from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 
 
+@extend_schema(exclude=True)
 class PublicSessionViewSet(HALViewSetRetrieve):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'

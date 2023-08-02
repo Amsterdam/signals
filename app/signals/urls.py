@@ -44,8 +44,7 @@ if settings.SILK_ENABLED:
     urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
 # DRF Spectacular
-if settings.DRF_SPECTACULAR_ENABLED:
-    urlpatterns += [
-        path('signals/schema/', SpectacularAPIView.as_view(), name='schema'),
-        path('signals/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    ]
+urlpatterns += [
+    path('signals/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('signals/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]

@@ -336,6 +336,7 @@ if AZURE_APPLICATION_INSIGHTS_ENABLED:
 REST_FRAMEWORK = dict(
     PAGE_SIZE=100,
     UNAUTHENTICATED_TOKEN={},
+    DEFAULT_SCHEMA_CLASS='signals.schema.SIGAutoSchema',
     DEFAULT_AUTHENTICATION_CLASSES=[],
     DEFAULT_PAGINATION_CLASS='signals.apps.api.generics.pagination.HALPagination',
     DEFAULT_FILTER_BACKENDS=(
@@ -347,27 +348,6 @@ REST_FRAMEWORK = dict(
     },
     EXCEPTION_HANDLER='signals.apps.api.views.api_exception_handler',
 )
-
-# Swagger settings
-DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')  # Must end with a trailing slash
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
-    'SECURITY_DEFINITIONS': {
-        'Signals API - Swagger': {
-            'type': 'oauth2',
-            'authorizationUrl': f'{DATAPUNT_API_URL}oauth2/authorize',
-            'flow': 'implicit',
-            'scopes': {
-                'SIG/ALL': 'Signals alle authorizaties',
-            }
-        }
-    },
-    'OAUTH2_CONFIG': {
-        'clientId': 'swagger-ui',
-        #  'clientSecret': 'yourAppClientSecret',
-        'appName': 'Signal Swagger UI',
-    },
-}
 
 # Sigmax settings
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
@@ -449,29 +429,22 @@ MARKDOWNX_MARKDOWNIFY_FUNCTION = 'signals.apps.email_integrations.utils.markdown
 MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Signals has for markdownx
 
 # DRF Spectacular settings
-DRF_SPECTACULAR_ENABLED = os.getenv('DRF_SPECTACULAR_ENABLED', False) in TRUE_VALUES
-
-if DRF_SPECTACULAR_ENABLED:
-    REST_FRAMEWORK.update(dict(
-        DEFAULT_SCHEMA_CLASS='signals.schema.SIGAutoSchema',
-    ))
-
-    SPECTACULAR_SETTINGS = {
-        'TITLE': 'Signalen API',
-        'DESCRIPTION': 'One of the tasks of a municipality is to maintain public spaces. When citizens have '
-                       'complaints about public spaces they can leave these complaints with the municipality. '
-                       'Signalen (SIG) receives these complaints and is used to track progress towards their '
-                       'resolution. SIG provides an API that is used both by the SIG frontend and external '
-                       'systems that integrate with SIG.',
-        'VERSION': __version__,
-        'SERVE_INCLUDE_SCHEMA': False,
-        'SWAGGER_UI_DIST': 'SIDECAR',
-        'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-        'GENERIC_ADDITIONAL_PROPERTIES': True,
-        'AUTHENTICATION_WHITELIST': [
-            'signals.auth.backend.JWTAuthBackend',
-            'signals.apps.my_signals.rest_framework.authentication.MySignalsTokenAuthentication'
-        ],
-    }
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Signalen API',
+    'DESCRIPTION': 'One of the tasks of a municipality is to maintain public spaces. When citizens have '
+                   'complaints about public spaces they can leave these complaints with the municipality. '
+                   'Signalen (SIG) receives these complaints and is used to track progress towards their '
+                   'resolution. SIG provides an API that is used both by the SIG frontend and external '
+                   'systems that integrate with SIG.',
+    'VERSION': __version__,
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'GENERIC_ADDITIONAL_PROPERTIES': True,
+    'AUTHENTICATION_WHITELIST': [
+        'signals.auth.backend.JWTAuthBackend',
+        'signals.apps.my_signals.rest_framework.authentication.MySignalsTokenAuthentication'
+    ],
+}
 
 EMAIL_VERIFICATION_TOKEN_HOURS_VALID = os.getenv('EMAIL_VERIFICATION_TOKEN_HOURS_VALID', 24)
