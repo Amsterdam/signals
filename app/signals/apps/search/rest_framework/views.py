@@ -2,13 +2,14 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from typing import Optional
 
-from datapunt_api.rest import DatapuntViewSet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.generics.exceptions import GatewayTimeoutException
 from signals.apps.api.generics.permissions import SIAPermissions
@@ -21,7 +22,7 @@ from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 
 
-class SearchView(DatapuntViewSet):
+class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
