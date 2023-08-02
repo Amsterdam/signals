@@ -44,8 +44,8 @@ psycopg2-binary
 pypdf
 python-dateutil
 python-magic
-raven
 requests
+sentry-sdk
 textX
 types-cryptography
 uWSGI

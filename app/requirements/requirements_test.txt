@@ -72,6 +72,7 @@ certifi==2023.7.22
     #   -r requirements/requirements.txt
     #   elasticsearch
     #   requests
+    #   sentry-sdk
 cffi==1.15.1
     # via
     #   -r requirements/requirements.txt
@@ -518,8 +519,6 @@ pyyaml==6.0.1
     #   -r requirements/requirements.txt
     #   drf-spectacular
     #   flex
-raven==6.10.0
-    # via -r requirements/requirements.txt
 referencing==0.30.0
     # via
     #   -r requirements/requirements.txt
@@ -559,6 +558,8 @@ rsa==4.9
     # via
     #   -r requirements/requirements.txt
     #   google-auth
+sentry-sdk==1.29.2
+    # via -r requirements/requirements.txt
 simplejson==3.19.1
     # via
     #   -r requirements/requirements.txt
@@ -639,6 +640,7 @@ urllib3==1.26.16
     #   elasticsearch
     #   google-auth
     #   requests
+    #   sentry-sdk
 uwsgi==2.0.22
     # via -r requirements/requirements.txt
 validate-email==1.3

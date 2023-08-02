@@ -25,7 +25,7 @@ BASE_LOGGING = {
     'handlers': {
         'sentry': {
             'level': 'WARNING',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'class': 'sentry_sdk.integrations.logging.EventHandler',
         },
         'colorize': {
             'class': 'logs.handlers.ColoredHandler',

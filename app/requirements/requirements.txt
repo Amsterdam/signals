@@ -55,6 +55,7 @@ certifi==2023.7.22
     # via
     #   elasticsearch
     #   requests
+    #   sentry-sdk
 cffi==1.15.1
     # via
     #   cairocffi
@@ -331,8 +332,6 @@ pyyaml==6.0.1
     # via
     #   drf-spectacular
     #   flex
-raven==6.10.0
-    # via -r requirements/requirements.in
 referencing==0.30.0
     # via
     #   jsonschema
@@ -361,6 +360,8 @@ rpds-py==0.9.2
     #   referencing
 rsa==4.9
     # via google-auth
+sentry-sdk==1.29.2
+    # via -r requirements/requirements.in
 simplejson==3.19.1
     # via django-rest-swagger
 six==1.16.0
@@ -417,6 +418,7 @@ urllib3==1.26.16
     #   elasticsearch
     #   google-auth
     #   requests
+    #   sentry-sdk
 uwsgi==2.0.22
     # via -r requirements/requirements.in
 validate-email==1.3

@@ -2,6 +2,9 @@
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from signals import __version__
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -84,7 +87,6 @@ INSTALLED_APPS = [
     'django_filters',
     'djcelery_email',
     'markdownx',
-    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
     'storages',
@@ -323,9 +325,10 @@ CELERY_EMAIL_TASK_CONFIG = {
 }
 
 # Sentry logging
-RAVEN_CONFIG = {
-    'dsn': os.getenv('SENTRY_RAVEN_DSN'),
-}
+sentry_sdk.init(
+    dsn=os.getenv('SENTRY_RAVEN_DSN'),
+    integrations=[DjangoIntegration()],
+)
 
 # Azure Application insights logging
 AZURE_APPLICATION_INSIGHTS_ENABLED = os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES
