@@ -4,8 +4,11 @@ import time
 
 from django.contrib.gis import geos
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -24,16 +27,15 @@ class PrivateExpressionViewSet(ModelViewSet):
     """
     private ViewSet to display/process expressions in the database
     """
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions & ModelWritePermissions,)
 
-    authentication_classes = (JWTAuthBackend, )
     queryset = Expression.objects.all()
 
-    serializer_class = ExpressionSerializer
-
-    filter_backends = (DjangoFilterBackend, )
-    permission_classes = (SIAPermissions & ModelWritePermissions, )
-
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = ExpressionFilterSet
+
+    serializer_class = ExpressionSerializer
 
     dsl_service = DslService()
 
@@ -47,46 +49,46 @@ class PrivateExpressionViewSet(ModelViewSet):
         ExpressionContext.CTX_TIME: time.strptime("12:00:00", "%H:%M:%S")
     }
 
-    def _result_msg(self, msg):
-        return {
-            'result': msg
-        }
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='type', location=OpenApiParameter.QUERY,
+                             description='The expression type', required=True, type=str),
+            OpenApiParameter(name='expression', location=OpenApiParameter.QUERY,
+                             description='The expression to validate', required=True, type=str),
+        ],
+    )
+    @action(detail=False, url_path='validate')
+    def validate(self, request: Request) -> Response:
+        """Validate expression for a certain expression type"""
+        exp_type = request.query_params.get('type', False)
+        exp = request.query_params.get('expression', False)
+        if not exp or not exp_type:
+            raise ValidationError({'result': 'type and expression required'})
 
-    def _bad_request(self, msg):
-        return Response(
-            data=self._result_msg(msg),
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    def _context_from_type(self, exp_type):
-        return {
+        # populate context based on exp_type
+        ctx = {
             t.identifier: self._default_context_type.get(t.identifier_type, None)
             for t in ExpressionContext.objects.filter(_type__name=exp_type)
         }
 
-    @action(detail=False, url_path='validate/?$')
-    def validate(self, request):
-        """Validate expression for a certain expression type"""
-        exp_type = request.query_params.get('type', None)
-        exp = request.query_params.get('expression', None)
-        if not exp or not exp_type:
-            return self._bad_request('type and expression required')
-        # populate context based on exp_type
-        ctx = self._context_from_type(exp_type)
         result = self.dsl_service.validate(ctx, exp)
-        if not result:
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return self._bad_request(result)
+        if result:
+            raise ValidationError({'result': result})
+        return Response(status=status.HTTP_200_OK)
 
-    @action(detail=False, url_path='context/?$')
-    def context(self, request):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='type', location=OpenApiParameter.QUERY,
+                             description='The expression type', required=True, type=str),
+        ],
+    )
+    @action(detail=False, url_path='context')
+    def context(self, request: Request) -> Response:
         """Returns available identifers for expression type"""
-        exp_type = request.query_params.get('type', None)
+        exp_type = request.query_params.get('type', False)
         if not exp_type:
-            return self._bad_request('type required')
+            raise ValidationError({'result': 'type required'})
 
         ctx = ExpressionContext.objects.filter(_type__name=exp_type)
-
         serializer = ExpressionContextSerializer(ctx, many=True)
         return Response(serializer.data)
