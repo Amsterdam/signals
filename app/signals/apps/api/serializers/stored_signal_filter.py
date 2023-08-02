@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -35,7 +35,7 @@ class StoredSignalFilterSerializer(HALSerializer):
         return super().validate(attrs)
 
     def validate_options(self, value):
-        if type(value) != dict:
+        if not isinstance(value, dict):
             raise ValidationError('Expected an object for "options"')
 
         signal_filter = SignalFilterSet(data=value, queryset=Signal.objects.none())

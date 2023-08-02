@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 """
 Module with Django model mixin for SIA report parameters.
 
@@ -298,7 +298,7 @@ def get_categories(value):
     # Return a queryset of matching IDs (so that filtering for allowed
     # categories is easy down the line).
     for x in matching_category_ids:
-        assert type(x) == int
+        assert isinstance(x, int)
     return Category.objects.filter(id__in=matching_category_ids)
 
 
