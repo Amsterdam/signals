@@ -45,12 +45,22 @@ def given_email_template(key: str) -> None:
     EmailTemplateFactory.create(key=key, title=key, body=TEMPLATES.get(key))
 
 
-@then(parsers.parse('the reporter with email address {email} should receive an email with template key {key}'))
-def then_email(email: str, key: str) -> None:
+
+def _email_sent(email: str, subject: str) -> bool:
     found = False
     for outbox_email in mail.outbox:
-        if outbox_email.to[0] == email and outbox_email.subject == key:
+        if outbox_email.to[0] == email and outbox_email.subject == subject:
             found = True
             break
 
-    assert found
+    return found
+
+
+@then(parsers.parse('the reporter with email address {email} should receive an email with template key {key}'))
+def then_email(email: str, key: str) -> None:
+    assert _email_sent(email, key)
+
+
+@then(parsers.parse('the reporter with email address {email} should not receive an email with template key {key}'))
+def then_not_email(email: str, key: str) -> None:
+    assert not _email_sent(email, key)
