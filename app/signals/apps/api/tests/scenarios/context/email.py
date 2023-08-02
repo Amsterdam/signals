@@ -45,7 +45,6 @@ def given_email_template(key: str) -> None:
     EmailTemplateFactory.create(key=key, title=key, body=TEMPLATES.get(key))
 
 
-
 def _email_sent(email: str, subject: str) -> bool:
     found = False
     for outbox_email in mail.outbox:
