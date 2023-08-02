@@ -58,3 +58,10 @@ def then_reporter_state(email: str, state: str, signal: Signal) -> None:
     reporter = signal.reporters.get(email=email)
 
     assert reporter.state == state
+
+
+@then(parsers.parse('the reporter with email address {email} should no longer have a verification token'))
+def then_reporter_has_no_verification_token(email: str, signal: Signal) -> None:
+    reporter = signal.reporters.get(email=email)
+
+    assert reporter.email_verification_token is None
