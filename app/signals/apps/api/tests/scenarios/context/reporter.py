@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from pytest_bdd import parsers, then, when
+from pytest_bdd import given, parsers, then, when
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
+from signals.apps.signals.factories import ReporterFactory
 from signals.apps.signals.models import Signal
 from signals.apps.users.models import User
+
+
+@given(parsers.parse('the signal has a reporter with state new and phone number {phone}, email address {email} and state {state}'))
+def add_reporter(phone: str, email: str, state: str, signal: Signal) -> None:
+    ReporterFactory.create(phone=phone, email=email, state=state, _signal=signal)
 
 
 @when(
@@ -44,3 +50,10 @@ def then_signal_updated(phone: str, email: str, signal: Signal) -> None:
     signal.refresh_from_db()
     assert signal.reporter.phone == phone
     assert signal.reporter.email == email
+
+
+@then(parsers.parse('the reporter with email address {email} should have state {state}'))
+def then_reporter_state(email: str, state: str, signal: Signal) -> None:
+    reporter = signal.reporters.get(email=email)
+
+    assert reporter.state == state
