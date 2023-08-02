@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import time
 
-from datapunt_api.pagination import HALPagination
-from datapunt_api.rest import DatapuntViewSetWritable
 from django.contrib.gis import geos
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from signals.apps.api.filters.expression import ExpressionFilterSet
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
@@ -21,19 +20,15 @@ from signals.apps.signals.models import Expression, ExpressionContext
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateExpressionViewSet(DatapuntViewSetWritable):
+class PrivateExpressionViewSet(ModelViewSet):
     """
     private ViewSet to display/process expressions in the database
     """
 
     authentication_classes = (JWTAuthBackend, )
     queryset = Expression.objects.all()
-    queryset_detail = Expression.objects.all()
 
     serializer_class = ExpressionSerializer
-    serializer_detail_class = ExpressionSerializer
-
-    pagination_class = HALPagination
 
     filter_backends = (DjangoFilterBackend, )
     permission_classes = (SIAPermissions & ModelWritePermissions, )
@@ -68,13 +63,6 @@ class PrivateExpressionViewSet(DatapuntViewSetWritable):
             t.identifier: self._default_context_type.get(t.identifier_type, None)
             for t in ExpressionContext.objects.filter(_type__name=exp_type)
         }
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_detail_class(data=request.data, context=self.get_serializer_context())
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, url_path='validate/?$')
     def validate(self, request):
