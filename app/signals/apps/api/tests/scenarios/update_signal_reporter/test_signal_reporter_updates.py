@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
 import pytest
-from pytest_bdd import scenario, scenarios
+from pytest_bdd import scenario
 
 from signals.apps.api.tests.scenarios.context.api import * # noqa
 from signals.apps.api.tests.scenarios.context.email import * # noqa
