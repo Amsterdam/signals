@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from collections import OrderedDict
+
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
@@ -51,7 +53,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
         text_list = attrs.get('text_list', [])
         if text:
             text_list.append(text)
-        attrs['text_list'] = list(set(text_list))
+
+        # Remove duplicate answers but keep the order intact
+        ordered_text_dict = OrderedDict.fromkeys(text_list)
+        attrs['text_list'] = list(ordered_text_dict.keys())
 
         # Call the super validate method
         return super().validate(attrs)
