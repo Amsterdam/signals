@@ -50,7 +50,7 @@ class SignalReporterSerializer(ModelSerializer):
 
     def _cancel_previous_reporters(self, signal: Signal) -> None:
         for reporter in signal.reporters.all():
-            if reporter.state != Reporter.REPORTER_STATE_APPROVED:
+            if reporter.state not in (Reporter.REPORTER_STATE_APPROVED, Reporter.REPORTER_STATE_CANCELLED):
                 reporter.cancel()
                 reporter.save()
 
