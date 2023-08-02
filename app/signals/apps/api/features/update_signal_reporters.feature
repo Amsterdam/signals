@@ -86,3 +86,4 @@ Feature: Updating the reporter of signal
     And the reporter with email address joep@example.com should not receive an email with template key verify_email_reporter
     And the reporter with email address joep@example.com should receive an email with template key confirm_reporter_updated
     And the reporter of the signal should have phone number 0200000001 and email address joep@example.com
+    And the reporter with email address joep@example.com should have state approved
