@@ -50,8 +50,9 @@ def verify_token(email: str, signal: Signal, api_client: APIClient) -> Response:
     )
 
 
-@then(parsers.parse('the reporter of the signal should have phone number {phone} and email address {email}'))
-def then_signal_updated(phone: str, email: str, signal: Signal) -> None:
+@then(parsers.parse('the reporter of the signal should have phone number {phone}, '
+                    'email address {email} and state {state}'))
+def then_signal_updated(phone: str, email: str, state: str, signal: Signal) -> None:
     signal.refresh_from_db()
 
     if email == 'null':
@@ -59,6 +60,7 @@ def then_signal_updated(phone: str, email: str, signal: Signal) -> None:
 
     assert signal.reporter.phone == phone
     assert signal.reporter.email == email
+    assert signal.reporter.state == state
 
 
 @then(parsers.parse('the reporter with email address {email} should have state {state}'))
