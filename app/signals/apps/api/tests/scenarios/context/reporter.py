@@ -28,9 +28,13 @@ def create_reporter(
 ) -> Response:
     api_client.force_authenticate(read_write_user)
 
+    data = {'sharing_allowed': True, 'phone': phone}
+    if email != 'null':
+        data['email'] = email
+
     return api_client.post(
         f'/signals/v1/private/signals/{signal.id}/reporters/',
-        data={'phone': phone, 'email': email, 'sharing_allowed': True},
+        data=data,
         format='json',
     )
 
@@ -49,6 +53,10 @@ def verify_token(email: str, signal: Signal, api_client: APIClient) -> Response:
 @then(parsers.parse('the reporter of the signal should have phone number {phone} and email address {email}'))
 def then_signal_updated(phone: str, email: str, signal: Signal) -> None:
     signal.refresh_from_db()
+
+    if email == 'null':
+        email = None
+
     assert signal.reporter.phone == phone
     assert signal.reporter.email == email
 
