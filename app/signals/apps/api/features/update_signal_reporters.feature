@@ -127,3 +127,13 @@ Feature: Updating the reporter of signal
     And the reporter with email address joep@example.com should not receive an email with template key verify_email_reporter
     And the reporter with email address joep@example.com should receive an email with template key confirm_reporter_updated
     And the reporter with email address ja@example.com should have state cancelled
+
+  Scenario: Update phone of signal with reporter that has cancelled state
+    Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
+    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state cancelled
+    When I create a new reporter for the signal with phone number 0200000001 and email address joep@example.com
+    Then the response status code should be 201
+    And the reporter with email address joep@example.com should not receive an email with template key notify_current_reporter
+    And the reporter with email address joep@example.com should not receive an email with template key verify_email_reporter
+    And the reporter with email address joep@example.com should receive an email with template key confirm_reporter_updated
+    And the reporter with email address ja@example.com should have state cancelled
