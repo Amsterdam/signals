@@ -148,3 +148,13 @@ def test_update_reporter_phone_of_signal_with_reporter_that_has_verification_ema
 )
 def test_update_reporter_phone_of_signal_with_reporter_that_has_cancelled_state():
     """Update phone of signal with reporter that has cancelled state."""
+
+
+@pytest.mark.django_db()
+@scenario(
+    'features/update_signal_reporters.feature',
+    'Update reporter email of signal with reporter that has phone and email',
+    features_base_dir='./signals/apps/api',
+)
+def test_update_reporter_email_of_signal_with_reporter_that_has_phone_and_email():
+    """Update reporter email of signal with reporter that has phone and email."""
