@@ -9,7 +9,8 @@ from signals.apps.signals.models import Signal
 from signals.apps.users.models import User
 
 
-@given(parsers.parse('the signal has a reporter with state new and phone number {phone}, email address {email} and state {state}'))
+@given(parsers.parse('the signal has a reporter with state new and phone number {phone},'
+                     ' email address {email} and state {state}'))
 def add_reporter(phone: str, email: str, state: str, signal: Signal) -> None:
     ReporterFactory.create(phone=phone, email=email, state=state, _signal=signal)
 
