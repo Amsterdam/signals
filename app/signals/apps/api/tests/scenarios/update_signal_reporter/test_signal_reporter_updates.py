@@ -108,3 +108,13 @@ def test_update_reporter_phone_of_signal_with_reporter_that_has_only_phone():
 )
 def test_update_reporter_phone_of_signal_with_reporter_that_has_only_email():
     """Update reporter phone of signal with reporter that has only email."""
+
+
+@pytest.mark.django_db()
+@scenario(
+    'features/update_signal_reporters.feature',
+    'Update reporter phone of signal with reporter that has neither',
+    features_base_dir='./signals/apps/api',
+)
+def test_update_reporter_phone_of_signal_with_reporter_that_has_neither():
+    """Update reporter phone of signal with reporter that has neither."""
