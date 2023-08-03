@@ -55,6 +55,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         permissions = (
             ('sia_can_view_contact_details', 'Inzien van contactgegevens melder (in melding)'),
         )
+        ordering = ('created_at',)
 
     @property
     def is_anonymized(self) -> bool:
