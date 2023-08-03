@@ -28,9 +28,11 @@ def create_reporter(
 ) -> Response:
     api_client.force_authenticate(read_write_user)
 
-    data = {'sharing_allowed': True, 'phone': phone}
+    data = {'sharing_allowed': True}
     if email != 'null':
         data['email'] = email
+    if phone != 'null':
+        data['phone'] = phone
 
     return api_client.post(
         f'/signals/v1/private/signals/{signal.id}/reporters/',
@@ -57,6 +59,8 @@ def then_signal_updated(phone: str, email: str, state: str, signal: Signal) -> N
 
     if email == 'null':
         email = None
+    if phone == 'null':
+        phone = None
 
     assert signal.reporter.phone == phone
     assert signal.reporter.email == email
