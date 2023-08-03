@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from signals.admin.oidc import views as admin_oidc_views
@@ -22,7 +21,7 @@ urlpatterns = [
 
     # The Django admin
     path('signals/admin/', admin.site.urls),
-    url(r'^signals/markdownx/', include('markdownx.urls')),
+    re_path(r'^signals/markdownx/', include('markdownx.urls')),
 
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
