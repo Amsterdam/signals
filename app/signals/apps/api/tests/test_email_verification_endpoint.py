@@ -54,3 +54,18 @@ class TestEmailVerificationEndpoint(SignalsBaseApiTestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual({'token': self.TOKEN}, response.json())
+
+    def test_token_already_verified(self):
+        ReporterFactory.create(
+            state=Reporter.REPORTER_STATE_APPROVED,
+            email='a@b.c',
+            phone='789',
+            email_verification_token=self.TOKEN,
+            email_verification_token_expires=timezone.now() + datetime.timedelta(weeks=1),
+            email_verified=True,
+        )
+
+        response = self.client.post(self.PATH, {'token': self.TOKEN}, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual({'token': ['Token already verified!']}, response.json())

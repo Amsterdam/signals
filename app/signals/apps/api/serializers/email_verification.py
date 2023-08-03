@@ -17,6 +17,9 @@ class EmailVerificationSerializer(serializers.Serializer):
         except Reporter.DoesNotExist:
             raise serializers.ValidationError("Token not found!")
 
+        if self.reporter.email_verified:
+            raise serializers.ValidationError("Token already verified!")
+
         if self.reporter.email_verification_token_expires < timezone.now():
             raise serializers.ValidationError("Token expired!")
 
