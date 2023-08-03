@@ -52,7 +52,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone and email of signal with reporter that has new state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state new
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state new
     When I create a new reporter for the signal with phone number 0200000001 and email address jan@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should receive an email with template key notify_current_reporter
@@ -61,7 +61,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone and email of signal with reporter that has verification_email_sent state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state verification_email_sent
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state verification_email_sent
     When I create a new reporter for the signal with phone number 0200000001 and email address jan@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should receive an email with template key notify_current_reporter
@@ -71,7 +71,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone and email of signal with reporter that has cancelled state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state cancelled
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state cancelled
     When I create a new reporter for the signal with phone number 0200000001 and email address jan@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should receive an email with template key notify_current_reporter
@@ -110,7 +110,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone of signal with reporter that has new state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state new
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state new
     When I create a new reporter for the signal with phone number 0200000001 and email address joep@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should not receive an email with template key notify_current_reporter
@@ -120,7 +120,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone of signal with reporter that has verification_email_sent state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state verification_email_sent
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state verification_email_sent
     When I create a new reporter for the signal with phone number 0200000001 and email address joep@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should not receive an email with template key notify_current_reporter
@@ -130,7 +130,7 @@ Feature: Updating the reporter of signal
 
   Scenario: Update phone of signal with reporter that has cancelled state
     Given there is a signal with reporter phone number 02000000000 and email address joep@example.com
-    And the signal has a reporter with state new and phone number 0200000001, email address ja@example.com and state cancelled
+    And the signal has a reporter with phone number 0200000001, email address ja@example.com and state cancelled
     When I create a new reporter for the signal with phone number 0200000001 and email address joep@example.com
     Then the response status code should be 201
     And the reporter with email address joep@example.com should not receive an email with template key notify_current_reporter
