@@ -648,9 +648,9 @@ class TestCategory(TestCase):
                     parent_category.save()
 
                 validation_error = e.exception
-                self.assertEquals(len(validation_error.error_dict['configuration']), 1)
-                self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                                  'Value of "show_children_in_filter" is not a valid boolean')
+                self.assertEqual(len(validation_error.error_dict['configuration']), 1)
+                self.assertEqual(validation_error.error_dict['configuration'][0].message,
+                                 'Value of "show_children_in_filter" is not a valid boolean')
 
     def test_only_show_in_filter_parent_category_configuration(self):
         """
@@ -666,8 +666,8 @@ class TestCategory(TestCase):
             parent_category.save()
 
         validation_error = e.exception
-        self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                          'The "show_children_in_filter" is required for parent categories')
+        self.assertEqual(validation_error.error_dict['configuration'][0].message,
+                         'The "show_children_in_filter" is required for parent categories')
 
         parent_category.configuration = {'show_children_in_filter': True, 'not': 'allowed'}
 
@@ -675,9 +675,9 @@ class TestCategory(TestCase):
             parent_category.save()
 
         validation_error = e.exception
-        self.assertEquals(len(validation_error.error_dict['configuration']), 1)
-        self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                          'Only "show_children_in_filter" is allowed')
+        self.assertEqual(len(validation_error.error_dict['configuration']), 1)
+        self.assertEqual(validation_error.error_dict['configuration'][0].message,
+                         'Only "show_children_in_filter" is allowed')
 
     def test_invalid_show_in_filter_and_additional_config_parent_category_configuration(self):
         """
@@ -703,7 +703,7 @@ class TestCategory(TestCase):
                     parent_category.save()
 
                 validation_error = e.exception
-                self.assertEquals(len(validation_error.error_dict['configuration']), 2)
+                self.assertEqual(len(validation_error.error_dict['configuration']), 2)
                 messages = [ve.message for ve in validation_error.error_dict['configuration']]
                 self.assertIn('Value of "show_children_in_filter" is not a valid boolean', messages)
                 self.assertIn('Only "show_children_in_filter" is allowed', messages)
