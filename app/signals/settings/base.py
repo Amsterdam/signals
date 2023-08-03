@@ -320,6 +320,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 CELERY_EMAIL_CHUNK_SIZE = 1
 CELERY_EMAIL_TASK_CONFIG = {
     'ignore_result': False,
+    'max_retries': os.getenv('CELERY_EMAIL_TASK_CONFIG_MAX_RETRIES', 3),
+    'default_retry_delay': os.getenv('CELERY_EMAIL_TASK_CONFIG_DEFAULT_RETRY_DELAY', 60 * 3)
 }
 
 # Sentry logging
