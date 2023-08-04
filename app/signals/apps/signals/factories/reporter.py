@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from string import digits
 
 from factory import Sequence, SubFactory, post_generation
@@ -13,6 +13,7 @@ class ReporterFactory(DjangoModelFactory):
 
     class Meta:
         model = Reporter
+        skip_postgeneration_save = True
 
     _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', reporter=None)
 
@@ -25,3 +26,4 @@ class ReporterFactory(DjangoModelFactory):
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
+        self.save()

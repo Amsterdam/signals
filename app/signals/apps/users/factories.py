@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import factory
 import faker
 from django.conf import settings
@@ -14,6 +14,7 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = settings.AUTH_USER_MODEL
         django_get_or_create = ('username', )
+        skip_postgeneration_save = True
 
     first_name = factory.LazyAttribute(
         lambda o: fake.first_name()
@@ -50,6 +51,7 @@ class GroupFactory(DjangoModelFactory):
     class Meta:
         model = Group
         django_get_or_create = ('name',)
+        skip_postgeneration_save = True
 
     name = factory.LazyAttribute(
         lambda o: fake.word()

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import uuid
 from datetime import timedelta
 
@@ -62,6 +62,17 @@ class SignalFactory(DjangoModelFactory):
         self.reporter = self.reporters.last()
         self.priority = self.priorities.last()
         self.type_assignment = self.types.last()
+
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        """Save again the instance if creating and at least one hook ran.
+
+        Deprecated: https://factoryboy.readthedocs.io/en/stable/changelog.html
+        To fix this warning, we override _after_postgeneration to save() the instance.
+        """
+        if create:
+            # Some post-generation hooks ran, and may have modified us.
+            instance.save()
 
 
 class SignalFactoryWithImage(SignalFactory):

@@ -15,6 +15,7 @@ class StatusMessageFactory(DjangoModelFactory):
 
     class Meta:
         model = StatusMessage
+        skip_postgeneration_save = True
 
 
 class StatusMessageCategoryFactory(DjangoModelFactory):

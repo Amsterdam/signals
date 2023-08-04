@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from string import ascii_uppercase
 
 from factory import LazyFunction
@@ -20,3 +20,4 @@ class DepartmentFactory(DjangoModelFactory):
 
     class Meta:
         model = Department
+        skip_postgeneration_save = True

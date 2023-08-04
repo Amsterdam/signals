@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from factory import SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText
@@ -18,3 +18,4 @@ class StatusMessageTemplateFactory(DjangoModelFactory):
 
     class Meta:
         model = StatusMessageTemplate
+        skip_postgeneration_save = True
