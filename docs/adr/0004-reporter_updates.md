@@ -6,6 +6,7 @@ Author: Youri Westerman
 ## Status
 
 2023-06-14 - Draft (Youri Westerman)
+2023-08-04 - Final (Youri Westerman)
 
 ## Context
 
@@ -17,11 +18,13 @@ Allowing the phone number and/or email address to be updated is a lot more
 user-friendly than having to create a new signal, especially when the old signal
 is already being handled.
 
-In order to verify if a new email address actually correct we should require a
+In order to verify if a new email address actually correct we require a
 verification process.
 
 A reporter is its own entity in the database which is linked to a signal using a
-bidirectional one-to-one relation.
+bidirectional one-to-one relation. However, multiple reporters can be linked to the
+same signal. This makes a single reporter the current reporter for the signal and
+allows for keeping track of changes to the signal's reporter information.
 
 ## Decision
 
@@ -63,22 +66,12 @@ use a state machine. See the diagram below.
 
 ```mermaid
 stateDiagram-v2
-    direction LR
-    state includes_email <<choice>>
-    state email_changed <<choice>>
-    state phone_changed <<choice>>
-    state verification_link_clicked <<choice>>
-
-    [*] --> includes_email
-    includes_email --> phone_changed: does not include email
-    includes_email --> email_changed: includes email
-    email_changed --> phone_changed: email not changed
-    email_changed --> verification_email_sent: email changed
-    phone_changed --> cancelled: phone not changed
-    phone_changed --> approved: phone changed
+    [*] --> new
+    new --> approved
+    new --> verification_email_sent
+    verification_email_sent --> approved
     verification_email_sent --> cancelled
-    verification_email_sent --> verification_link_clicked
-    verification_link_clicked --> approved: verification link clicked
+    new --> cancelled
     cancelled --> [*]
     approved --> [*]
 ```
