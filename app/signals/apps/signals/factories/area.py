@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import random
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
@@ -32,6 +32,7 @@ def get_random_bbox(bbox=BBOX, n_lon_subdiv=10, n_lat_subdiv=10):
 class AreaTypeFactory(DjangoModelFactory):
     class Meta:
         model = AreaType
+        skip_postgeneration_save = True
 
     name = Sequence(lambda n: f'Gebied type {n}')
     code = Sequence(lambda n: f'gebied-type-code-{n}')
@@ -41,6 +42,7 @@ class AreaTypeFactory(DjangoModelFactory):
 class AreaFactory(DjangoModelFactory):
     class Meta:
         model = Area
+        skip_postgeneration_save = True
 
     name = Sequence(lambda n: f'Gebied type {n}')
     code = Sequence(lambda n: f'gebied-type-code-{n}')

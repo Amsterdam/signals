@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from factory import Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory, FileField, ImageField
 
@@ -9,6 +9,7 @@ from signals.apps.signals.models import Attachment
 class AttachmentFactory(DjangoModelFactory):
     class Meta:
         model = Attachment
+        skip_postgeneration_save = True
 
     _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
     created_by = Sequence(lambda n: 'veelmelder{}@example.com'.format(n))

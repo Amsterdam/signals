@@ -20,7 +20,8 @@ class ParentCategoryFactory(DjangoModelFactory):
 
     class Meta:
         model = Category
-        django_get_or_create = ('slug', )
+        django_get_or_create = ('slug',)
+        skip_postgeneration_save = True
 
     @post_generation
     def questions(self, create, extracted, **kwargs):
@@ -30,6 +31,7 @@ class ParentCategoryFactory(DjangoModelFactory):
         if extracted:
             for question in extracted:
                 self.questions.add(question)
+            self.save()
 
 
 class CategoryFactory(DjangoModelFactory):
@@ -45,7 +47,8 @@ class CategoryFactory(DjangoModelFactory):
 
     class Meta:
         model = Category
-        django_get_or_create = ('parent', 'slug', )
+        django_get_or_create = ('parent', 'slug',)
+        skip_postgeneration_save = True
 
     @post_generation
     def departments(self, create, extracted, **kwargs):
@@ -61,6 +64,7 @@ class CategoryFactory(DjangoModelFactory):
                         'can_view': True
                     }
                 )
+            self.save()
 
     @post_generation
     def questions(self, create, extracted, **kwargs):
@@ -70,6 +74,7 @@ class CategoryFactory(DjangoModelFactory):
         if extracted:
             for question in extracted:
                 self.questions.add(question)
+            self.save()
 
 
 class CategoryWithIconFactory(CategoryFactory):

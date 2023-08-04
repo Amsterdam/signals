@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from factory import SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText
@@ -15,3 +15,4 @@ class StoredSignalFilterFactory(DjangoModelFactory):
 
     class Meta:
         model = StoredSignalFilter
+        skip_postgeneration_save = True

@@ -22,6 +22,8 @@ REASONS = [
 class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswerTopic
+        skip_postgeneration_save = True
+
     name = factory.Sequence(lambda n: 'topic name: {}'.format(n))
     description = factory.Sequence(lambda n: 'topic text: {}'.format(n))
     order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
@@ -30,6 +32,7 @@ class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
 class StandardAnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswer
+        skip_postgeneration_save = True
 
     text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
     is_visible = fuzzy.FuzzyChoice([True, False])
@@ -41,6 +44,7 @@ class StandardAnswerFactory(factory.django.DjangoModelFactory):
 class FeedbackFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Feedback
+        skip_postgeneration_save = True
 
     _signal = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
     created_at = factory.LazyFunction(timezone.now)

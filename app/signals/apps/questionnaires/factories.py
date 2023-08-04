@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from factory import LazyFunction, SelfAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 from faker import Faker
@@ -32,6 +32,7 @@ class QuestionFactory(DjangoModelFactory):
 
     class Meta:
         model = Question
+        skip_postgeneration_save = True
 
 
 class QuestionGraphFactory(DjangoModelFactory):
@@ -40,6 +41,7 @@ class QuestionGraphFactory(DjangoModelFactory):
 
     class Meta:
         model = QuestionGraph
+        skip_postgeneration_save = True
 
 
 class ChoiceFactory(DjangoModelFactory):
@@ -47,6 +49,7 @@ class ChoiceFactory(DjangoModelFactory):
 
     class Meta:
         model = Choice
+        skip_postgeneration_save = True
 
 
 class EdgeFactory(DjangoModelFactory):
@@ -57,6 +60,7 @@ class EdgeFactory(DjangoModelFactory):
 
     class Meta:
         model = Edge
+        skip_postgeneration_save = True
 
 
 class TriggerFactory(DjangoModelFactory):
@@ -65,6 +69,7 @@ class TriggerFactory(DjangoModelFactory):
 
     class Meta:
         model = Trigger
+        skip_postgeneration_save = True
 
 
 class QuestionnaireFactory(DjangoModelFactory):
@@ -78,6 +83,7 @@ class QuestionnaireFactory(DjangoModelFactory):
 
     class Meta:
         model = Questionnaire
+        skip_postgeneration_save = True
 
 
 class SessionFactory(DjangoModelFactory):
@@ -88,6 +94,7 @@ class SessionFactory(DjangoModelFactory):
 
     class Meta:
         model = Session
+        skip_postgeneration_save = True
 
 
 class AnswerFactory(DjangoModelFactory):
@@ -97,3 +104,4 @@ class AnswerFactory(DjangoModelFactory):
 
     class Meta:
         model = Answer
+        skip_postgeneration_save = True

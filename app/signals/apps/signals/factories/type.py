@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from factory import SubFactory
 from factory.django import DjangoModelFactory
 
@@ -12,3 +12,4 @@ class TypeFactory(DjangoModelFactory):
 
     class Meta:
         model = Type
+        skip_postgeneration_save = True

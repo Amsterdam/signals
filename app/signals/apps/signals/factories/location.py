@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import copy
 import random
 
@@ -25,6 +25,7 @@ class LocationFactory(DjangoModelFactory):
 
     class Meta:
         model = Location
+        skip_postgeneration_save = True
 
     _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', location=None)
 
@@ -39,6 +40,7 @@ class LocationFactory(DjangoModelFactory):
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
+        self.save()
 
 
 class ValidLocationFactory(LocationFactory):
@@ -52,3 +54,4 @@ class ValidLocationFactory(LocationFactory):
         self.buurt_code = valid_location.pop('buurt_code')
         self.stadsdeel = valid_location.pop('stadsdeel')
         self.address = valid_location
+        self.save()
