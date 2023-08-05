@@ -282,6 +282,8 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['_signal_id'], str(category_assignment._signal_id))
                 self.assertEqual(row['main'], str(category_assignment.category.parent.name))
                 self.assertEqual(row['sub'], str(category_assignment.category.name))
+                self.assertEqual(row['main_slug'], str(category_assignment.category.parent.slug))
+                self.assertEqual(row['sub_slug'], str(category_assignment.category.slug))
                 self.assertEqual(row['departments'],
                                  ', '.join(category_assignment.category.departments.values_list('name', flat=True)))
 
