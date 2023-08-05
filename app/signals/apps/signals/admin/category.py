@@ -76,7 +76,6 @@ class CategoryAdmin(admin.ModelAdmin):
     inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline, StatusMessageCategoryInline)
     fields = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message', 'public_name',
               'is_public_accessible', 'icon',)
-    readonly_fields = ('slug',)
     view_on_site = True
 
     search_fields = ('name', 'public_name',)
