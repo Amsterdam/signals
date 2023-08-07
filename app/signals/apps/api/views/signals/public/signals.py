@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from typing import Any
 
+from django.conf import settings
 from django.db.models import Min, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -14,7 +15,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import GenericViewSet
 
-from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters.signal import PublicSignalGeographyFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.serializers import PublicSignalCreateSerializer, PublicSignalSerializerDetail
@@ -197,7 +197,8 @@ class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
         # Paginate our queryset and turn it into a GeoJSON feature collection:
         headers = []
         feature_collection = {'type': 'FeatureCollection', 'features': []}
-        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
+        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage',
+                                                     page_size=settings.SIGNALS_API_GEO_PAGINATE_BY)
         page_qs = paginator.paginate_queryset(queryset, self.request, view=self)
 
         if page_qs is not None:

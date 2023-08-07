@@ -2,6 +2,7 @@
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import logging
 
+from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Q
 from django.utils import timezone
@@ -12,7 +13,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import GenericViewSet
 
-from signals.apps.api import app_settings
 from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import (
@@ -111,10 +111,10 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
             distance_from_point=Distance('location__geometrie', signal.location.geometrie),
         ).filter(
             (Q(parent__isnull=True) & Q(children__isnull=True)) | Q(parent__isnull=False),
-            distance_from_point__lte=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_RADIUS,
+            distance_from_point__lte=settings.SIGNAL_API_CONTEXT_GEOGRAPHY_RADIUS,
             category_assignment__category_id=signal.category_assignment.category.pk,
             created_at__gte=(
-                timezone.now() - timezone.timedelta(weeks=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
+                timezone.now() - timezone.timedelta(weeks=settings.SIGNAL_API_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
             ),
         ).exclude(pk=signal.pk)
 
