@@ -321,6 +321,13 @@ CELERY_EMAIL_CHUNK_SIZE = 1
 CELERY_EMAIL_TASK_CONFIG = {
     'ignore_result': False,
 }
+celery_email_task_config_max_retries = os.getenv('CELERY_EMAIL_TASK_CONFIG_MAX_RETRIES')
+if celery_email_task_config_max_retries:
+    CELERY_EMAIL_TASK_CONFIG['max_retries'] = celery_email_task_config_max_retries
+
+celery_email_task_config_default_retry_delay = os.getenv('CELERY_EMAIL_TASK_CONFIG_DEFAULT_RETRY_DELAY')
+if celery_email_task_config_default_retry_delay:
+    CELERY_EMAIL_TASK_CONFIG['default_retry_delay'] = celery_email_task_config_default_retry_delay
 
 # Sentry logging
 RAVEN_CONFIG = {
