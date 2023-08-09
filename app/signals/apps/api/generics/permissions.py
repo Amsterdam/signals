@@ -159,5 +159,4 @@ class ReporterPermission(BasePermission):
         ) or SignalPermissionService.has_permission(
             user=request.user,
             permission='signals.sia_can_view_all_categories',
-            signal=obj._signal
         )
