@@ -9,7 +9,7 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED
+    HTTP_401_UNAUTHORIZED, HTTP_204_NO_CONTENT
 )
 from rest_framework.test import APITestCase
 
@@ -78,3 +78,11 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
 
         reporter = response.json()
         self.assertEqual(reporter.get('state'), Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
+
+    def test_can_cancel(self) -> None:
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
+        reporter = ReporterFactory.create(_signal=signal, state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
+
+        response = self.client.delete(f'/signals/v1/private/signals/{signal.pk}/reporters/{reporter.pk}')
+
+        self.assertEqual(response.status_code, HTTP_204_NO_CONTENT)
