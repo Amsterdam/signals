@@ -91,7 +91,7 @@ defusedxml==0.7.1
     # via
     #   cairosvg
     #   djangorestframework-xml
-django==3.2.25
+django==4.0.10
     # via
     #   -r requirements/requirements.in
     #   django-appconf
@@ -202,7 +202,7 @@ markdown==3.6
     # via django-markdownx
 mozilla-django-oidc==4.0.1
     # via -r requirements/requirements.in
-msal==1.27.0
+msal==1.28.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -288,7 +288,6 @@ python-magic==0.4.27
     # via -r requirements/requirements.in
 pytz==2024.1
     # via
-    #   django
     #   djangorestframework
     #   flower
 pyyaml==6.0.1

@@ -137,7 +137,7 @@ defusedxml==0.7.1
     #   djangorestframework-xml
 distlib==0.3.8
     # via virtualenv
-django==3.2.25
+django==4.0.10
     # via
     #   -r requirements/requirements.txt
     #   django-appconf
@@ -243,7 +243,7 @@ factory-boy==3.3.0
     # via
     #   -r requirements/requirements_test.in
     #   types-factory-boy
-faker==24.2.0
+faker==24.3.0
     # via factory-boy
 filelock==3.13.1
     # via
@@ -331,7 +331,7 @@ mccabe==0.7.0
     # via flake8
 mozilla-django-oidc==4.0.1
     # via -r requirements/requirements.txt
-msal==1.27.0
+msal==1.28.0
     # via
     #   -r requirements/requirements.txt
     #   azure-identity
@@ -513,7 +513,6 @@ python-magic==0.4.27
 pytz==2024.1
     # via
     #   -r requirements/requirements.txt
-    #   django
     #   djangorestframework
     #   flower
 pyyaml==6.0.1

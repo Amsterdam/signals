@@ -145,7 +145,7 @@ distlib==0.3.8
     # via
     #   -r requirements/requirements_test.txt
     #   virtualenv
-django==3.2.25
+django==4.0.10
     # via
     #   -r requirements/requirements_test.txt
     #   django-appconf
@@ -258,7 +258,7 @@ factory-boy==3.3.0
     # via
     #   -r requirements/requirements_test.txt
     #   types-factory-boy
-faker==24.2.0
+faker==24.3.0
     # via
     #   -r requirements/requirements_test.txt
     #   factory-boy
@@ -357,7 +357,7 @@ mccabe==0.7.0
     #   flake8
 mozilla-django-oidc==4.0.1
     # via -r requirements/requirements_test.txt
-msal==1.27.0
+msal==1.28.0
     # via
     #   -r requirements/requirements_test.txt
     #   azure-identity
@@ -550,7 +550,6 @@ python-magic==0.4.27
 pytz==2024.1
     # via
     #   -r requirements/requirements_test.txt
-    #   django
     #   djangorestframework
     #   flower
 pyyaml==6.0.1
