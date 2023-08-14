@@ -3,14 +3,14 @@
 from django.db import transaction
 from django.utils import timezone
 from django_fsm import TransitionNotAllowed
-from rest_framework.fields import BooleanField
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
+from rest_framework.fields import BooleanField, CharField
 
 from signals.apps.history.models import Log
 from signals.apps.signals.models import Reporter, Signal
 
 
-class SignalReporterSerializer(ModelSerializer):
+class SignalReporterSerializer(serializers.ModelSerializer):
     allows_contact = BooleanField(source='_signal.allows_contact', read_only=True)
     sharing_allowed = BooleanField(required=True)
 
@@ -116,3 +116,7 @@ class SignalReporterSerializer(ModelSerializer):
                 )
 
         return reporter
+
+
+class CancelSignalReporterSerializer(serializers.Serializer):
+    reason = CharField(required=False)
