@@ -9,7 +9,7 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED, HTTP_204_NO_CONTENT
+    HTTP_401_UNAUTHORIZED,
 )
 from rest_framework.test import APITestCase
 
@@ -79,10 +79,75 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         reporter = response.json()
         self.assertEqual(reporter.get('state'), Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
 
-    def test_can_cancel(self) -> None:
+    def test_can_cancel_without_reason(self) -> None:
         signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
         reporter = ReporterFactory.create(_signal=signal, state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
 
-        response = self.client.delete(f'/signals/v1/private/signals/{signal.pk}/reporters/{reporter.pk}')
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/{reporter.pk}/cancel',
+            data={},
+            format='json',
+        )
 
-        self.assertEqual(response.status_code, HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.json().get('state'), Reporter.REPORTER_STATE_CANCELLED)
+
+        log = reporter.history_log.all()[0]
+        self.assertEqual(log.what, 'UPDATE_REPORTER')
+        self.assertEqual(log.description, 'Contactgegevens wijziging geannuleerd.')
+
+    def test_can_cancel_with_reason(self) -> None:
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
+        reporter = ReporterFactory.create(_signal=signal, state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
+
+        reason = 'Wijziging aangevraagd door buurman.'
+
+        response = self.client.post(
+         f'/signals/v1/private/signals/{signal.pk}/reporters/{reporter.pk}/cancel',
+         data={'reason': reason},
+         format='json',
+        )
+
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.json().get('state'), Reporter.REPORTER_STATE_CANCELLED)
+
+        log = reporter.history_log.all()[0]
+        self.assertEqual(log.what, 'UPDATE_REPORTER')
+        self.assertEqual(log.description, f'Contactgegevens wijziging geannuleerd: {reason}')
+
+    def test_404_when_signal_not_found(self) -> None:
+        response = self.client.post(
+            '/signals/v1/private/signals/11145/reporters/1/cancel',
+            data={},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_when_reporter_not_found(self) -> None:
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
+
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/11145/cancel',
+            data={},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_400_when_transition_not_allowed(self) -> None:
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
+
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/{signal.reporter.pk}/cancel',
+            data={},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        non_field_errors = body.get('non_field_errors')
+        self.assertIsNotNone(non_field_errors)
+        self.assertEqual(len(non_field_errors), 1)
+        self.assertEqual(non_field_errors[0], 'Cancelling this reporter is not possible.')
