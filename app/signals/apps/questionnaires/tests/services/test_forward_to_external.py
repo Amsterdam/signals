@@ -196,7 +196,7 @@ class TestForwardToExternalSessionService(TestCase):
             # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
             # not active in this test. So we only get one extra log entry containing the external reaction.
             self.assertEqual(Log.objects.count(), n_log + 1)
-            msg = f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
+            msg = f'Toelichting externe behandelaar op vraag van {question_timestamp} {answer.payload}'
             log_entry = Log.objects.first()
             self.assertEqual(log_entry.description, msg)
 
@@ -236,7 +236,7 @@ class TestForwardToExternalSessionService(TestCase):
             # In the case of a status change after forwarding a signal we get no status change but we do get a log
             # entry containing the external reaction.
             self.assertEqual(Log.objects.count(), n_log + 1)
-            msg = f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
+            msg = f'Toelichting externe behandelaar op vraag van {question_timestamp} {answer.payload}'
             log_entry = Log.objects.first()
             self.assertEqual(log_entry.description, msg)
 

@@ -190,9 +190,8 @@ class SignalLogService:
 
         tz = pytz.timezone(settings.TIME_ZONE)
 
-        external_user = session._signal_status.email_override
         when = session._signal_status.created_at.astimezone(tz).strftime('%d-%m-%Y %H:%M')
-        description = f'Toelichting door behandelaar {external_user} op vraag van {when} {reaction}'
+        description = f'Toelichting externe behandelaar op vraag van {when} {reaction}'
 
         session.history_log.create(
             action=Log.ACTION_RECEIVE,
