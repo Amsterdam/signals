@@ -18,12 +18,12 @@ attrs==23.1.0
     #   referencing
 autopep8==2.0.2
     # via django-silk
-azure-core==1.28.0
+azure-core==1.29.2
     # via
     #   azure-identity
     #   azure-storage-blob
     #   opencensus-ext-azure
-azure-identity==1.13.0
+azure-identity==1.14.0
     # via opencensus-ext-azure
 azure-storage-blob==12.17.0
     # via -r requirements/requirements.in
@@ -40,7 +40,7 @@ cairocffi==1.6.1
     #   -r requirements/requirements.in
     #   cairosvg
     #   weasyprint
-cairosvg==2.7.0
+cairosvg==2.7.1
     # via
     #   -r requirements/requirements.in
     #   weasyprint
@@ -186,7 +186,7 @@ elasticsearch-dsl==7.4.1
     # via -r requirements/requirements.in
 flex==6.14.1
     # via -r requirements/requirements.in
-flower==2.0.0
+flower==2.0.1
     # via -r requirements/requirements.in
 google-api-core==2.11.1
     # via opencensus
@@ -214,7 +214,7 @@ josepy==1.13.0
     # via mozilla-django-oidc
 jsonpointer==2.4
     # via flex
-jsonschema==4.18.4
+jsonschema==4.19.0
     # via
     #   -r requirements/requirements.in
     #   drf-spectacular
@@ -279,13 +279,13 @@ prometheus-client==0.17.1
     # via flower
 prompt-toolkit==3.0.39
     # via click-repl
-protobuf==4.23.4
+protobuf==4.24.0
     # via
     #   google-api-core
     #   googleapis-common-protos
 psutil==5.9.5
     # via opencensus-ext-azure
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.7
     # via
     #   -r requirements/requirements.in
     #   opencensus-ext-postgresql
@@ -303,7 +303,7 @@ pyjwt[crypto]==2.8.0
     # via msal
 pyopenssl==23.2.0
     # via josepy
-pypdf==3.14.0
+pypdf==3.15.1
     # via -r requirements/requirements.in
 pyphen==0.14.0
     # via weasyprint
@@ -333,7 +333,7 @@ pyyaml==6.0.1
     #   flex
 raven==6.10.0
     # via -r requirements/requirements.in
-referencing==0.30.0
+referencing==0.30.2
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -366,7 +366,6 @@ simplejson==3.19.1
 six==1.16.0
     # via
     #   azure-core
-    #   azure-identity
     #   djangorestframework-csv
     #   elasticsearch-dsl
     #   flex
@@ -391,7 +390,7 @@ tinycss2==1.2.1
     #   cairosvg
     #   cssselect2
     #   weasyprint
-tornado==6.3.2
+tornado==6.3.3
     # via flower
 types-cryptography==3.3.23.2
     # via -r requirements/requirements.in
