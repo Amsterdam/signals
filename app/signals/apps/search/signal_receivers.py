@@ -3,11 +3,9 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from signals.apps.search.tasks import (
-    index_status_message,
-    remove_status_message_from_index,
-    save_to_elastic
-)
+from signals.apps.search.documents.status_message import StatusMessage as StatusMessageDocument
+from signals.apps.search.tasks import save_to_elastic
+from signals.apps.search.transformers.status_message import transform
 from signals.apps.signals.managers import (
     create_child,
     create_initial,
@@ -43,7 +41,8 @@ def status_message_post_save_receiver(sender: str, instance: StatusMessageModel,
     instance : StatusMessageModel
         The instance of the StatusMessage model that was saved to the database.
     """
-    index_status_message.apply_async(kwargs={'status_message_id': instance.id}, priority=10)
+    document = transform(instance)
+    document.save()
 
 
 @receiver(post_delete, sender=StatusMessageModel, dispatch_uid='status_message_post_delete_receiver')
@@ -59,4 +58,5 @@ def status_message_post_delete_receiver(sender: str, instance: StatusMessageMode
     instance : StatusMessageModel
         The instance of the StatusMessage model that was saved to the database.
     """
-    remove_status_message_from_index.apply_async(kwargs={'status_message_id': instance.id}, priority=10)
+    document = StatusMessageDocument.get(instance.id)
+    document.delete()
