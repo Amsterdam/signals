@@ -93,7 +93,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
         - Do not return logs about Priority  
         - Do not return logs about Status changes to LEEG, AFWACHTING, ON_HOLD, GEANNULEERD, GESPLITST, 
           VERZOEK_TOT_AFHANDELING, INGEPLAND, VERZOEK_TOT_HEROPENEN, TE_VERZENDEN, VERZONDEN, VERZENDEN_MISLUKT, 
-          AFGEHANDELD_EXTERN  
+          DOORGEZET_NAAR_EXTERN, AFGEHANDELD_EXTERN
         - Status changes are translated to a more reporter friendly name  
         -- GEANNULEERD, AFGEHANDELD -> Afgesloten    
         -- HEROPEND -> Heropend  
@@ -110,12 +110,18 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
 
         # Some Status transactions are excluded
         status_type = ContentType.objects.get_for_model(Status)
-        excluded_q |= Q(Q(content_type=status_type) & Q(extra__in=[workflow.LEEG, workflow.AFWACHTING, workflow.ON_HOLD,
-                                                                   workflow.GEANNULEERD, workflow.GESPLITST,
-                                                                   workflow.VERZOEK_TOT_AFHANDELING, workflow.INGEPLAND,
+        excluded_q |= Q(Q(content_type=status_type) & Q(extra__in=[workflow.LEEG,
+                                                                   workflow.AFWACHTING,
+                                                                   workflow.ON_HOLD,
+                                                                   workflow.GEANNULEERD,
+                                                                   workflow.GESPLITST,
+                                                                   workflow.VERZOEK_TOT_AFHANDELING,
+                                                                   workflow.INGEPLAND,
                                                                    workflow.VERZOEK_TOT_HEROPENEN,
-                                                                   workflow.TE_VERZENDEN, workflow.VERZONDEN,
+                                                                   workflow.TE_VERZENDEN,
+                                                                   workflow.VERZONDEN,
                                                                    workflow.VERZENDEN_MISLUKT,
+                                                                   workflow.DOORGEZET_NAAR_EXTERN,
                                                                    workflow.AFGEHANDELD_EXTERN, ]))
 
         # The first occurrence in the history log of a Location, CategoryAssignment or Type transition are excluded
@@ -131,7 +137,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
             flat=True
         ).order_by())
 
-        history_log_qs = signal.history_log.exclude(Q(excluded_q))
+        history_log_qs = signal.history_log.exclude(Q(excluded_q)).exclude(action=Log.ACTION_RECEIVE)
 
         what = self.request.query_params.get('what', None)
         if what:
