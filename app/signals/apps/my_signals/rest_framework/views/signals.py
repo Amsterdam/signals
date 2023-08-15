@@ -137,7 +137,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
             flat=True
         ).order_by())
 
-        history_log_qs = signal.history_log.exclude(Q(excluded_q))
+        history_log_qs = signal.history_log.exclude(Q(excluded_q)).exclude(action=Log.ACTION_RECEIVE)
 
         what = self.request.query_params.get('what', None)
         if what:
