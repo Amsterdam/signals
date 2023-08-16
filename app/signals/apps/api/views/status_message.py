@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import CreateModelMixin
@@ -39,6 +40,18 @@ class StatusMessagesViewSet(ModelViewSet):
     ordering_fields = ('created_at',
                        'updated_at',
                        ('statusmessagecategory__position', 'position'),)
+
+    @transaction.atomic()
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+
+    @transaction.atomic()
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
 
 
 class StatusMessagesCategoryPositionViewSet(CreateModelMixin, GenericViewSet):
