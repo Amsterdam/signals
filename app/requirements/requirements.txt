@@ -331,8 +331,6 @@ pyyaml==6.0.1
     # via
     #   drf-spectacular
     #   flex
-raven==6.10.0
-    # via -r requirements/requirements.in
 referencing==0.30.2
     # via
     #   jsonschema

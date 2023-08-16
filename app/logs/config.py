@@ -23,10 +23,6 @@ BASE_LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'WARNING',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
         'colorize': {
             'class': 'logs.handlers.ColoredHandler',
             'formatter': 'elaborate'
