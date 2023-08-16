@@ -42,7 +42,7 @@ def status_message_post_save_receiver(sender: str, instance: StatusMessageModel,
         The instance of the StatusMessage model that was saved to the database.
     """
     document = transform(instance)
-    document.save()
+    document.save(refresh='true')
 
 
 @receiver(post_delete, sender=StatusMessageModel, dispatch_uid='status_message_post_delete_receiver')
@@ -59,4 +59,4 @@ def status_message_post_delete_receiver(sender: str, instance: StatusMessageMode
         The instance of the StatusMessage model that was saved to the database.
     """
     document = StatusMessageDocument.get(instance.id)
-    document.delete()
+    document.delete(refresh='true')
