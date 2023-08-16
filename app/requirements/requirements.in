@@ -44,7 +44,6 @@ psycopg2-binary
 pypdf
 python-dateutil
 python-magic
-raven
 requests
 textX
 types-cryptography

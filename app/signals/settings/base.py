@@ -84,7 +84,6 @@ INSTALLED_APPS = [
     'django_filters',
     'djcelery_email',
     'markdownx',
-    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
     'storages',
@@ -328,11 +327,6 @@ if celery_email_task_config_max_retries:
 celery_email_task_config_default_retry_delay = os.getenv('CELERY_EMAIL_TASK_CONFIG_DEFAULT_RETRY_DELAY')
 if celery_email_task_config_default_retry_delay:
     CELERY_EMAIL_TASK_CONFIG['default_retry_delay'] = celery_email_task_config_default_retry_delay
-
-# Sentry logging
-RAVEN_CONFIG = {
-    'dsn': os.getenv('SENTRY_RAVEN_DSN'),
-}
 
 # Azure Application insights logging
 AZURE_APPLICATION_INSIGHTS_ENABLED = os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES
