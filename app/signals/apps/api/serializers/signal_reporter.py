@@ -94,14 +94,15 @@ class SignalReporterSerializer(serializers.ModelSerializer):
         # we can transition to approved
         if not verify_email_successful:
             try:
+                old_reporter = reporter._signal.reporter
                 reporter.approve()
                 reporter.save()
 
-                if reporter._signal.reporter.phone != reporter.phone:
+                if old_reporter.phone != reporter.phone:
                     self._log_to_history(reporter, 'Telefoonnummer is gewijzigd.', signal)
 
                 # This can happen when the e-mail address is removed or blanked
-                if reporter._signal.reporter.email != reporter.email:
+                if old_reporter.email != reporter.email:
                     self._log_to_history(reporter, 'E-mailadres is gewijzigd.', signal)
             except TransitionNotAllowed:
                 # If everything fails the change request is not valid and should be
