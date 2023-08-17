@@ -23,6 +23,8 @@ class EmailVerificationView(APIView):
         validated_data = serializer.validated_data
 
         reporter = serializer.reporter
+        signal = reporter._signal
+        old_reporter = signal.reporter
         reporter.email_verified = True
         reporter.approve()
         reporter.save()
@@ -31,22 +33,22 @@ class EmailVerificationView(APIView):
             action=Log.ACTION_UPDATE,
             created_at=timezone.now(),
             description='E-mailadres is geverifieerd door de melder.',
-            _signal=reporter._signal,
+            _signal=signal,
         )
 
         reporter.history_log.create(
             action=Log.ACTION_UPDATE,
             created_at=timezone.now(),
             description='E-mailadres is gewijzigd.',
-            _signal=reporter._signal,
+            _signal=signal,
         )
 
-        if reporter._signal.reporter.phone != reporter.phone:
+        if old_reporter.phone != reporter.phone:
             reporter.history_log.create(
                 action=Log.ACTION_UPDATE,
                 created_at=timezone.now(),
                 description='Telefoonnummer is gewijzigd.',
-                _signal=reporter._signal,
+                _signal=signal,
             )
 
         return Response(data=validated_data)
