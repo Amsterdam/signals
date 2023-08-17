@@ -14,10 +14,15 @@ Feature: Updating the reporter of signal
     Then the response status code should be 201
     And the reporter with email address joep@example.com should receive an email with template key notify_current_reporter
     And the reporter with email address jan@example.com should receive an email with template key verify_email_reporter
+    And the history should state E-mail verificatie verzonden.
     When I verify the token of jan@example.com
     Then the response status code should be 200
     And the reporter with email address jan@example.com should receive an email with template key confirm_reporter_updated
     And the reporter of the signal should have phone number 0200000001, email address jan@example.com and state approved
+    And the history should state E-mailadres is geverifieerd door de melder.
+    And the history should state E-mailadres is gewijzigd.
+    And the history should state Telefoonnummer is gewijzigd.
+
 
   Scenario: Update reporter phone and email of signal with reporter that has only phone number
     Given there is a signal with reporter phone number 0200000000 and email address null

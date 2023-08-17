@@ -5,6 +5,7 @@ from pytest_bdd import scenario
 
 from signals.apps.api.tests.scenarios.context.api import * # noqa
 from signals.apps.api.tests.scenarios.context.email import * # noqa
+from signals.apps.api.tests.scenarios.context.history import * # noqa
 from signals.apps.api.tests.scenarios.context.reporter import * # noqa
 from signals.apps.api.tests.scenarios.context.signal import * # noqa
 from signals.apps.api.tests.scenarios.context.user import * # noqa
