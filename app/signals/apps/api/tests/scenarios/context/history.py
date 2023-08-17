@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from pytest_bdd import then, parsers
+from pytest_bdd import parsers, then
 
 from signals.apps.signals.models import Signal
 
