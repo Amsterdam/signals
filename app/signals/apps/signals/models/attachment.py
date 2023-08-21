@@ -60,6 +60,9 @@ class Attachment(CreatedUpdatedModel):
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
 
+    public = models.BooleanField(default=False)
+    caption = models.CharField(max_length=255, null=True)
+
     class Meta:
         ordering = ('created_at',)
         indexes = [
