@@ -6,6 +6,7 @@ Views dealing with 'signals.Attachment' model directly.
 import os
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin
@@ -18,6 +19,7 @@ from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
 )
+from signals.apps.api.serializers.attachment import PrivateSignalAttachmentUpdateSerializer
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
@@ -53,7 +55,8 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, GenericViewSet):
         request={
             'multipart/form-data': PrivateSignalAttachmentSerializer
         }
-    )
+    ),
+    update=extend_schema(request=PrivateSignalAttachmentUpdateSerializer)
 )
 class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
     queryset = Attachment.objects.all()
@@ -74,6 +77,12 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
         pk = self.kwargs.get('parent_lookup__signal__pk')
         signal = get_object_or_404(Signal.objects.filter_for_user(self.request.user), pk=pk)
         return signal
+
+    def get_serializer(self, *args, **kwargs) -> serializers.BaseSerializer:
+        if self.request.method in ['PUT', 'PATCH']:
+            return PrivateSignalAttachmentUpdateSerializer()
+
+        return super().get_serializer(*args, **kwargs)
 
     def destroy(self, *args, **kwargs):
         user = self.request.user

@@ -122,3 +122,9 @@ class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeri
         )
 
         extra_kwargs = {'file': {'write_only': True}}
+
+
+class PrivateSignalAttachmentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ('public', 'caption')
