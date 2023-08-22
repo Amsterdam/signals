@@ -103,7 +103,6 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
         self.assertTrue(body.get('public'))
         self.assertEqual(body.get('caption'), caption)
 
-
     def test_patch_attachment_public_field(self):
         attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
         self.client.force_authenticate(user=self.superuser)
@@ -117,7 +116,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
         body = response.json()
         self.assertTrue(body.get('public'))
 
-    def  test_patch_attachment_caption_field(self):
+    def test_patch_attachment_caption_field(self):
         caption = 'Allowed'
         attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
         self.client.force_authenticate(user=self.superuser)
