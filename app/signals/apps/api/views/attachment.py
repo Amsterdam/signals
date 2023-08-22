@@ -8,11 +8,11 @@ import os
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
-from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
-from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
@@ -48,13 +48,16 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, GenericViewSet):
         return self.get_object()
 
 
-class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, DetailSerializerMixin, CreateModelMixin, DestroyModelMixin,
-                                      ReadOnlyModelViewSet):
+@extend_schema_view(
+    create=extend_schema(
+        request={
+            'multipart/form-data': PrivateSignalAttachmentSerializer
+        }
+    )
+)
+class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
     queryset = Attachment.objects.all()
-
     serializer_class = PrivateSignalAttachmentSerializer
-    serializer_detail_class = PrivateSignalAttachmentSerializer
-
     authentication_classes = (JWTAuthBackend,)
 
     def get_queryset(self, *args, **kwargs):
