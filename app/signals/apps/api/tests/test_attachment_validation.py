@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import AttachmentFactory, SignalFactory
 from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -60,6 +60,91 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': allowed})
             self.assertEqual(response.status_code, 201)
+
+    def test_upload_allowed_private_with_public_field(self):
+        self.client.force_authenticate(user=self.superuser)
+        for filename, content_type in ALLOWED:
+            with open(filename, 'rb') as allowed_file:
+                allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
+                response = self.client.post(self.private_upload_url, data={'file': allowed, 'public': True})
+            self.assertEqual(response.status_code, 201)
+
+    def test_upload_allowed_private_with_caption_field(self):
+        self.client.force_authenticate(user=self.superuser)
+        for filename, content_type in ALLOWED:
+            with open(filename, 'rb') as allowed_file:
+                allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
+                response = self.client.post(self.private_upload_url, data={'file': allowed, 'caption': 'Allowed'})
+            self.assertEqual(response.status_code, 201)
+
+    def test_upload_allowed_private_with_public_and_caption_fields(self):
+        self.client.force_authenticate(user=self.superuser)
+        for filename, content_type in ALLOWED:
+            with open(filename, 'rb') as allowed_file:
+                allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
+                response = self.client.post(
+                    self.private_upload_url,
+                    data={'file': allowed, 'public': True, 'caption': 'Allowed'}
+                )
+            self.assertEqual(response.status_code, 201)
+
+    def test_put_attachment_public_and_caption_fields(self):
+        caption = 'Allowed'
+        attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.put(
+            self.private_upload_url + f'{attachment.pk}',
+            data={'public': True, 'caption': caption}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertTrue(body.get('public'))
+        self.assertEqual(body.get('caption'), caption)
+
+
+    def test_patch_attachment_public_field(self):
+        attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.patch(
+            self.private_upload_url + f'{attachment.pk}',
+            data={'public': True}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertTrue(body.get('public'))
+
+    def  test_patch_attachment_caption_field(self):
+        caption = 'Allowed'
+        attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.patch(
+            self.private_upload_url + f'{attachment.pk}',
+            data={'caption': caption}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertEqual(body.get('caption'), caption)
+
+    def test_patch_attachment_public_and_caption_field(self):
+        caption = 'Allowed'
+        attachment = AttachmentFactory.create(_signal=self.signal, public=False, caption=None)
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.patch(
+            self.private_upload_url + f'{attachment.pk}',
+            data={'caption': caption, 'public': True}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertEqual(body.get('caption'), caption)
+        self.assertTrue(body.get('public'))
 
     def test_upload_disallowed_public(self):
         # Test uploads of disfiles with allowed filetypes with correct content
