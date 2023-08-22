@@ -44,7 +44,7 @@ class SignalAttachmentSerializerMixin:
 class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):
     serializer_url_field = PublicSignalAttachmentLinksField
     _display = DisplayField()
-    location = serializers.FileField(source='file', required=False)
+    location = serializers.FileField(source='file', required=False, read_only=True)
 
     class Meta:
         model = Attachment
@@ -57,7 +57,7 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
             'file',
         )
 
-        read_only = (
+        read_only_fields = (
             '_display',
             '_links',
             'location',
@@ -94,7 +94,9 @@ class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeri
     serializer_url_field = PrivateSignalAttachmentLinksField
 
     _display = DisplayField()
-    location = serializers.FileField(source='file', required=False)
+    location = serializers.FileField(source='file', required=False, read_only=True)
+    public = serializers.BooleanField(required=False)
+    caption = serializers.CharField(required=False)
 
     class Meta:
         model = Attachment
@@ -106,9 +108,11 @@ class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeri
             'created_at',
             'file',
             'created_by',
+            'public',
+            'caption',
         )
 
-        read_only = (
+        read_only_fields = (
             '_display',
             '_links',
             'location',
@@ -118,3 +122,9 @@ class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeri
         )
 
         extra_kwargs = {'file': {'write_only': True}}
+
+
+class PrivateSignalAttachmentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ('public', 'caption')
