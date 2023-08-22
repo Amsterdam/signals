@@ -80,7 +80,7 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
 
     def get_serializer(self, *args, **kwargs) -> serializers.BaseSerializer:
         if self.request.method in ['PUT', 'PATCH']:
-            return PrivateSignalAttachmentUpdateSerializer()
+            return PrivateSignalAttachmentUpdateSerializer(*args, **kwargs)
 
         return super().get_serializer(*args, **kwargs)
 
