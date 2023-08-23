@@ -98,6 +98,11 @@ class MySignalListLinksField(HyperlinkedIdentityField):
                         'type': 'string',
                         'format': 'date-time',
                         'example': '2023-06-01T00:00:00Z'
+                    },
+                    'caption': {
+                        'type': 'string',
+                        'nullable': True,
+                        'example': 'This is a caption',
                     }
                 }
             }
