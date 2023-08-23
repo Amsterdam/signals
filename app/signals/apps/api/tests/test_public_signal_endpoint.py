@@ -267,6 +267,18 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
             self.assertEqual(response.status_code, 201)
 
+    def test_attachment_is_public_by_default(self):
+        signal = SignalFactory.create(status__state=GEMELD)
+        data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+
+        response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+        self.assertEqual(response.status_code, 201)
+
+        attachments = signal.attachments.all()
+        self.assertEqual(len(attachments), 1)
+        attachment = attachments[0]
+        self.assertTrue(attachment.public)
+
     @patch('signals.apps.api.serializers.attachment.PUBLIC_UPLOAD_ALLOWED_STATES', new=(AFGEHANDELD,))
     def test_add_attachment_in_state_AFGEHANDELD(self):
         # When a nuisance complaint is handled it transitions to the state

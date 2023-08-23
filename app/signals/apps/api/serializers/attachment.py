@@ -21,7 +21,7 @@ PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
 
 
 class SignalAttachmentSerializerMixin:
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Attachment:
         user = self.context['request'].user
         signal = self.context['view'].get_signal()
 
@@ -67,7 +67,7 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
 
         extra_kwargs = {'file': {'write_only': True}}
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Attachment:
         signal = self.context['view'].get_signal()
         if signal.status.state not in PUBLIC_UPLOAD_ALLOWED_STATES:
             msg = 'Public uploads not allowed in current signal state.'
@@ -87,7 +87,11 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
                 msg = 'No feedback expected for this signal hence no uploads allowed.'
                 raise ValidationError(msg)
 
-        return super().create(validated_data)
+        attachment = super().create(validated_data)
+        attachment.public = True
+        attachment.save()
+
+        return attachment
 
 
 class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):
