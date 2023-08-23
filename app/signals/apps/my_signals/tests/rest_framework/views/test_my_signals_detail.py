@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
+import typing
+
 from django.test import override_settings
 from django.urls import include, path
 from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
@@ -26,10 +28,12 @@ test_urlconf.urlpatterns = urlpatterns
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestMySignalsDetailEndpoint(APITestCase):
+    CAPTION: typing.Final[str] = 'A beautiful canal with lots of bicycle parking facilities.'
     endpoint = '/my/signals'
 
     def setUp(self):
         self.signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
+        AttachmentFactory.create(_signal=self.signal, created_by=None, public=True, caption=self.CAPTION)
         AttachmentFactory.create_batch(3, _signal=self.signal)
 
         token = Token.objects.create(reporter_email='my-signals-test-reporter@example.com')
@@ -60,6 +64,12 @@ class TestMySignalsDetailEndpoint(APITestCase):
         self.assertIn(self.signal.location.geometrie[0], response_data['location']['geometrie']['coordinates'])
         self.assertIn(self.signal.location.geometrie[1], response_data['location']['geometrie']['coordinates'])
         self.assertEqual({}, response_data['extra_properties'])
+        links = response_data.get('_links')
+        self.assertIsNotNone(links)
+        attachments = links.get('sia:attachments')
+        self.assertIsNotNone(attachments)
+        self.assertEqual(len(attachments), 1)
+        self.assertEqual(attachments[0].get('caption'), self.CAPTION)
 
         # Update the status to a "CLOSED" state
         status = StatusFactory.create(_signal=self.signal, state=AFGEHANDELD)

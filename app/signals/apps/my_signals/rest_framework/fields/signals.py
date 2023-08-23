@@ -98,6 +98,11 @@ class MySignalListLinksField(HyperlinkedIdentityField):
                         'type': 'string',
                         'format': 'date-time',
                         'example': '2023-06-01T00:00:00Z'
+                    },
+                    'caption': {
+                        'type': 'string',
+                        'nullable': True,
+                        'example': 'This is a caption',
                     }
                 }
             }
@@ -117,7 +122,7 @@ class MySignalDetailLinksField(HyperlinkedIdentityField):
             ('archives', dict(href=self.get_url(value, 'my_signals:my-signals-history', request, _format))),
         ])
 
-        attachment_qs = value.attachments.filter(created_by__isnull=True, is_image=True)
+        attachment_qs = value.attachments.filter(public=True)
         if attachment_qs.exists():
             # A list URI's of all the attachments
             representation.update({
@@ -126,6 +131,7 @@ class MySignalDetailLinksField(HyperlinkedIdentityField):
                         'href': request.build_absolute_uri(attachment.file.url),
                         'created_by': attachment.created_by,
                         'created_at': attachment.created_at,
+                        'caption': attachment.caption,
                     }
                     for attachment in attachment_qs.all().order_by('-created_at')
                 )),
