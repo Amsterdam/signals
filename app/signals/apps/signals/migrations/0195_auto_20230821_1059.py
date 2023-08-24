@@ -11,10 +11,7 @@ def _make_attachment_public_when_uploaded_by_reporter(
         schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     Attachment = apps.get_model('signals', 'Attachment')
-    attachments = Attachment.objects.filter(created_by__isnull=True)
-    for attachment in attachments:
-        attachment.public = True
-        attachment.save()
+    Attachment.objects.filter(created_by__isnull=True).update(public=True)
 
 
 class Migration(migrations.Migration):
