@@ -4,8 +4,7 @@ services:
   api:
     build:
       context: .
-      args:
-        - DEV_DEPS=1
+      target: dev
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +32,7 @@ services:
   celery:
     build:
       context: .
+      target: prod
     depends_on:
       mailhog:
         condition: service_started
@@ -51,6 +51,7 @@ services:
   flower:
     build:
       context: .
+      target: prod
     ports:
       - "5566:5566"
     depends_on:
@@ -71,6 +72,7 @@ services:
   celery_beat:
     build:
       context: .
+      target: prod
     depends_on:
       mailhog:
         condition: service_started
