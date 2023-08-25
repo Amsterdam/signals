@@ -24,7 +24,7 @@ jobs:
         run: echo "${{ github.event.inputs.tag }}"
 
       - name: Build the Docker image
-        run: docker build -t signalen/backend:${{ github.event.inputs.tag }} .
+        run: docker build --target prod -t signalen/backend:${{ github.event.inputs.tag }} .
 
       - name: Push the tagged image to Docker
         run: docker push signalen/backend:${{ github.event.inputs.tag }}
