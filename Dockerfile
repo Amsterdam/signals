@@ -4,7 +4,7 @@ ARG PYTHON_VERSION=3.11
 ##################################################
 #                   Python                       #
 ##################################################
-FROM python:${PYTHON_VERSION}-slim-buster
+FROM python:${PYTHON_VERSION}-slim-buster AS prod
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
@@ -52,15 +52,22 @@ RUN set -eux; \
     chown signals /app/static; \
     chown signals /app/media
 
-ARG DEV_DEPS=0
-RUN set -eux; \
-    if [ $DEV_DEPS -ne 0 ]; then \
-        pip install pip-tools; \
-        pip-sync requirements/requirements.txt requirements/requirements_dev.txt; \
-    fi
-
 USER signals
 
 RUN SECRET_KEY=$DJANGO_SECRET_KEY python manage.py collectstatic --no-input
 
 CMD uwsgi
+
+
+##################################################
+#                    DEV                         #
+##################################################
+FROM prod AS dev
+
+USER root
+
+RUN set -eux; \
+    pip install pip-tools; \
+    pip-sync requirements/requirements.txt requirements/requirements_dev.txt
+
+USER signals
