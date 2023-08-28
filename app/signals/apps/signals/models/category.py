@@ -173,7 +173,10 @@ class Category(TrackFields, models.Model):
                                            self.parent.name) if self.parent else ""
                                        )
 
-    def is_parent(self):
+    def is_parent(self) -> bool:
+        if self.pk is None:
+            return False
+
         return self.children.exists()
 
     def is_child(self):

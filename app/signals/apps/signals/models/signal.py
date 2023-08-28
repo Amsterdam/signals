@@ -104,7 +104,10 @@ class Signal(CreatedUpdatedModel):
                f'{created_at.isoformat()}'
 
     @property
-    def is_parent(self):
+    def is_parent(self) -> bool:
+        if self.pk is None:
+            return False
+
         return self.children.exists()
 
     @property
