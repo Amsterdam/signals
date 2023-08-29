@@ -126,7 +126,7 @@ services:
       - es-data:/usr/share/elasticsearch/data
 
   database:
-    image: amsterdam/postgres11
+    image: postgis/postgis:12-2.5-alpine
     shm_size: '1024m'
     ports:
       - "5409:5432"
