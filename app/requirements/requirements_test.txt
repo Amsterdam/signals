@@ -137,7 +137,7 @@ defusedxml==0.7.1
     #   djangorestframework-xml
 distlib==0.3.8
     # via virtualenv
-django==4.1.13
+django==4.2.11
     # via
     #   -r requirements/requirements.txt
     #   django-appconf
@@ -172,7 +172,7 @@ django-cors-headers==4.3.1
     # via -r requirements/requirements.txt
 django-extensions==3.2.3
     # via -r requirements/requirements.txt
-django-filter==23.5
+django-filter==24.1
     # via -r requirements/requirements.txt
 django-filter-stubs==0.1.3
     # via -r requirements/requirements_test.in
