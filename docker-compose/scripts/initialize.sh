@@ -1,39 +1,26 @@
 #!/bin/bash
 
-# If there is already a log file there is no need to initialize the database
-# and load dummy data for now
-LOGFILE='/app/initialize.log'
-
-if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
-  echo "Start with a fresh database"
-  export PGPASSWORD=insecure
-  psql -h database -p 5432 -d signals -U signals -c "drop schema public cascade;"
-  psql -h database -p 5432 -d signals -U signals -c "create schema public;"
-fi
+set -eux
 
 # Apply all migrations
 python manage.py migrate --noinput
 
 # Create the super user if it does not exists
 echo "Creating the super user if it does not already exists"
-echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='signals.admin@example.com').exists() or User.objects.create_superuser('signals.admin@example.com', 'signals.admin@example.com', 'password')" | python manage.py shell
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='signals.admin@example.com').exists() or User.objects.create_superuser('signals.admin@example.com', 'signals.admin@example.com', 'password')"
 
 # Collect static
 python manage.py collectstatic --no-input
 
 if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
-  echo "Load dummy data"
-  python manage.py load_areas stadsdeel
-  python manage.py load_areas cbs-gemeente-2022
-  python manage.py load_areas sia-stadsdeel
-
-  # Other scripts to load data should be placed here
-  # python manage.py dummy_categories --parents-to-create 10 --children-to-create 5 # Disabled because there are already categories loaded through the migrations
-  # python manage.py dummy_departments --to-create 10  # Disabled because there are already departments loaded through the migrations
-  python manage.py dummy_sources --to-create 10
-  python manage.py dummy_signals --to-create 100
-
-  echo "[$(date +"%FT%T%z")] - Done!!!" >> "$LOGFILE"
+  if python manage.py shell -c "import sys; from django.db import connection; cursor = connection.cursor(); cursor.execute('select count(*) from signals_signal'); sys.exit(cursor.fetchone()[0])"; then
+    echo "Load dummy data"
+    python manage.py load_areas stadsdeel
+    python manage.py load_areas cbs-gemeente-2022
+    python manage.py load_areas sia-stadsdeel
+    python manage.py dummy_sources --to-create 10
+    python manage.py dummy_signals --to-create 100
+  fi
 fi
 
 uwsgi --master \
