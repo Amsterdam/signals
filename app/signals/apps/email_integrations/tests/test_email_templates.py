@@ -422,13 +422,14 @@ _Dit bericht is automatisch gegenereerd_""" # noqa
         ),
         (
             EmailTemplate.VERIFY_EMAIL_REPORTER,
-            """Beste melder,
+            """Geachte melder,
 
-Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.
+Er is een wijziging van uw e-mailadres aangevraagd voor melding {{ formatted_signal_id }}. Bevestig uw nieuwe e-mailadres.
+Daarna houden wij u op de hoogte van uw melding op uw nieuwe e-mailadres.
+[Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur]({{ verification_url }}).
 
-[{{ verification_url }}]({{ verification_url }})
-
-Alvast bedankt!
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -436,12 +437,12 @@ Met vriendelijke groet,
         ),
         (
             EmailTemplate.NOTIFY_CURRENT_REPORTER,
-            """Beste melder,
+            """Geachte melder,
 
-Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
-neem dan z.s.m. contact met ons op.
+Er is een wijziging van uw e-mailadres aangevraagd voor melding {{ formatted_signal_id }}. Op het nieuwe e-mailadres ontvangt u een e-mail om het nieuwe adres te bevestigen. Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur.
 
-Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
+Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -449,9 +450,12 @@ Met vriendelijke groet,
         ),
         (
             EmailTemplate.CONFIRM_REPORTER_UPDATED,
-            """Beste melder,
+            """Geachte melder,
 
-Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.
+U heeft een wijziging van uw e-mailadres  aangevraagd voor melding {{ formatted_signal_id }}.
+
+Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -1270,13 +1274,14 @@ Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot
         verify = ReporterVerifier(ReporterMailer(EmailTemplateRenderer()), generator)
         verify(reporter)
 
-        assert mail.outbox[0].body == f"""Beste melder,
+        assert mail.outbox[0].body == f"""Geachte melder,
 
-Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.
+Er is een wijziging van uw e-mailadres aangevraagd voor melding SIG-{reporter._signal.id}. Bevestig uw nieuwe e-mailadres.
+Daarna houden wij u op de hoogte van uw melding op uw nieuwe e-mailadres.
+Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur http://dummy_link/verify_email/{token}.
 
-http://dummy_link/verify_email/{token} http://dummy_link/verify_email/{token}
-
-Alvast bedankt!
+Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -1290,13 +1295,15 @@ Gemeente Amsterdam""" # noqa
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding </title>
+    <title>Uw melding {reporter._signal.id}</title>
 </head>
 <body>
-    <p>Beste melder,</p>
-<p>Er is een wijziging van uw e-mailadres aangevraagd. Graag willen wij u vragen om onderstaande url te gebruiken om uw nieuwe e-mailadres te bevestigen.</p>
-<p><a href="http://dummy_link/verify_email/{token}">http://dummy_link/verify_email/{token}</a></p>
-<p>Alvast bedankt!</p>
+    <p>Geachte melder,</p>
+<p>Er is een wijziging van uw e-mailadres aangevraagd voor melding SIG-{reporter._signal.id}. Bevestig uw nieuwe e-mailadres.
+Daarna houden wij u op de hoogte van uw melding op uw nieuwe e-mailadres.
+<a href="http://dummy_link/verify_email/{token}">Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur</a>.</p>
+<p>Meer weten?
+Voor vragen over uw melding kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.</p>
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>
@@ -1311,12 +1318,12 @@ Gemeente Amsterdam""" # noqa
 
         mail_reporter(reporter, EmailTemplate.NOTIFY_CURRENT_REPORTER)
 
-        assert mail.outbox[0].body == """Beste melder,
+        assert mail.outbox[0].body == f"""Geachte melder,
 
-Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
-neem dan z.s.m. contact met ons op.
+Er is een wijziging van uw e-mailadres aangevraagd voor melding SIG-{reporter._signal.id}. Op het nieuwe e-mailadres ontvangt u een e-mail om het nieuwe adres te bevestigen. Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur.
 
-Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.
+Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -1325,18 +1332,18 @@ Gemeente Amsterdam""" # noqa
         body, mime_type = mail.outbox[0].alternatives[0]
         self.assertEqual(mime_type, 'text/html')
 
-        assert body == """
+        assert body == f"""
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding </title>
+    <title>Uw melding {reporter._signal.id}</title>
 </head>
 <body>
-    <p>Beste melder,</p>
-<p>Er is een wijziging van uw contact gegevens aangevraagd. Mocht dat niet correct zijn of heeft u deze wijziging niet aangevraagd,
-neem dan z.s.m. contact met ons op.</p>
-<p>Indien dit wel correct is, gebruik dan de link die wij u naar uw nieuwe e-mailadres hebben verstuurd om uw nieuwe e-mailadres te bevestigen.</p>
+    <p>Geachte melder,</p>
+<p>Er is een wijziging van uw e-mailadres aangevraagd voor melding SIG-{reporter._signal.id}. Op het nieuwe e-mailadres ontvangt u een e-mail om het nieuwe adres te bevestigen. Bevestig uw nieuwe e-mailadres alstublieft binnen 24 uur.</p>
+<p>Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.</p>
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>
@@ -1351,9 +1358,12 @@ neem dan z.s.m. contact met ons op.</p>
 
         mail_reporter(reporter, EmailTemplate.CONFIRM_REPORTER_UPDATED)
 
-        assert mail.outbox[0].body == """Beste melder,
+        assert mail.outbox[0].body == f"""Geachte melder,
 
-Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.
+U heeft een wijziging van uw e-mailadres  aangevraagd voor melding SIG-{reporter._signal.id}.
+
+Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.
 
 Met vriendelijke groet,
 
@@ -1362,16 +1372,18 @@ Gemeente Amsterdam""" # noqa
         body, mime_type = mail.outbox[0].alternatives[0]
         self.assertEqual(mime_type, 'text/html')
 
-        assert body == """
+        assert body == f"""
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding </title>
+    <title>Uw melding {reporter._signal.id}</title>
 </head>
 <body>
-    <p>Beste melder,</p>
-<p>Bij deze bevestigen wij dat uw verzoek om uw contact gegevens te wijzigen succesvol is uitgevoerd.</p>
+    <p>Geachte melder,</p>
+<p>U heeft een wijziging van uw e-mailadres  aangevraagd voor melding SIG-{reporter._signal.id}.</p>
+<p>Meer weten of annuleren?
+Voor vragen over de wijziging kunt u bellen met telefoonnummer 14 020, maandag tot en met vrijdag van 08.00 tot 18.00.</p>
 <p>Met vriendelijke groet,</p>
 <p>Gemeente Amsterdam</p>
 </body>

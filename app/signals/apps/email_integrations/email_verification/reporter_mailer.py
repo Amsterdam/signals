@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
+from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Reporter
 
 
@@ -43,9 +44,7 @@ class ReporterMailer:
         if not reporter.email:
             raise FailedToSendReporterMailException('Reporter has no email address!')
 
-        if context is None:
-            context = {}
-        context['ORGANIZATION_NAME'] = settings.ORGANIZATION_NAME
+        context = make_email_context(reporter._signal, context)
 
         subject, message, html_message = self._render_email_template(
             template_key,
