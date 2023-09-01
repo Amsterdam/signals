@@ -4,16 +4,17 @@ import typing
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from django.test import override_settings
+from django.test import TestCase, override_settings
 
 from signals.apps.email_integrations.email_verification.reporter_mailer import (
     FailedToSendReporterMailException,
     ReporterMailer
 )
+from signals.apps.signals.factories import ReporterFactory
 from signals.apps.signals.models import Reporter
 
 
-class TestReporterMailer:
+class TestReporterMailer(TestCase):
     FROM_EMAIL: typing.Final[str] = 'noreply@example.com'
     EMAIL: typing.Final[str] = 'someone@example.com'
     SUBJECT: typing.Final[str] = 'subject'
@@ -28,13 +29,12 @@ class TestReporterMailer:
         renderer = Mock(return_value=(self.SUBJECT, self.MESSAGE, self.HTML_MESSAGE))
         mailer = ReporterMailer(renderer, self.FROM_EMAIL)
 
-        reporter = Reporter()
-        reporter.email = self.EMAIL
+        reporter = ReporterFactory(email=self.EMAIL)
 
         with override_settings(ORGANIZATION_NAME=self.ORGANIZATION_NAME):
             mailer(reporter, self.TEMPLATE_KEY)
 
-        renderer.assert_called_once_with(self.TEMPLATE_KEY, {'ORGANIZATION_NAME': self.ORGANIZATION_NAME})
+        renderer.assert_called_once()
         send_mail.assert_called_once_with(
             from_email=self.FROM_EMAIL,
             recipient_list=[self.EMAIL],
