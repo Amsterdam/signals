@@ -199,7 +199,7 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
 
 
 class TestDeleteClosedSignals(TestCase):
-    @patch('signals.apps.signals.tasks.SignalDeletionService.delete_signals', autospec=True)
+    @patch('signals.apps.signals.tasks.delete_signals.SignalDeletionService.delete_signals', autospec=True)
     def test_service_is_called(self, mocked_delete_signals):
         delete_closed_signals()
 
@@ -211,7 +211,7 @@ class TestDeleteClosedSignals(TestCase):
 
 
 class TestClearSessionsTask(TestCase):
-    @mock.patch('signals.apps.signals.tasks.call_command', autospec=True)
+    @mock.patch('signals.apps.signals.tasks.clear_sessions.call_command', autospec=True)
     def test_clearsessions_is_called(self, mocked_call_command):
         clearsessions()
 
