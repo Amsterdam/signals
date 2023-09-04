@@ -190,3 +190,8 @@ the way requests are recorded. For more information, see the Django Silk
 
 That's it! With Django Silk, you can profile and identify performance
 bottlenecks.
+
+## Mail
+To test mail during development [Mailpit](https://github.com/axllent/mailpit) is
+available. Its SMTP server is listening on tcp port 1025 and the web interface is
+available on [http://localhost:8025](http://localhost:8025).
