@@ -10,7 +10,7 @@ services:
     depends_on:
       dex:
         condition: service_started
-      mailhog:
+      mailpit:
         condition: service_started
       database:
         condition: service_healthy
@@ -34,7 +34,7 @@ services:
       context: .
       target: prod
     depends_on:
-      mailhog:
+      mailpit:
         condition: service_started
       database:
         condition: service_healthy
@@ -55,7 +55,7 @@ services:
     ports:
       - "5566:5566"
     depends_on:
-      mailhog:
+      mailpit:
         condition: service_started
       database:
         condition: service_healthy
@@ -74,7 +74,7 @@ services:
       context: .
       target: prod
     depends_on:
-      mailhog:
+      mailpit:
         condition: service_started
       database:
         condition: service_healthy
@@ -90,8 +90,8 @@ services:
       - ./app:/app
     command: celery -A signals beat -l debug --pidfile /tmp/celerybeat.pid
 
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
+  mailpit:
+    image: axllent/mailpit
     ports:
       - "1025:1025"
       - "8025:8025"
