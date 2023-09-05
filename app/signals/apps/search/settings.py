@@ -8,6 +8,7 @@ DEFAULTS = dict(
     CONNECTION=dict(
         HOST='http://127.0.0.1:9200',
         INDEX='signals',
+        CA_BUNDLE=None,
     ),
 )
 
@@ -27,7 +28,7 @@ class APISettings(object):
 
     def __getattr__(self, attr):
         if attr not in self.defaults:
-            raise AttributeError('Invalid SEARCH setting: {}'.format(attr))
+            raise AttributeError('Cannot retrieve non-existing SEARCH setting: {}'.format(attr))
 
         try:
             val = self.user_settings[attr]
