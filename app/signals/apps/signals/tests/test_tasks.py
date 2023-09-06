@@ -1,19 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from unittest import mock
-from unittest.mock import call, patch
 
 from django.test import TestCase, TransactionTestCase
 
 from signals.apps.signals import factories
 from signals.apps.signals.models import Status
 from signals.apps.signals.models.signal import Signal
-from signals.apps.signals.tasks import (
-    clearsessions,
-    delete_closed_signals,
-    update_status_children_based_on_parent
-)
-from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, GEANNULEERD, GESPLITST
+from signals.apps.signals.tasks import clearsessions, update_status_children_based_on_parent
+from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, GEANNULEERD
 
 
 class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
@@ -196,18 +191,6 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
         self.assertEqual(self.child_signal_1.status.state, GEANNULEERD)
         self.assertNotEqual(self.child_signal_2.status.state, child_signal_2_state)
         self.assertEqual(self.child_signal_2.status.state, GEANNULEERD)
-
-
-class TestDeleteClosedSignals(TestCase):
-    @patch('signals.apps.signals.tasks.delete_signals.SignalDeletionService.delete_signals', autospec=True)
-    def test_service_is_called(self, mocked_delete_signals):
-        delete_closed_signals()
-
-        mocked_delete_signals.assert_has_calls([
-            call(AFGEHANDELD, 365, dry_run=False),
-            call(GEANNULEERD, 365, dry_run=False),
-            call(GESPLITST, 365, dry_run=False),
-        ])
 
 
 class TestClearSessionsTask(TestCase):

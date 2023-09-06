@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from io import StringIO
 
 from django.conf import settings
@@ -51,9 +51,7 @@ class TestDeleteSignals(TestCase):
         buffer = StringIO()
         with override_settings(FEATURE_FLAGS=self.feature_flags):
             call_command('delete_signals', GEANNULEERD, '365', '--dry-run', stdout=buffer)
-        output = buffer.getvalue()
 
-        self.assertIn(f'Deleted Signal: #{signal.id} (dry-run)', output)
         self.assertTrue(Signal.objects.filter(id=signal.id).exists())
         self.assertFalse(DeletedSignal.objects.filter(signal_id=signal.id).exists())
 
@@ -160,8 +158,8 @@ class TestDeleteSignals(TestCase):
 
     def test_gesplits_parent_and_child_signals_should_be_deleted(self):
         """
-        Parent signal created 370 days ago and the final state set 369 days ago. So the signal and its children should
-        be deleted.
+        Parent signal created 370 days ago, and the final state set 369 days ago.
+        So the signal and its children should be deleted.
         """
         self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
 
