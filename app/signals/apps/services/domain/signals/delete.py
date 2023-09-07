@@ -94,7 +94,7 @@ class DeleteSignalsService:
         if signal.is_parent:
             # Delete children before deleting the parent
             for child_signal in signal.children.all():
-                DeleteSignalsService.delete_signal(child_signal, batch_uuid, dry_run)
+                DeleteSignalsService.delete_signal(child_signal.id, batch_uuid, dry_run)
 
         try:
             with transaction.atomic():

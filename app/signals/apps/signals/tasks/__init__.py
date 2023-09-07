@@ -6,7 +6,10 @@ from signals.apps.signals.tasks.child_signals import (
     update_status_children_based_on_parent
 )
 from signals.apps.signals.tasks.clear_sessions import clearsessions
-from signals.apps.signals.tasks.delete_signals import delete_signals_in_state_for_x_days, delete_closed_signals
+from signals.apps.signals.tasks.delete_signals import (
+    delete_closed_signals,
+    delete_signals_in_state_for_x_days
+)
 from signals.apps.signals.tasks.refresh_database_view import (
     refresh_materialized_view_public_signals_geography_feature_collection
 )
