@@ -12,22 +12,14 @@ class Command(BaseCommand):
         parser.add_argument('state',
                             type=str,
                             help='State a Signal must be in to be deleted'
-                                 f'choices are: {", ".join(DeleteSignalsService.valid_states)}')
+                                 f'choices are: {", ".join(DeleteSignalsService.VALID_STATES)}')
         parser.add_argument('days',
                             type=int,
                             help='Minimum days a Signal must be in the given state to be deleted')
-        parser.add_argument('--dry-run',
-                            action='store_true',
-                            dest='_dry_run',
-                            help='Dry-run mode, will not delete any signals')
 
     def handle(self, *args, **options):
         state = options['state']
         days = options['days']
-        dry_run = options['_dry_run']
-
-        if dry_run:
-            self.stdout.write('Dry-run mode: Enabled')
 
         self.stdout.write(f'Started: {timezone.now():%Y-%m-%d %H:%M:%S}')
         self.stdout.write(f'{"":-<80}')
@@ -35,7 +27,7 @@ class Command(BaseCommand):
         self.stdout.write(f'Days: {days}')
 
         try:
-            batch_uuid = DeleteSignalsService.run(state=state, days=days, delay_deletion=False, dry_run=dry_run)
+            batch_uuid = DeleteSignalsService.run(state=state, days=days, delay_deletion=False)
         except ValueError as e:
             self.stderr.write(f'{e}')
             return

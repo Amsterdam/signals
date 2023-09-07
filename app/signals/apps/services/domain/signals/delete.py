@@ -2,13 +2,13 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 import logging
 import uuid
+from typing import Final
 
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.utils import timezone
 
-from signals.apps.search.tasks import delete_from_elastic
 from signals.apps.signals.models import DeletedSignal, Signal
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GESPLITST
 from signals.celery import app
@@ -22,10 +22,10 @@ class DeleteSignalsService:
 
     This class provides methods for deleting signals that meet the specified criteria.
     """
-    valid_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, ]
+    VALID_STATES: Final[list[str]] = [AFGEHANDELD, GEANNULEERD, GESPLITST, ]
 
     @staticmethod
-    def run(state: str, days: int, delay_deletion: bool = False, dry_run: bool = False) -> uuid.UUID:
+    def run(state: str, days: int, delay_deletion: bool = False) -> uuid.UUID:
         """
         Run the deletion process for signals.
 
@@ -33,7 +33,6 @@ class DeleteSignalsService:
             state (str): The state of signals to be deleted.
             days (int): The minimum number of days a signal should have been in the state to be eligible for deletion.
             delay_deletion (bool, optional): If True, delay the actual deletion process using celery.
-            dry_run (bool, optional): If True, no actual deletion occurs.
 
         Raises:
             ValueError: If the provided state, days, or feature flag is invalid.
@@ -41,9 +40,9 @@ class DeleteSignalsService:
         if not settings.FEATURE_FLAGS.get('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False):
             raise ValueError('Feature flag "DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED" is not enabled')
 
-        if state not in DeleteSignalsService.valid_states:
+        if state not in DeleteSignalsService.VALID_STATES:
             raise ValueError('Invalid state(s) provided must be one of '
-                             f'"{", ".join(DeleteSignalsService.valid_states)}"')
+                             f'"{", ".join(DeleteSignalsService.VALID_STATES)}"')
 
         if days < 365:
             raise ValueError('Invalid days provided must be at least 365')
@@ -58,26 +57,22 @@ class DeleteSignalsService:
 
         for signal in signal_qs:
             if delay_deletion:
-                DeleteSignalsService.delete_signal.delay(signal.id, batch_uuid, dry_run)
+                DeleteSignalsService.delete_signal.delay(signal.id, batch_uuid)
             else:
-                DeleteSignalsService.delete_signal(signal.id, batch_uuid, dry_run)
+                DeleteSignalsService.delete_signal(signal.id, batch_uuid)
 
         return batch_uuid
 
     @staticmethod
     @app.task(prio=0)
-    def delete_signal(signal_id: int, batch_uuid: uuid.UUID = None, dry_run: bool = False):  # noqa C901
+    def delete_signal(signal_id: int, batch_uuid: uuid.UUID = None):  # noqa C901
         """
         Delete a signal and associated data.
 
         Args:
             signal_id (int): The id of the signal to be deleted.
             batch_uuid (UUID, optional): A unique identifier for the deletion batch.
-            dry_run (bool, optional): If True, no actual deletion occurs.
         """
-        if dry_run:
-            return
-
         try:
             signal = Signal.objects.get(id=signal_id)
         except Signal.DoesNotExist:
@@ -94,17 +89,12 @@ class DeleteSignalsService:
         if signal.is_parent:
             # Delete children before deleting the parent
             for child_signal in signal.children.all():
-                DeleteSignalsService.delete_signal(child_signal.id, batch_uuid, dry_run)
+                DeleteSignalsService.delete_signal(child_signal.id, batch_uuid)
 
         try:
             with transaction.atomic():
                 DeletedSignal.objects.create_from_signal(signal=signal, action='automatic', note=note,
                                                          batch_uuid=batch_uuid)
-
-                try:
-                    delete_from_elastic(signal=signal)
-                except Exception:
-                    pass
 
                 attachment_files = [attachment.file.path for attachment in signal.attachments.all()]
                 signal.attachments.all().delete()
