@@ -6,8 +6,8 @@ from pytest_bdd import scenario
 
 from signals.settings import FEATURE_FLAGS
 
-from signals.apps.services.tests.scenarios.context.signals import * # noqa
-from signals.apps.services.tests.scenarios.context.domain_signals_delete import * # noqa
+from signals.apps.signals.tests.scenarios.context.signals import * # noqa
+from signals.apps.signals.tests.scenarios.context.domain_signals_delete import * # noqa
 
 
 @pytest.mark.django_db()
@@ -20,7 +20,7 @@ from signals.apps.services.tests.scenarios.context.domain_signals_delete import 
 @scenario(
     'features/do_not_delete_signals.feature',
     'Do not delete a Signal in the state Afgehandeld for x years',
-    features_base_dir='./signals/apps/services/tests/scenarios',
+    features_base_dir='./signals/apps/signals/tests/scenarios',
 )
 def test_delete_signal_afgehandeld():
     pass
@@ -36,7 +36,7 @@ def test_delete_signal_afgehandeld():
 @scenario(
     'features/do_not_delete_signals.feature',
     'Do not delete a Signal in the state Geannuleerd for x years',
-    features_base_dir='./signals/apps/services/tests/scenarios',
+    features_base_dir='./signals/apps/signals/tests/scenarios',
 )
 def test_delete_signal_geannuleerd():
     pass
@@ -52,7 +52,7 @@ def test_delete_signal_geannuleerd():
 @scenario(
     'features/do_not_delete_signals.feature',
     'Do not delete a Signal in the state Gesplitst for x years',
-    features_base_dir='./signals/apps/services/tests/scenarios',
+    features_base_dir='./signals/apps/signals/tests/scenarios',
 )
 def test_delete_signal_gesplitst():
     pass

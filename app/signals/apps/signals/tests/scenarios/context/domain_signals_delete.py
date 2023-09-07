@@ -2,8 +2,8 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from pytest_bdd import parsers, when
 
-from signals.apps.services.domain.signals.delete import DeleteSignalsService
-from signals.apps.services.tests.scenarios.context.utils import get_state_code, nr_of_days_in_years
+from signals.apps.signals.tasks import delete_signals_in_state_for_x_days
+from signals.apps.signals.tests.scenarios.context.utils import get_state_code, nr_of_days_in_years
 
 
 @when(
@@ -14,4 +14,4 @@ def when_the_system_runs_task_to_delete_signals(state: str, years: int):
     days = nr_of_days_in_years(years)
     state = get_state_code(state)
 
-    DeleteSignalsService.run(state=state, days=days, delay_deletion=False)
+    delete_signals_in_state_for_x_days(state=state, days=days)

@@ -4,9 +4,9 @@ import freezegun
 from django.utils import timezone
 from pytest_bdd import given, parsers, then
 
-from signals.apps.services.tests.scenarios.context.utils import get_state_code, nr_of_days_in_years
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Signal
+from signals.apps.signals.tests.scenarios.context.utils import get_state_code, nr_of_days_in_years
 
 
 @given(
