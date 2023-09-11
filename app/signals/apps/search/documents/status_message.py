@@ -2,6 +2,8 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from elasticsearch_dsl import Boolean, Document, Integer, Keyword, Text
 
+from signals.apps.search.settings import app_settings
+
 
 class StatusMessage(Document):
     id = Integer()
@@ -11,4 +13,4 @@ class StatusMessage(Document):
     active = Boolean()
 
     class Index:
-        name = 'status_messages'
+        name = app_settings.CONNECTION['STATUS_MESSAGE_INDEX']

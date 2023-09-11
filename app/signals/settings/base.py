@@ -372,6 +372,7 @@ SEARCH = {
     'CONNECTION': {
         'HOST': os.getenv('ELASTICSEARCH_HOST', 'elastic-index.service.consul:9200'),
         'INDEX': os.getenv('ELASTICSEARCH_INDEX', 'signals'),
+        'STATUS_MESSAGE_INDEX': os.getenv('ELASTICSEARCH_STATUS_MESSAGE_INDEX', 'status_messages'),
     },
 }
 
