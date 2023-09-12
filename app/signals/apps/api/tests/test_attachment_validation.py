@@ -13,6 +13,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APILiveServerTestCase
 
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory
+from signals.apps.signals.models import Note
 from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -229,8 +230,11 @@ class TestAttachmentConcurrency(APILiveServerTestCase):
     def _upload(self, file_info) -> None:
         with open(file_info[0], 'rb') as allowed_file:
             allowed = SimpleUploadedFile(file_info[0], allowed_file.read(), content_type=file_info[1])
-            response = self.client.post(self.public_upload_url, data={'file': allowed})
+            self.client.post(self.public_upload_url, data={'file': allowed})
 
     def test_concurrent_uploads(self):
         with ThreadPoolExecutor(max_workers=3) as executor:
             executor.map(self._upload, ALLOWED)
+
+        self.assertEqual(self.signal.attachments.all().count(), len(ALLOWED))
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), len(ALLOWED))
