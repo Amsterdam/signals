@@ -14,21 +14,21 @@ class DeletedSignalAdmin(admin.ModelAdmin):
         }),
     )
 
+    date_hierarchy = 'deleted_at'
     list_display = ('signal_id', 'signal_state', 'signal_state_set_at', 'action', 'deleted_at', 'batch_uuid',)
-    list_per_page = 20
     list_select_related = True
-    list_filter = ('action', )
+    list_filter = ('action', 'deleted_at', )
     ordering = ('-deleted_at',)
 
     search_fields = ['signal_id__exact', ]
 
+    @admin.action(description='category')
     def get_category_name(self, obj):
         return obj.category.name
-    get_category_name.short_description = 'category'
 
+    @admin.action(description='deleted by')
     def get_deleted_by(self, obj):
         return obj.deleted_by or 'Signalen system'
-    get_deleted_by.short_description = 'deleted by'
 
     # No adding, editing or deleting allowed in the admin
     def has_add_permission(self, request):
