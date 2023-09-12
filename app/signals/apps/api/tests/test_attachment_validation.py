@@ -6,9 +6,11 @@ the permissions system of SIA/Signalen, hence the usage of superusers to write
 to private endpoints
 """
 import os
+from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APILiveServerTestCase
 
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory
 from signals.test.utils import SignalsBaseApiTestCase
@@ -214,3 +216,21 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
                 suf = SimpleUploadedFile(filename, file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': suf})
             self.assertEqual(response.status_code, 400)
+
+
+class TestAttachmentConcurrency(APILiveServerTestCase):
+    public_signals_endpoint = '/signals/v1/public/signals/'
+    public_attachments_endpoint = public_signals_endpoint + '{uuid}/attachments/'
+
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.public_upload_url = self.public_attachments_endpoint.format(uuid=self.signal.uuid)
+
+    def _upload(self, file_info) -> None:
+        with open(file_info[0], 'rb') as allowed_file:
+            allowed = SimpleUploadedFile(file_info[0], allowed_file.read(), content_type=file_info[1])
+            response = self.client.post(self.public_upload_url, data={'file': allowed})
+
+    def test_concurrent_uploads(self):
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            executor.map(self._upload, ALLOWED)
