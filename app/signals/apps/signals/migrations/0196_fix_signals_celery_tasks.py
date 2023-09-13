@@ -5,7 +5,6 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations import RunPython
 
-
 FORWARD_MAPPING = {
     'signals.apps.signals.tasks.anonymize_reporter': 'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporter',
     'signals.apps.signals.tasks.anonymize_reporters': 'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporters',
