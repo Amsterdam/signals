@@ -7,23 +7,24 @@ from django.db.migrations import RunPython
 
 FORWARD_MAPPING = {
     'signals.apps.signals.tasks.anonymize_reporter': 'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporter',
-    'signals.apps.signals.tasks.anonymize_reporters': 'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporters',
-    'signals.apps.signals.tasks.apply_auto_create_children': 'signals.apps.signals.tasks.child_signals.apply_auto_create_children',
-    'signals.apps.signals.tasks.update_status_children_based_on_parent': 'signals.apps.signals.tasks.child_signals.update_status_children_based_on_parent',
+    'signals.apps.signals.tasks.anonymize_reporters': 'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporters', # noqa E501
+    'signals.apps.signals.tasks.apply_auto_create_children': 'signals.apps.signals.tasks.child_signals.apply_auto_create_children', # noqa E501
+    'signals.apps.signals.tasks.update_status_children_based_on_parent': 'signals.apps.signals.tasks.child_signals.update_status_children_based_on_parent', # noqa E501
     'signals.apps.signals.tasks.clearsessions': 'signals.apps.signals.tasks.clear_sessions.clearsessions',
-    'signals.apps.signals.tasks.refresh_materialized_view_public_signals_geography_feature_collection': 'signals.apps.signals.tasks.refresh_database_view.refresh_materialized_view_public_signals_geography_feature_collection',
+    'signals.apps.signals.tasks.refresh_materialized_view_public_signals_geography_feature_collection': 'signals.apps.signals.tasks.refresh_database_view.refresh_materialized_view_public_signals_geography_feature_collection', # noqa E501
     'signals.apps.signals.tasks.apply_routing': 'signals.apps.signals.tasks.signal_routing.apply_routing',
-}  # noqa
+}
 
 REVERSED_MAPPING = {
     'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporter': 'signals.apps.signals.tasks.anonymize_reporter',
-    'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporters': 'signals.apps.signals.tasks.anonymize_reporters',
-    'signals.apps.signals.tasks.child_signals.apply_auto_create_children': 'signals.apps.signals.tasks.apply_auto_create_children',
-    'signals.apps.signals.tasks.child_signals.update_status_children_based_on_parent': 'signals.apps.signals.tasks.update_status_children_based_on_parent',
+    'signals.apps.signals.tasks.anonymize_reporter.anonymize_reporters': 'signals.apps.signals.tasks.anonymize_reporters', # noqa E501
+    'signals.apps.signals.tasks.child_signals.apply_auto_create_children': 'signals.apps.signals.tasks.apply_auto_create_children', # noqa E501
+    'signals.apps.signals.tasks.child_signals.update_status_children_based_on_parent': 'signals.apps.signals.tasks.update_status_children_based_on_parent', # noqa E501
     'signals.apps.signals.tasks.clear_sessions.clearsessions': 'signals.apps.signals.tasks.clearsessions',
-    'signals.apps.signals.tasks.refresh_database_view.refresh_materialized_view_public_signals_geography_feature_collection': 'signals.apps.signals.tasks.refresh_materialized_view_public_signals_geography_feature_collection',
+    'signals.apps.signals.tasks.refresh_database_view.refresh_materialized_view_public_signals_geography_feature_collection': 'signals.apps.signals.tasks.refresh_materialized_view_public_signals_geography_feature_collection', # noqa E501
     'signals.apps.signals.tasks.signal_routing.apply_routing': 'signals.apps.signals.tasks.apply_routing',
-}  # noqa
+}
+
 
 def _fix_celery_tasks(
         apps: Apps,
@@ -37,6 +38,7 @@ def _fix_celery_tasks(
     # Loop through the keys in the FORWARD_MAPPING dictionary
     for key, value in FORWARD_MAPPING.items():
         PeriodicTask.objects.filter(task=key).update(task=value)
+
 
 def _reverse_fix_celery_tasks(
         apps: Apps,
