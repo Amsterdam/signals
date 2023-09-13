@@ -379,22 +379,16 @@ class SignalManager(models.Manager):
 
         return note
 
-    def create_note(self, data, signal):
-        """Create a new `Note` object for a given `Signal` object.
-
-        :param data: deserialized data dict
-        :returns: Note object
-        """
-        from signals.apps.signals.models import Signal
-
+    def create_note(self, data: dict, signal):
+        """Create a new `Note` object for a given `Signal` object."""
         # Added for completeness of the internal API, and firing of Django
         # signals upon creation of a Note.
-        with transaction.atomic():
-            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
 
-            note = self._create_note_no_transaction(data, locked_signal)
+        with transaction.atomic():
+            note = self._create_note_no_transaction(data, signal)
+
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
-                                                                  signal_obj=locked_signal,
+                                                                  signal_obj=signal,
                                                                   note=note))
 
         return note
