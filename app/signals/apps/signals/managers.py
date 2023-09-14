@@ -375,7 +375,6 @@ class SignalManager(models.Manager):
         from .models import Note
 
         note = Note.objects.create(**data, _signal_id=signal.id)
-        signal.save()
 
         return note
 
