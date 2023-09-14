@@ -3,6 +3,7 @@
 from elasticsearch_dsl import FacetedSearch, Search, TermsFacet
 
 from signals.apps.search.documents.status_message import StatusMessage
+from signals.apps.search.settings import app_settings
 
 
 class StatusMessagesSearch(FacetedSearch):
@@ -10,7 +11,7 @@ class StatusMessagesSearch(FacetedSearch):
     configure a faceted search, which allows us to use filters and provides us with
     counts for each possible filter option.
     """
-    index = 'status_messages'
+    index = app_settings.CONNECTION['STATUS_MESSAGE_INDEX']
     doc_types = (StatusMessage,)
     fields = ('title', 'text',)
     facets = {
