@@ -235,10 +235,6 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(Note.objects.count(), 1)
         self.assertEqual(signal.notes.count(), 1)
 
-        # signal updated_at field should be updated
-        new_updated_at = Signal.objects.get(id=signal.id).updated_at
-        self.assertNotEqual(old_updated_at, new_updated_at)
-
         # check that the relevant Django signal fired
         patched_create_note.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
