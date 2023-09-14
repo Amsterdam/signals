@@ -226,7 +226,6 @@ class TestSignalManager(TransactionTestCase):
     @mock.patch('signals.apps.signals.managers.create_note')
     def test_create_note(self, patched_create_note):
         signal = factories.SignalFactory.create()
-        old_updated_at = signal.updated_at
 
         # add note to signal via internal actions API
         note = Signal.actions.create_note(self.note_data, signal)
