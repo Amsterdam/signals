@@ -376,6 +376,11 @@ class SignalManager(models.Manager):
 
         note = Note.objects.create(**data, _signal_id=signal.id)
 
+        # Ensures that the 'updated_at' timestamp accurately reflects the most
+        # recent activity related to a Signal, without altering any other
+        # existing data
+        signal.save(update_fields=['updated_at'])
+
         return note
 
     def create_note(self, data: dict, signal):
