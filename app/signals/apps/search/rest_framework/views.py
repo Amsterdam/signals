@@ -5,6 +5,7 @@ from typing import Optional
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from elasticsearch_dsl.query import MultiMatch
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,6 +34,20 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
 
     pagination_class = ElasticHALPagination
 
+    ordering_fields: tuple[str] = (
+        'created_at',
+    )
+
+    def _validate_ordering(self, ordering: list[str]) -> None:
+        for field in ordering:
+            name = field
+            if field[0] == '-':
+                name = field[1:]
+
+            if name not in self.ordering_fields:
+                raise ValidationError({'ordering': f"Cannot order by '{field}'!"})
+
+
     def get_queryset(self, *args, **kwargs):
         q = self.request.query_params.get('q', '')
 
@@ -49,6 +64,13 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
         )
 
         s = SignalDocument.search().query(multi_match)
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering is not None:
+            ordering = ordering.split(',')
+            self._validate_ordering(ordering)
+            s = s.sort(*ordering)
+
         s.execute()
         return s
 
