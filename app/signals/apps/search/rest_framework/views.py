@@ -37,7 +37,7 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
         if 'q' in self.request.query_params:
             q = self.request.query_params['q']
         else:
-            q = '*'
+            q = ''
 
         multi_match = MultiMatch(
             query=q,
@@ -47,7 +47,8 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
                 'category_assignment.category.name',
                 'reporter.email',  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
                 'reporter.phone'  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
-            ]
+            ],
+            zero_terms_query='all',
         )
 
         s = SignalDocument.search().query(multi_match)
