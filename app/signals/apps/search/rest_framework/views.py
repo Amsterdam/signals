@@ -34,10 +34,7 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
     pagination_class = ElasticHALPagination
 
     def get_queryset(self, *args, **kwargs):
-        if 'q' in self.request.query_params:
-            q = self.request.query_params['q']
-        else:
-            q = ''
+        q = self.request.query_params.get('q', '')
 
         multi_match = MultiMatch(
             query=q,
