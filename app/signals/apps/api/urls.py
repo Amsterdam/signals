@@ -153,9 +153,7 @@ urlpatterns = [
                                                     'delete': 'destroy'}),
                 name='private-category-icon'),
 
-        re_path(r'translations/?$',
-                PrivateCreateI18NextTranslationFileView.as_view(),
-                name='private-i18next-translations')
+        path('translations/', PrivateCreateI18NextTranslationFileView.as_view(), name='private-i18next-translations')
     ])),
 
     # Feedback
