@@ -34,6 +34,10 @@ from signals.apps.api.views.status_message import (
     StatusMessagesCategoryPositionViewSet,
     StatusMessagesViewSet
 )
+from signals.apps.api.views.translations import (
+    PrivateCreateI18NextTranslationFileView,
+    PublicRetrieveI18NextTranslationFileView
+)
 from signals.apps.search.rest_framework.views import SearchView, StatusMessageSearchView
 from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
@@ -101,6 +105,9 @@ urlpatterns = [
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
         path('reporter/verify-email', EmailVerificationView.as_view(), name='email-verification'),
+        path('translations.json', PublicRetrieveI18NextTranslationFileView.as_view(),
+             name='public-i18next-latest-translations'),
+
     ])),
 
     # Private additions
@@ -144,7 +151,11 @@ urlpatterns = [
                                                     'put': 'update',
                                                     'patch': 'update',
                                                     'delete': 'destroy'}),
-                name='private-category-icon')
+                name='private-category-icon'),
+
+        re_path(r'translations/?$',
+                PrivateCreateI18NextTranslationFileView.as_view(),
+                name='private-i18next-translations')
     ])),
 
     # Feedback

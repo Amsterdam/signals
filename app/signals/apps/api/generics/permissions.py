@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.views import View
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
@@ -159,4 +159,23 @@ class ReporterPermission(BasePermission):
         ) or SignalPermissionService.has_permission(
             user=request.user,
             permission='signals.sia_can_view_all_categories',
+        )
+
+
+class CanCreateI18NextTranslationFile(BasePermission):
+    def has_permission(self, request: Request, *args: set, **kwargs: dict) -> bool:
+        """
+        Check if the user has permission to create an I18Next translation file.
+
+        Args:
+            request (Request): The incoming request.
+            **kwargs (dict): Additional keyword arguments.
+
+        Returns:
+            bool: True if the user has permission, False otherwise.
+        """
+        # Allow access to root user or users with the specific permission
+        return (
+                request.user.is_superuser or
+                request.user.has_perm('signals.add_i18next_translation_file')
         )
