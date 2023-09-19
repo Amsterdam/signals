@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from signals.apps.api.generics.permissions import CanCreateI18NextTranslationFile
 from signals.auth.backend import JWTAuthBackend
 
+I18NEXT_TRANSLATION_FILE_PATH = 'i18next/translations.json'
+
 
 class PrivateCreateI18NextTranslationFileView(APIView):
     authentication_classes = (JWTAuthBackend, )
@@ -29,9 +31,6 @@ class PrivateCreateI18NextTranslationFileView(APIView):
         Returns:
             Response: A success response with the created JSON data.
         """
-        # Generate filename
-        translation_filename = 'i18next/translations.json'
-
         # Create ContentFile from JSON data and save to storage
         latest_file_content = json.dumps(request.data)
 
@@ -39,13 +38,13 @@ class PrivateCreateI18NextTranslationFileView(APIView):
         if not isinstance(latest_file_content, bytes):
             latest_file_content = latest_file_content.encode('utf-8')
 
-        if default_storage.exists(translation_filename):
+        if default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
             # Overwrite the JSON data to storage
-            with default_storage.open(translation_filename, 'wb') as translation_file:
+            with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH, 'wb') as translation_file:
                 translation_file.write(latest_file_content)
         else:
             # Save JSON data to storage
-            default_storage.save(translation_filename, ContentFile(latest_file_content))
+            default_storage.save(I18NEXT_TRANSLATION_FILE_PATH, ContentFile(latest_file_content))
 
         return Response(data=request.data, status=HTTP_201_CREATED)
 
@@ -63,14 +62,11 @@ class PublicRetrieveI18NextTranslationFileView(APIView):
         Returns:
             Response | FileResponse: A FileResponse with the file content or Response (404) if the file doesn't exist.
         """
-        # Build the file path within the storage
-        file_path = 'i18next/translations.json'
-
         # Check if the file exists in storage
-        if not default_storage.exists(file_path):
+        if not default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
             return Response('Translation file not found.', status=HTTP_404_NOT_FOUND)
 
         # Determine the file's content type
-        content_type, _ = mimetypes.guess_type(file_path)
-        response = FileResponse(default_storage.open(file_path), content_type=content_type)
+        content_type, _ = mimetypes.guess_type(I18NEXT_TRANSLATION_FILE_PATH)
+        response = FileResponse(default_storage.open(I18NEXT_TRANSLATION_FILE_PATH), content_type=content_type)
         return response
