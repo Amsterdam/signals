@@ -47,7 +47,6 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
             if name not in self.ordering_fields:
                 raise ValidationError({'ordering': f"Cannot order by '{field}'!"})
 
-
     def get_queryset(self, *args, **kwargs):
         q = self.request.query_params.get('q', '')
 
