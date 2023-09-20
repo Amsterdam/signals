@@ -39,12 +39,11 @@ class PrivateCreateI18NextTranslationFileView(APIView):
             latest_file_content = latest_file_content.encode('utf-8')
 
         if default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
-            # Overwrite the JSON data to storage
-            with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH, 'wb') as translation_file:
-                translation_file.write(latest_file_content)
-        else:
-            # Save JSON data to storage
-            default_storage.save(I18NEXT_TRANSLATION_FILE_PATH, ContentFile(latest_file_content))
+            # Delete the old file
+            default_storage.delete(I18NEXT_TRANSLATION_FILE_PATH)
+
+        # Save JSON data to storage
+        default_storage.save(I18NEXT_TRANSLATION_FILE_PATH, ContentFile(latest_file_content))
 
         return Response(data=request.data, status=HTTP_201_CREATED)
 
