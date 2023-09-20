@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
 import json
+import tempfile
 from typing import Any
 
 from django.contrib.auth.models import Permission, User
@@ -70,34 +71,35 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
                at "i18next/translations.js"
             4. Check that the contents of the file match the posted JSON blob
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_post_translation_new_file/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Check that no file called "i18next/translations.js"
-            # exists initially
-            self.assertFalse(
-                default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
-            )
-
-            # Post the JSON blob
-            response = self.client.post(
-                self.endpoint,
-                data=json.dumps(TEST_TRANSLATION_DATA),
-                content_type="application/json"
-            )
-
-            # Check that a file has been created
-            self.assertEqual(response.status_code, 201)
-            self.assertTrue(
-                default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
-            )
-
-            # Check that the contents of the file match the posted JSON blob
-            with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH) as file:
-                file_contents: str = file.read().decode()
-                self.assertEqual(
-                    json.loads(file_contents),
-                    TEST_TRANSLATION_DATA
+                # Check that no file called "i18next/translations.js"
+                # exists initially
+                self.assertFalse(
+                    default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
                 )
+
+                # Post the JSON blob
+                response = self.client.post(
+                    self.endpoint,
+                    data=json.dumps(TEST_TRANSLATION_DATA),
+                    content_type="application/json"
+                )
+
+                # Check that a file has been created
+                self.assertEqual(response.status_code, 201)
+                self.assertTrue(
+                    default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
+                )
+
+                # Check that the contents of the file match the posted JSON blob
+                with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH) as file:
+                    file_contents: str = file.read().decode()
+                    self.assertEqual(
+                        json.loads(file_contents),
+                        TEST_TRANSLATION_DATA
+                    )
 
     def test_post_translation_file_already_exists(self) -> None:
         """
@@ -110,41 +112,42 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
             5. Check that the contents of the file is no longer the same
                as before
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_post_translation_file_already_exists/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Create an existing translation file
-            default_storage.save(
-                I18NEXT_TRANSLATION_FILE_PATH,
-                ContentFile("Existing file content")
-            )
-
-            # Post the JSON blob
-            response = self.client.post(
-                self.endpoint,
-                data=json.dumps(TEST_TRANSLATION_DATA),
-                content_type="application/json"
-            )
-
-            # Check that a file still exists
-            self.assertEqual(response.status_code, 201)
-            self.assertTrue(
-                default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
-            )
-
-            # Check that the contents of the file match the posted JSON blob
-            with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH) as file:
-                file_contents: str = file.read().decode()
-                self.assertEqual(
-                    json.loads(file_contents),
-                    TEST_TRANSLATION_DATA
+                # Create an existing translation file
+                default_storage.save(
+                    I18NEXT_TRANSLATION_FILE_PATH,
+                    ContentFile("Existing file content")
                 )
 
-                # Check that the contents of the file are no longer the
-                # same as before
-                self.assertNotEqual(
-                    file_contents,
-                    "Existing file content"
+                # Post the JSON blob
+                response = self.client.post(
+                    self.endpoint,
+                    data=json.dumps(TEST_TRANSLATION_DATA),
+                    content_type="application/json"
                 )
+
+                # Check that a file still exists
+                self.assertEqual(response.status_code, 201)
+                self.assertTrue(
+                    default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH)
+                )
+
+                # Check that the contents of the file match the posted JSON blob
+                with default_storage.open(I18NEXT_TRANSLATION_FILE_PATH) as file:
+                    file_contents: str = file.read().decode()
+                    self.assertEqual(
+                        json.loads(file_contents),
+                        TEST_TRANSLATION_DATA
+                    )
+
+                    # Check that the contents of the file are no longer the
+                    # same as before
+                    self.assertNotEqual(
+                        file_contents,
+                        "Existing file content"
+                    )
 
     def test_post_no_user_logged_in(self) -> None:
         """
@@ -155,21 +158,22 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
             3. Check that the request is not allowed because the user is
                not logged in (HTTP 401 Unauthorized)
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_post_no_user_logged_in/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Log the user out
-            self.client.logout()
+                # Log the user out
+                self.client.logout()
 
-            # Post the JSON blob
-            response = self.client.post(
-                self.endpoint,
-                data=json.dumps(TEST_TRANSLATION_DATA),
-                content_type="application/json"
-            )
+                # Post the JSON blob
+                response = self.client.post(
+                    self.endpoint,
+                    data=json.dumps(TEST_TRANSLATION_DATA),
+                    content_type="application/json"
+                )
 
-            # Check that the request is not allowed because the user is
-            # not logged in
-            self.assertEqual(response.status_code, 401)
+                # Check that the request is not allowed because the user is
+                # not logged in
+                self.assertEqual(response.status_code, 401)
 
     def test_post_no_permission(self) -> None:
         """
@@ -181,23 +185,24 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
             3. Check that the request is not allowed because the user doesn't
                have the required permission (HTTP 403 Forbidden)
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_post_no_permission/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Remove the permission from the user
-            self.user.user_permissions.remove(
-                self.add_i18next_translation_file_permission
-            )
+                # Remove the permission from the user
+                self.user.user_permissions.remove(
+                    self.add_i18next_translation_file_permission
+                )
 
-            # Post the JSON blob
-            response = self.client.post(
-                self.endpoint,
-                data=json.dumps(TEST_TRANSLATION_DATA),
-                content_type="application/json"
-            )
+                # Post the JSON blob
+                response = self.client.post(
+                    self.endpoint,
+                    data=json.dumps(TEST_TRANSLATION_DATA),
+                    content_type="application/json"
+                )
 
-            # Check that the request is not allowed because the user doesn't
-            # have the required permission
-            self.assertEqual(response.status_code, 403)
+                # Check that the request is not allowed because the user doesn't
+                # have the required permission
+                self.assertEqual(response.status_code, 403)
 
 
 class TestPublicRetrieveI18NextTranslationFileView(APITestCase):
@@ -211,27 +216,28 @@ class TestPublicRetrieveI18NextTranslationFileView(APITestCase):
             3. Retrieve the contents of the translation file
             4. Check that the retrieved contents match the posted JSON blob
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_retrieve_translation_file/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Create an existing translation file
-            default_storage.save(
-                I18NEXT_TRANSLATION_FILE_PATH,
-                ContentFile(json.dumps(TEST_TRANSLATION_DATA))
-            )
+                # Create an existing translation file
+                default_storage.save(
+                    I18NEXT_TRANSLATION_FILE_PATH,
+                    ContentFile(json.dumps(TEST_TRANSLATION_DATA))
+                )
 
-            # Retrieve the contents of the file
-            response_retrieve = self.client.get(self.endpoint)
+                # Retrieve the contents of the file
+                response_retrieve = self.client.get(self.endpoint)
 
-            self.assertEqual(response_retrieve.status_code, 200)
+                self.assertEqual(response_retrieve.status_code, 200)
 
-            # Check that the retrieved content matches the posted JSON blob
-            file_contents = response_retrieve.streaming_content
-            content_file = ContentFile(b"".join(file_contents))
+                # Check that the retrieved content matches the posted JSON blob
+                file_contents = response_retrieve.streaming_content
+                content_file = ContentFile(b"".join(file_contents))
 
-            self.assertEqual(
-                json.loads(content_file.read().decode()),
-                TEST_TRANSLATION_DATA
-            )
+                self.assertEqual(
+                    json.loads(content_file.read().decode()),
+                    TEST_TRANSLATION_DATA
+                )
 
     def test_retrieve_file_does_no_exist(self) -> None:
         """
@@ -240,14 +246,15 @@ class TestPublicRetrieveI18NextTranslationFileView(APITestCase):
             1. Attempt to retrieve a file that does not exist
             2. Check that a 404 response is raised (HTTP 404 Not Found)
         """
-        with self.settings(MEDIA_ROOT='/tmp/test_retrieve_file_does_no_exist/'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.settings(MEDIA_ROOT=tmpdir):
 
-            # Delete the translation file if it already exists
-            if default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
-                default_storage.delete(I18NEXT_TRANSLATION_FILE_PATH)
+                # Delete the translation file if it already exists
+                if default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
+                    default_storage.delete(I18NEXT_TRANSLATION_FILE_PATH)
 
-            # Attempt to retrieve a nonexistent file
-            response = self.client.get(self.endpoint)
+                # Attempt to retrieve a nonexistent file
+                response = self.client.get(self.endpoint)
 
-            # Check that a 404 response is raised
-            self.assertEqual(response.status_code, 404)
+                # Check that a 404 response is raised
+                self.assertEqual(response.status_code, 404)
