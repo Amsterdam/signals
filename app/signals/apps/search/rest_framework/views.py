@@ -3,7 +3,7 @@
 from typing import Optional
 
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
@@ -77,9 +77,9 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter('q', OpenApiTypes.STR, description='The search term.'),
-            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order the results by a specific field.'
-                                                                   ' Currently the only valid options are "created_at"'
-                                                                   ' and "-created_at".'),
+            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order the results by a specific field. '
+                                                                       'Currently the only valid options are '
+                                                                       '"created_at" and "-created_at".'),
         ],
         responses={
             200: PrivateSignalSerializerList,
