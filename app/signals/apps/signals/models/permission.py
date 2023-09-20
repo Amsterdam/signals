@@ -39,7 +39,7 @@ def sync_custom_permissions(sender, **kwargs):
 
     custom_permissions = [
         # Custom permission to allow users to create i18next translation files.
-        ('add_i18next_translation_file', 'Can create i18next translation file')
+        ('sia_add_i18next_translation_file', 'Can create i18next translation file')
     ]
 
     for codename, name in custom_permissions:
