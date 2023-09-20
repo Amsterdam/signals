@@ -3,8 +3,9 @@
 from typing import Optional
 
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from elasticsearch_dsl.query import MultiMatch
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,6 +21,7 @@ from signals.apps.search.rest_framework.pagination import ElasticHALPagination
 from signals.apps.search.rest_framework.serializers import StatusMessageListSerializer
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+from signals.schema import GenericErrorSerializer
 
 
 class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
@@ -33,11 +35,21 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
 
     pagination_class = ElasticHALPagination
 
+    ordering_fields: tuple[str] = (
+        'created_at',
+    )
+
+    def _validate_ordering(self, ordering: list[str]) -> None:
+        for field in ordering:
+            name = field
+            if field[0] == '-':
+                name = field[1:]
+
+            if name not in self.ordering_fields:
+                raise ValidationError({'ordering': f"Cannot order by '{field}'!"})
+
     def get_queryset(self, *args, **kwargs):
-        if 'q' in self.request.query_params:
-            q = self.request.query_params['q']
-        else:
-            q = '*'
+        q = self.request.query_params.get('q', '')
 
         multi_match = MultiMatch(
             query=q,
@@ -47,13 +59,44 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
                 'category_assignment.category.name',
                 'reporter.email',  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
                 'reporter.phone'  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
-            ]
+            ],
+            zero_terms_query='all',
         )
 
         s = SignalDocument.search().query(multi_match)
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering is not None:
+            ordering = ordering.split(',')
+            self._validate_ordering(ordering)
+            s = s.sort(*ordering)
+
         s.execute()
         return s
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter('q', OpenApiTypes.STR, description='The search term.'),
+            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order the results by a specific field. '
+                                                                       'Currently the only valid options are '
+                                                                       '"created_at" and "-created_at".'),
+        ],
+        responses={
+            200: PrivateSignalSerializerList,
+            400: OpenApiTypes.OBJECT,
+            401: GenericErrorSerializer,
+            403: GenericErrorSerializer,
+            500: GenericErrorSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                'Bad Request',
+                description='When providing a field name that is not supported by the "ordering" parameter.',
+                value={'ordering': "Cannot order by 'updated_at'!}"},
+                status_codes=['400'],
+            ),
+        ],
+    )
     def list(self, request, *args, **kwargs):
         if not SignalDocument.ping():
             raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
