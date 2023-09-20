@@ -3,7 +3,7 @@
 from typing import Optional
 
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from elasticsearch_dsl.query import MultiMatch
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
@@ -21,6 +21,7 @@ from signals.apps.search.rest_framework.pagination import ElasticHALPagination
 from signals.apps.search.rest_framework.serializers import StatusMessageListSerializer
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+from signals.schema import GenericErrorSerializer
 
 
 class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
@@ -73,6 +74,29 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
         s.execute()
         return s
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter('q', OpenApiTypes.STR, description='The search term.'),
+            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order the results by a specific field.'
+                                                                   ' Currently the only valid options are "created_at"'
+                                                                   ' and "-created_at".'),
+        ],
+        responses={
+            200: PrivateSignalSerializerList,
+            400: OpenApiTypes.OBJECT,
+            401: GenericErrorSerializer,
+            403: GenericErrorSerializer,
+            500: GenericErrorSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                'Bad Request',
+                description='When providing a field name that is not supported by the "ordering" parameter.',
+                value={'ordering': "Cannot order by 'updated_at'!}"},
+                status_codes=['400'],
+            ),
+        ],
+    )
     def list(self, request, *args, **kwargs):
         if not SignalDocument.ping():
             raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
