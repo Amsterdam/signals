@@ -177,5 +177,5 @@ class CanCreateI18NextTranslationFile(BasePermission):
         # Allow access to root user or users with the specific permission
         return (
                 request.user.is_superuser or
-                request.user.has_perm('signals.add_i18next_translation_file')
+                request.user.has_perm('signals.sia_add_i18next_translation_file')
         )

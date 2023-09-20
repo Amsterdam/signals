@@ -44,7 +44,7 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
     def setUp(self) -> None:
         # Create a user with the necessary permission
         self.add_i18next_translation_file_permission: Permission = Permission.objects.get(
-            codename='add_i18next_translation_file'
+            codename='sia_add_i18next_translation_file'
         )
         self.user: User = User.objects.create_user(
             username='testuser',
@@ -107,7 +107,7 @@ class PrivateCreateI18NextTranslationFileView(APITestCase):
             2. Post the JSON blob to the specified URL
             3. Check that a file still exists at "i18next/translations.js"
             4. Check that the contents of the file match the posted JSON blob
-            5. Check that the contents of the file are no longer the same
+            5. Check that the contents of the file is no longer the same
                as before
         """
         with self.settings(MEDIA_ROOT='/tmp/test_post_translation_file_already_exists/'):
