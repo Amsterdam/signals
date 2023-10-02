@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build container image
-        run: DOCKER_BUILDKIT=1 docker-compose -f docker-compose.test.yml build
+        run: docker-compose -f docker-compose.test.yml build
 
       - name: pytest
         run: docker-compose -f docker-compose.test.yml run api pytest -n 4 --cov=signals --cov-report=term --cov-report=html:/tmp/test/htmlcov --no-cov-on-fail --tb=short
@@ -18,10 +18,10 @@ jobs:
         run: docker-compose -f docker-compose.test.yml run api flake8 signals
 
       - name: isort
-        run: docker-compose -f docker-compose.test.yml run isort --diff --check-only signals tests
+        run: docker-compose -f docker-compose.test.yml run api isort --diff --check-only signals tests
 
       - name: spdx
-        run: docker-compose -f docker-compose.test.yml run python check_spdx.py .
+        run: docker-compose -f docker-compose.test.yml run api python check_spdx.py .
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
