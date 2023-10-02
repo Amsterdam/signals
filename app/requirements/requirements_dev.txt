@@ -377,6 +377,14 @@ msal-extensions==1.0.0
     # via
     #   -r requirements/requirements_test.txt
     #   azure-identity
+mypy==1.5.1
+    # via -r requirements/requirements_test.txt
+mypy-baseline==0.6.0
+    # via -r requirements/requirements_test.txt
+mypy-extensions==1.0.0
+    # via
+    #   -r requirements/requirements_test.txt
+    #   mypy
 networkx==3.1
     # via -r requirements/requirements_test.txt
 o365==2.0.31
@@ -654,6 +662,7 @@ typing-extensions==4.8.0
     #   -r requirements/requirements_test.txt
     #   azure-core
     #   azure-storage-blob
+    #   mypy
     #   pytest-bdd
 tzdata==2023.3
     # via
