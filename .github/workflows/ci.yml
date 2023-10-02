@@ -1,6 +1,9 @@
 name: CI
 on: [pull_request]
 
+env:
+  DOCKER_BUILDKIT: 1
+
 jobs:
   ci:
     runs-on: ubuntu-latest
