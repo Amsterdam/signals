@@ -22,9 +22,6 @@ services:
       POSTGRES_DB: signals
       POSTGRES_USER: signals
       POSTGRES_PASSWORD: insecure
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./dumps:/dumps
     healthcheck:
       test: [ "CMD-SHELL", "sh -c 'pg_isready -U signals -d signals'" ]
       interval: 10s
