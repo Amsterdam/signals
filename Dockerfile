@@ -71,3 +71,17 @@ RUN set -eux; \
     pip-sync requirements/requirements.txt requirements/requirements_dev.txt
 
 USER signals
+
+
+##################################################
+#                    TEST                        #
+##################################################
+FROM prod AS test
+
+USER root
+
+RUN set -eux; \
+    pip install pip-tools; \
+    pip-sync requirements/requirements.txt requirements/requirements_test.txt
+
+USER signals
