@@ -8,6 +8,10 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    env_file:
+      - docker-compose/environments/.api
+    environment:
+      TESTING: 'true'
 
   database:
     image: amsterdam/postgres11
