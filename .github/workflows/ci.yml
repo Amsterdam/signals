@@ -1,9 +1,6 @@
 name: CI
 on: [pull_request]
 
-env:
-  DOCKER_BUILDKIT: 1
-
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -11,11 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build container image
-        run: docker-compose -f docker-compose.test.yml build
+        run: DOCKER_BUILDKIT=1 docker-compose -f docker-compose.test.yml build
 
       - name: pytest
         run: docker-compose -f docker-compose.test.yml run api pytest -n 4 --cov=signals --cov-report=term --cov-report=html:/tmp/test/htmlcov --no-cov-on-fail --tb=short
