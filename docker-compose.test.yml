@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      target: test
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: amsterdam/postgres11
+    shm_size: '1024m'
+    ports:
+      - "5409:5432"
+    environment:
+      POSTGRES_DB: signals
+      POSTGRES_USER: signals
+      POSTGRES_PASSWORD: insecure
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U signals -d signals'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
