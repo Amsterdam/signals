@@ -4,6 +4,8 @@ factory-boy
 flake8
 freezegun
 isort
+mypy
+mypy-baseline
 pytest
 pytest-bdd
 pytest-cov

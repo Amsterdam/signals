@@ -23,6 +23,9 @@ jobs:
       - name: spdx
         run: docker-compose -f docker-compose.test.yml run api python check_spdx.py .
 
+      - name: mypy
+        run: docker-compose -f docker-compose.test.yml run api bash -c "mypy signals | mypy-baseline filter"
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
         with:
