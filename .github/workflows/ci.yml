@@ -13,7 +13,7 @@ jobs:
         run: docker-compose -f docker-compose.test.yml build
 
       - name: pytest
-        run: docker-compose -f docker-compose.test.yml run api pytest -n 4 --cov=signals --cov-report=term --cov-report=html:/tmp/test/htmlcov --no-cov-on-fail --tb=short --reuse-db --create-db
+        run: docker-compose -f docker-compose.test.yml run api pytest -n 4 --cov=signals --cov-report=term --cov-report=html:/tmp/test/htmlcov --no-cov-on-fail --tb=short --create-db
 
       - name: flake8
         run: docker-compose -f docker-compose.test.yml run api flake8 signals
