@@ -29,11 +29,15 @@ class StatusMessageTemplate(CreatedUpdatedModel):
         permissions = (
             ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),  # SIG-2192
         )
-        index_together = (
-            'category',
-            'state',
-            'order',
-        )
+        indexes = [
+            models.Index(
+                fields=[
+                    'category',
+                    'state',
+                    'order',
+                ]
+            )
+        ]
         ordering = (
             'category',
             'state',
