@@ -50,8 +50,10 @@ class Log(models.Model):
                                 blank=True, null=True)
 
     class Meta:
-        ordering = ('-created_at',)
-        index_together = (('content_type', 'object_pk',),)
+        ordering = ('-created_at', )
+        indexes = [
+            models.Index(fields=['content_type', 'object_pk', ])
+        ]
 
     def __str__(self) -> str:
         representation = f'{self.action} on {self.content_type.name} #{self.object_pk}'
