@@ -743,7 +743,7 @@ signals/apps/email_integrations/custom_backends/rest_email_endpoint.py:0: error:
 signals/apps/email_integrations/custom_backends/rest_email_endpoint.py:0: error: Skipping analyzing "django.core.mail.backends.base": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/email_integrations/custom_backends/rest_email_endpoint.py:0: error: Library stubs not installed for "requests"  [import]
 signals/settings/__init__.py:0: error: Incompatible import of "SIGNALS_AUTH" (imported name has type "dict[str, object]", local name has type "dict[str, bool | list[str] | str | None]")  [assignment]
-signals/settings/__init__.py:0: error: Incompatible import of "SIGNALS_AUTH" (imported name has type "dict[str, object]", local name has type "dict[str, bool | list[str] | str | None]")  [assignment]
+signals/settings/__init__.py:0: error: Cannot find implementation or library stub for module named "signals.settings.local"  [import]
 signals/auth/backend.py:0: error: Skipping analyzing "django.conf": module is installed, but missing library stubs or py.typed marker  [import]
 signals/auth/backend.py:0: error: Skipping analyzing "django.contrib.auth.models": module is installed, but missing library stubs or py.typed marker  [import]
 signals/auth/backend.py:0: error: Skipping analyzing "django.core.cache": module is installed, but missing library stubs or py.typed marker  [import]
