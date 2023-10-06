@@ -201,7 +201,9 @@ django-silk==5.0.4
 django-storages==1.14.1
     # via -r requirements/requirements.txt
 django-stubs[compatible-mypy]==4.2.4
-    # via -r requirements/requirements_test.in
+    # via
+    #   -r requirements/requirements_test.in
+    #   djangorestframework-stubs
 django-stubs-ext==4.2.2
     # via django-stubs
 django-timezone-field==6.0.1
@@ -223,6 +225,8 @@ djangorestframework-csv==2.1.1
     #   drf-amsterdam
 djangorestframework-gis==1.0
     # via -r requirements/requirements.txt
+djangorestframework-stubs[compatible-mypy]==3.14.3
+    # via -r requirements/requirements_test.in
 djangorestframework-xml==2.0.0
     # via
     #   -r requirements/requirements.txt
@@ -365,6 +369,7 @@ mypy==1.5.1
     # via
     #   -r requirements/requirements_test.in
     #   django-stubs
+    #   djangorestframework-stubs
 mypy-baseline==0.6.0
     # via -r requirements/requirements_test.in
 mypy-extensions==1.0.0
@@ -553,6 +558,7 @@ requests==2.31.0
     #   azure-core
     #   coreapi
     #   datapunt-authorization-django
+    #   djangorestframework-stubs
     #   flex
     #   google-api-core
     #   mozilla-django-oidc
@@ -581,7 +587,7 @@ rsa==4.9
     # via
     #   -r requirements/requirements.txt
     #   google-auth
-simplejson==3.19.1
+simplejson==3.19.2
     # via
     #   -r requirements/requirements.txt
     #   django-rest-swagger
@@ -633,7 +639,13 @@ types-cryptography==3.3.23.2
 types-pytz==2023.3.1.1
     # via django-stubs
 types-pyyaml==6.0.12.12
-    # via django-stubs
+    # via
+    #   django-stubs
+    #   djangorestframework-stubs
+types-requests==2.31.0.6
+    # via djangorestframework-stubs
+types-urllib3==1.26.25.14
+    # via types-requests
 typing-extensions==4.8.0
     # via
     #   -r requirements/requirements.txt
@@ -641,6 +653,7 @@ typing-extensions==4.8.0
     #   azure-storage-blob
     #   django-stubs
     #   django-stubs-ext
+    #   djangorestframework-stubs
     #   mypy
     #   pytest-bdd
 tzdata==2023.3

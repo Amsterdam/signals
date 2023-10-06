@@ -357,7 +357,7 @@ rpds-py==0.10.4
     #   referencing
 rsa==4.9
     # via google-auth
-simplejson==3.19.1
+simplejson==3.19.2
     # via django-rest-swagger
 six==1.16.0
     # via
