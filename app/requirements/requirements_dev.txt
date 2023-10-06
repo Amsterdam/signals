@@ -588,6 +588,7 @@ referencing==0.30.2
     #   -r requirements/requirements_test.txt
     #   jsonschema
     #   jsonschema-specifications
+    #   types-jsonschema
 requests==2.31.0
     # via
     #   -r requirements/requirements_test.txt
@@ -679,6 +680,8 @@ types-html5lib==1.1.11.15
     # via
     #   -r requirements/requirements_test.txt
     #   types-beautifulsoup4
+types-jsonschema==4.19.0.3
+    # via -r requirements/requirements_test.txt
 types-pytz==2023.3.1.1
     # via
     #   -r requirements/requirements_test.txt

@@ -9,6 +9,7 @@ mypy-baseline
 django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
 types-beautifulsoup4
+types-jsonschema
 pytest
 pytest-bdd
 pytest-cov
