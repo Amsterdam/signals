@@ -11,6 +11,7 @@ djangorestframework-stubs[compatible-mypy]
 types-beautifulsoup4
 types-jsonschema
 types-Pillow
+types-psycopg2
 types-Pygments
 types-Markdown
 types-python-dateutil
