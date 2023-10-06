@@ -70,7 +70,7 @@ signals/apps/services/domain/pdf.py:0: error: Skipping analyzing "weasyprint": m
 signals/apps/questionnaires/fieldtypes/text.py:0: error: Incompatible types in assignment (expression has type "str", base class "FieldType" defined the type as "None")  [assignment]
 signals/apps/questionnaires/fieldtypes/selected_object.py:0: error: Incompatible types in assignment (expression has type "str", base class "FieldType" defined the type as "None")  [assignment]
 signals/settings/__init__.py:0: error: Incompatible import of "SIGNALS_AUTH" (imported name has type "dict[str, object]", local name has type "dict[str, bool | list[str] | str | None]")  [assignment]
-signals/settings/__init__.py:0: error: Incompatible import of "SIGNALS_AUTH" (imported name has type "dict[str, object]", local name has type "dict[str, bool | list[str] | str | None]")  [assignment]
+signals/settings/__init__.py:0: error: Cannot find implementation or library stub for module named "signals.settings.local"  [import]
 signals/apps/questionnaires/managers.py:0: error: Skipping analyzing "networkx": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/signals/models/reporter.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/signals/models/reporter.py:0: error: Item "None" of "Reporter | None" has no attribute "email"  [union-attr]
