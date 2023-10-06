@@ -6,7 +6,6 @@ signals/apps/api/filters/department.py:0: error: Skipping analyzing "django_filt
 signals/admin/oidc/backends.py:0: error: Skipping analyzing "mozilla_django_oidc.auth": module is installed, but missing library stubs or py.typed marker  [import]
 signals/admin/oidc/backends.py:0: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 signals/apps/my_signals/rest_framework/filters/signals.py:0: error: Skipping analyzing "django_filters.rest_framework": module is installed, but missing library stubs or py.typed marker  [import]
-signals/apps/email_integrations/tests/markdown/test_plaintext.py:0: error: Library stubs not installed for "markdown"  [import]
 logs/handlers.py:0: error: Item "None" of "TextIO | None" has no attribute "write"  [union-attr]
 logs/handlers.py:0: error: Item "None" of "TextIO | None" has no attribute "write"  [union-attr]
 signals/settings/base.py:0: error: Need type annotation for "CELERY_BEAT_SCHEDULE" (hint: "CELERY_BEAT_SCHEDULE: Dict[<type>, <type>] = ...")  [var-annotated]
@@ -77,7 +76,6 @@ signals/apps/history/services/signal_log.py:0: error: Item "DateTimeField[str | 
 signals/apps/history/services/signal_log.py:0: error: Item "None" of "Status | None" has no attribute "email_override"  [union-attr]
 signals/apps/history/services/signal_log.py:0: error: Item "None" of "Status | None" has no attribute "created_at"  [union-attr]
 signals/apps/history/services/signal_log.py:0: error: Item "DateTimeField[str | datetime | date | Combinable, datetime]" of "DateTimeField[str | datetime | date | Combinable, datetime] | Any" has no attribute "strftime"  [union-attr]
-signals/apps/email_integrations/utils.py:0: error: Library stubs not installed for "markdown"  [import]
 signals/apps/email_integrations/utils.py:0: error: Item "None" of "CategoryAssignment | None" has no attribute "category"  [union-attr]
 signals/apps/email_integrations/utils.py:0: error: Item "ForeignKey[Category | Combinable, Category]" of "ForeignKey[Category | Combinable, Category] | Any" has no attribute "parent"  [union-attr]
 signals/apps/email_integrations/utils.py:0: error: Item "ForeignKey[Category | Combinable, Category]" of "ForeignKey[Category | Combinable, Category] | Any" has no attribute "parent"  [union-attr]
@@ -218,7 +216,6 @@ signals/apps/signals/admin/deleted_signals.py:0: error: Argument 1 has incompati
 signals/apps/sigmax/stuf_protocol/outgoing/stuf.py:0: error: Library stubs not installed for "lxml"  [import]
 signals/apps/sigmax/stuf_protocol/outgoing/stuf.py:0: error: Incompatible types in assignment (expression has type "str", variable has type "bool")  [assignment]
 signals/apps/sigmax/stuf_protocol/outgoing/stuf.py:0: error: Argument "headers" to "post" has incompatible type "dict[str, Sequence[object]]"; expected "Mapping[str, str | bytes] | None"  [arg-type]
-signals/apps/services/tests/domain/test_contact_details.py:0: error: Library stubs not installed for "markdown"  [import]
 signals/apps/services/domain/dsl.py:0: error: Need type annotation for "_code_cache" (hint: "_code_cache: Dict[<type>, <type>] = ...")  [var-annotated]
 signals/apps/services/domain/dsl.py:0: error: Item "None" of "CategoryAssignment | None" has no attribute "category"  [union-attr]
 signals/apps/services/domain/dsl.py:0: error: Item "None" of "CategoryAssignment | None" has no attribute "category"  [union-attr]
@@ -273,8 +270,6 @@ signals/apps/my_signals/factories.py:0: error: Skipping analyzing "factory": mod
 signals/apps/my_signals/factories.py:0: error: Skipping analyzing "factory.django": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/my_signals/admin.py:0: error: "Callable[[MySignalsTokenAdmin, Any], Any]" has no attribute "boolean"  [attr-defined]
 signals/apps/my_signals/rest_framework/serializers/token.py:0: error: Library stubs not installed for "dateutil.relativedelta"  [import]
-signals/apps/email_integrations/templatetags/markdown_filters.py:0: error: Library stubs not installed for "markdown"  [import]
-signals/apps/email_integrations/templatetags/markdown_filters.py:0: note: Hint: "python3 -m pip install types-Markdown"
 signals/apps/dataset/sources/gebieden.py:0: error: Skipping analyzing "requests.packages.urllib3.util.retry": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/dataset/sources/cbs.py:0: error: Incompatible types in assignment (expression has type "dict_keys[str, dict[Any, Any]]", base class "AreaLoader" defined the type as "list[Any]")  [assignment]
 signals/apps/api/views/email_verification.py:0: error: Item "None" of "Reporter | None" has no attribute "phone"  [union-attr]
