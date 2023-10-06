@@ -10,6 +10,7 @@ django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
 types-beautifulsoup4
 types-jsonschema
+types-Pillow
 pytest
 pytest-bdd
 pytest-cov
