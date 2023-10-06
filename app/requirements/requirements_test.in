@@ -7,6 +7,7 @@ isort
 mypy
 mypy-baseline
 django-stubs[compatible-mypy]
+djangorestframework-stubs[compatible-mypy]
 pytest
 pytest-bdd
 pytest-cov
