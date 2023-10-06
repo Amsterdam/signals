@@ -1,7 +1,5 @@
 signals/celery.py:0: error: Skipping analyzing "celery": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/questionnaires/utils/mermaidx.py:0: error: Skipping analyzing "networkx": module is installed, but missing library stubs or py.typed marker  [import]
-signals/apps/email_integrations/markdown/plaintext.py:0: error: Library stubs not installed for "bs4"  [import]
-signals/apps/email_integrations/markdown/plaintext.py:0: note: Hint: "python3 -m pip install types-beautifulsoup4"
 signals/apps/dataset/base.py:0: error: Need type annotation for "PROVIDES" (hint: "PROVIDES: List[<type>] = ...")  [var-annotated]
 signals/apps/api/filters/source.py:0: error: Skipping analyzing "django_filters.rest_framework": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/filters/department.py:0: error: Skipping analyzing "django_filters.rest_framework": module is installed, but missing library stubs or py.typed marker  [import]
