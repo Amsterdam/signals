@@ -13,6 +13,7 @@ types-jsonschema
 types-Pillow
 types-Markdown
 types-python-dateutil
+lxml-stubs
 pytest
 pytest-bdd
 pytest-cov

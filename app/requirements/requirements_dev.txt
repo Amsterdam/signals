@@ -361,6 +361,8 @@ lxml==4.9.3
     # via
     #   -r requirements/requirements_test.txt
     #   xmlunittest
+lxml-stubs==0.4.0
+    # via -r requirements/requirements_test.txt
 mako==1.2.4
     # via
     #   -r requirements/requirements_test.txt
