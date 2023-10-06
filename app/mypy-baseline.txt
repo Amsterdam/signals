@@ -257,6 +257,7 @@ signals/apps/signals/factories/category.py:0: error: Skipping analyzing "factory
 signals/apps/sigmax/factories.py:0: error: Skipping analyzing "factory": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/sigmax/stuf_protocol/incoming/actualiseerZaakstatus_Lk01.py:0: error: Library stubs not installed for "lxml"  [import]
 signals/apps/sigmax/stuf_protocol/incoming/actualiseerZaakstatus_Lk01.py:0: note: Hint: "python3 -m pip install lxml-stubs"
+signals/apps/sigmax/stuf_protocol/incoming/actualiseerZaakstatus_Lk01.py:0: note: (or run "mypy --install-types" to install all missing stub packages)
 signals/apps/search/documents/status_message.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl.query": module is installed, but missing library stubs or py.typed marker  [import]
@@ -269,7 +270,6 @@ signals/apps/questionnaires/rest_framework/serializers/public/answers.py:0: erro
 signals/apps/my_signals/factories.py:0: error: Skipping analyzing "factory": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/my_signals/factories.py:0: error: Skipping analyzing "factory.django": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/my_signals/admin.py:0: error: "Callable[[MySignalsTokenAdmin, Any], Any]" has no attribute "boolean"  [attr-defined]
-signals/apps/my_signals/rest_framework/serializers/token.py:0: error: Library stubs not installed for "dateutil.relativedelta"  [import]
 signals/apps/dataset/sources/gebieden.py:0: error: Skipping analyzing "requests.packages.urllib3.util.retry": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/dataset/sources/cbs.py:0: error: Incompatible types in assignment (expression has type "dict_keys[str, dict[Any, Any]]", base class "AreaLoader" defined the type as "list[Any]")  [assignment]
 signals/apps/api/views/email_verification.py:0: error: Item "None" of "Reporter | None" has no attribute "phone"  [union-attr]
@@ -355,9 +355,6 @@ signals/apps/email_integrations/tests/test_rules.py:0: error: Incompatible types
 signals/apps/email_integrations/tests/test_actions.py:0: error: Skipping analyzing "factory.fuzzy": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/tests/test_status_message_endpoint.py:0: error: Skipping analyzing "factory.django": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/tests/test_private_signal_reporters.py:0: error: Argument 1 to "freeze_time" has incompatible type "datetime"; expected "float"  [arg-type]
-signals/apps/api/tests/test_private_signal_endpoint.py:0: error: Library stubs not installed for "dateutil"  [import]
-signals/apps/api/tests/test_private_signal_endpoint.py:0: note: Hint: "python3 -m pip install types-python-dateutil"
-signals/apps/api/tests/test_private_signal_endpoint.py:0: note: (or run "mypy --install-types" to install all missing stub packages)
 signals/apps/api/tests/test_filters.py:0: error: Need type annotation for "signals" (hint: "signals: List[<type>] = ...")  [var-annotated]
 signals/apps/api/tests/test_filters.py:0: error: Need type annotation for "sub_categories" (hint: "sub_categories: List[<type>] = ...")  [var-annotated]
 signals/apps/api/tests/test_filters.py:0: error: Need type annotation for "states" (hint: "states: List[<type>] = ...")  [var-annotated]
@@ -457,10 +454,8 @@ signals/apps/signals/migrations/0046_auto_20190503_1053.py:0: error: Skipping an
 signals/apps/signals/migrations/0046_auto_20190503_1053.py:0: error: Skipping analyzing "django_extensions.db": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/signals/migrations/0046_auto_20190503_1053.py:0: error: Skipping analyzing "django_extensions": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/sigmax/rest_framework/views.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
-signals/apps/reporting/tests/csv/test_datawarehouse.py:0: error: Library stubs not installed for "dateutil"  [import]
 signals/apps/reporting/rest_framework/views.py:0: error: Skipping analyzing "django_filters.rest_framework": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/reporting/rest_framework/views.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
-signals/apps/my_signals/rest_framework/views/signals.py:0: error: Library stubs not installed for "dateutil.relativedelta"  [import]
 signals/apps/my_signals/rest_framework/views/signals.py:0: error: Skipping analyzing "django_filters.rest_framework": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/my_signals/rest_framework/views/signals.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/views/translations.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
@@ -541,7 +536,6 @@ signals/apps/api/views/signals/private/signals.py:0: error: Skipping analyzing "
 signals/apps/api/views/signals/private/signals.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
 signals/apps/api/views/signals/private/signal_context.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
 signals/apps/questionnaires/tests/rest_framework/views/public/test_reaction_request_flow.py:0: error: "NameSpace" has no attribute "urlpatterns"  [attr-defined]
-signals/apps/questionnaires/tests/rest_framework/views/public/test_public_sessions_endpoint_forward_to_external.py:0: error: Library stubs not installed for "dateutil"  [import]
 signals/apps/questionnaires/tests/rest_framework/views/public/test_public_sessions_endpoint_forward_to_external.py:0: error: "NameSpace" has no attribute "urlpatterns"  [attr-defined]
 signals/apps/questionnaires/tests/rest_framework/views/public/test_public_sessions_endpoint.py:0: error: "NameSpace" has no attribute "urlpatterns"  [attr-defined]
 signals/apps/questionnaires/tests/rest_framework/views/public/test_public_questions_endpoint.py:0: error: "NameSpace" has no attribute "urlpatterns"  [attr-defined]

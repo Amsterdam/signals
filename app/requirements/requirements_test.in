@@ -12,6 +12,7 @@ types-beautifulsoup4
 types-jsonschema
 types-Pillow
 types-Markdown
+types-python-dateutil
 pytest
 pytest-bdd
 pytest-cov
