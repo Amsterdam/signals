@@ -8,6 +8,14 @@ mypy
 mypy-baseline
 django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
+types-beautifulsoup4
+types-jsonschema
+types-Pillow
+types-psycopg2
+types-Pygments
+types-Markdown
+types-python-dateutil
+lxml-stubs
 pytest
 pytest-bdd
 pytest-cov
