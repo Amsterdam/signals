@@ -19,7 +19,7 @@ urlpatterns = [
 
 
 class NameSpace:
-    pass
+    urlpatterns: list
 
 
 test_urlconf = NameSpace()
