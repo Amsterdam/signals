@@ -23,9 +23,9 @@ azure-core==1.29.4
     #   azure-identity
     #   azure-storage-blob
     #   opencensus-ext-azure
-azure-identity==1.14.0
+azure-identity==1.14.1
     # via opencensus-ext-azure
-azure-storage-blob==12.18.2
+azure-storage-blob==12.18.3
     # via -r requirements/requirements.in
 beautifulsoup4==4.12.2
     # via
@@ -135,7 +135,7 @@ django-celery-email==3.0.0
     # via -r requirements/requirements.in
 django-celery-results==2.5.1
     # via -r requirements/requirements.in
-django-cors-headers==4.2.0
+django-cors-headers==4.3.0
     # via -r requirements/requirements.in
 django-extensions==3.2.3
     # via -r requirements/requirements.in
@@ -151,7 +151,7 @@ django-rest-swagger==2.2.0
     # via -r requirements/requirements.in
 django-silk==5.0.4
     # via -r requirements/requirements.in
-django-storages==1.14.1
+django-storages==1.14.2
     # via -r requirements/requirements.in
 django-timezone-field==6.0.1
     # via django-celery-beat
@@ -190,7 +190,7 @@ flower==2.0.1
     # via -r requirements/requirements.in
 google-api-core==2.12.0
     # via opencensus
-google-auth==2.23.2
+google-auth==2.23.3
     # via google-api-core
 googleapis-common-protos==1.60.0
     # via google-api-core
@@ -226,7 +226,7 @@ kombu==5.3.2
     # via celery
 lxml==4.9.3
     # via -r requirements/requirements.in
-markdown==3.4.4
+markdown==3.5
     # via
     #   -r requirements/requirements.in
     #   django-markdownx
@@ -303,7 +303,7 @@ pyjwt[crypto]==2.8.0
     # via msal
 pyopenssl==23.2.0
     # via josepy
-pypdf==3.16.2
+pypdf==3.16.4
     # via -r requirements/requirements.in
 pyphen==0.14.0
     # via weasyprint

@@ -32,11 +32,11 @@ azure-core==1.29.4
     #   azure-identity
     #   azure-storage-blob
     #   opencensus-ext-azure
-azure-identity==1.14.0
+azure-identity==1.14.1
     # via
     #   -r requirements/requirements_test.txt
     #   opencensus-ext-azure
-azure-storage-blob==12.18.2
+azure-storage-blob==12.18.3
     # via -r requirements/requirements_test.txt
 beautifulsoup4==4.12.2
     # via
@@ -191,13 +191,15 @@ django-celery-email==3.0.0
     # via -r requirements/requirements_test.txt
 django-celery-results==2.5.1
     # via -r requirements/requirements_test.txt
-django-cors-headers==4.2.0
+django-cors-headers==4.3.0
     # via -r requirements/requirements_test.txt
 django-debug-toolbar==4.2.0
     # via -r requirements/requirements_dev.in
 django-extensions==3.2.3
     # via -r requirements/requirements_test.txt
 django-filter==23.3
+    # via -r requirements/requirements_test.txt
+django-filter-stubs==0.1.3
     # via -r requirements/requirements_test.txt
 django-fsm==2.8.1
     # via -r requirements/requirements_test.txt
@@ -209,11 +211,12 @@ django-rest-swagger==2.2.0
     # via -r requirements/requirements_test.txt
 django-silk==5.0.4
     # via -r requirements/requirements_test.txt
-django-storages==1.14.1
+django-storages==1.14.2
     # via -r requirements/requirements_test.txt
 django-stubs[compatible-mypy]==4.2.4
     # via
     #   -r requirements/requirements_test.txt
+    #   django-filter-stubs
     #   djangorestframework-stubs
 django-stubs-ext==4.2.2
     # via
@@ -239,7 +242,9 @@ djangorestframework-csv==2.1.1
 djangorestframework-gis==1.0
     # via -r requirements/requirements_test.txt
 djangorestframework-stubs[compatible-mypy]==3.14.3
-    # via -r requirements/requirements_test.txt
+    # via
+    #   -r requirements/requirements_test.txt
+    #   django-filter-stubs
 djangorestframework-xml==2.0.0
     # via
     #   -r requirements/requirements_test.txt
@@ -266,7 +271,7 @@ execnet==2.0.2
     #   pytest-xdist
 factory-boy==3.3.0
     # via -r requirements/requirements_test.txt
-faker==19.6.2
+faker==19.9.0
     # via
     #   -r requirements/requirements_test.txt
     #   factory-boy
@@ -287,7 +292,7 @@ google-api-core==2.12.0
     # via
     #   -r requirements/requirements_test.txt
     #   opencensus
-google-auth==2.23.2
+google-auth==2.23.3
     # via
     #   -r requirements/requirements_test.txt
     #   google-api-core
@@ -367,7 +372,7 @@ mako==1.2.4
     # via
     #   -r requirements/requirements_test.txt
     #   pytest-bdd
-markdown==3.4.4
+markdown==3.5
     # via
     #   -r requirements/requirements_test.txt
     #   django-markdownx
@@ -394,6 +399,7 @@ msal-extensions==1.0.0
 mypy==1.5.1
     # via
     #   -r requirements/requirements_test.txt
+    #   django-filter-stubs
     #   django-stubs
     #   djangorestframework-stubs
 mypy-baseline==0.6.0
@@ -524,7 +530,7 @@ pyopenssl==23.2.0
     # via
     #   -r requirements/requirements_test.txt
     #   josepy
-pypdf==3.16.2
+pypdf==3.16.4
     # via -r requirements/requirements_test.txt
 pyphen==0.14.0
     # via
@@ -543,7 +549,7 @@ pytest==7.4.2
     #   pytest-subtests
     #   pytest-timeout
     #   pytest-xdist
-pytest-bdd==6.1.1
+pytest-bdd==7.0.0
     # via -r requirements/requirements_test.txt
 pytest-cov==4.1.0
     # via -r requirements/requirements_test.txt
@@ -551,7 +557,7 @@ pytest-django==4.5.2
     # via -r requirements/requirements_test.txt
 pytest-subtests==0.11.0
     # via -r requirements/requirements_test.txt
-pytest-timeout==2.1.0
+pytest-timeout==2.2.0
     # via -r requirements/requirements_test.txt
 pytest-xdist==3.3.1
     # via -r requirements/requirements_test.txt
@@ -688,7 +694,7 @@ types-html5lib==1.1.11.15
     #   types-beautifulsoup4
 types-jsonschema==4.19.0.3
     # via -r requirements/requirements_test.txt
-types-markdown==3.4.2.10
+types-markdown==3.5.0.0
     # via -r requirements/requirements_test.txt
 types-pillow==10.0.0.3
     # via -r requirements/requirements_test.txt
@@ -724,6 +730,7 @@ typing-extensions==4.8.0
     #   -r requirements/requirements_test.txt
     #   azure-core
     #   azure-storage-blob
+    #   django-filter-stubs
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework-stubs
