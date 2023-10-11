@@ -10,6 +10,7 @@ django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
 django-filter-stubs
 types-beautifulsoup4
+types-factory-boy
 types-jsonschema
 types-Pillow
 types-psycopg2

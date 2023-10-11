@@ -255,7 +255,9 @@ elasticsearch-dsl==7.4.1
 execnet==2.0.2
     # via pytest-xdist
 factory-boy==3.3.0
-    # via -r requirements/requirements_test.in
+    # via
+    #   -r requirements/requirements_test.in
+    #   types-factory-boy
 faker==19.9.0
     # via factory-boy
 filelock==3.12.4
@@ -649,6 +651,8 @@ types-cryptography==3.3.23.2
     # via -r requirements/requirements.txt
 types-docutils==0.20.0.3
     # via types-pygments
+types-factory-boy==0.4.1
+    # via -r requirements/requirements_test.in
 types-html5lib==1.1.11.15
     # via types-beautifulsoup4
 types-jsonschema==4.19.0.3
@@ -686,6 +690,7 @@ typing-extensions==4.8.0
     #   djangorestframework-stubs
     #   mypy
     #   pytest-bdd
+    #   types-factory-boy
 tzdata==2023.3
     # via
     #   -r requirements/requirements.txt
