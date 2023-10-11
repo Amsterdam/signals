@@ -11,9 +11,9 @@ class MySignalsTokenAdmin(ModelAdmin):
     list_display = ('is_valid', 'reporter_email', 'key', 'expires_at', 'created_at', )
     search_fields = ('reporter_email', 'key', )
 
-    def is_valid(self, obj):
+    @admin.display(boolean=True)
+    def is_valid(self, obj: Token) -> bool:
         return obj.expires_at > now()
-    is_valid.boolean = True
 
 
 admin.site.register(Token, MySignalsTokenAdmin)
