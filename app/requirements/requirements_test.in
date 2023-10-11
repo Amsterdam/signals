@@ -8,6 +8,7 @@ mypy
 mypy-baseline
 django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
+django-filter-stubs
 types-beautifulsoup4
 types-jsonschema
 types-Pillow
