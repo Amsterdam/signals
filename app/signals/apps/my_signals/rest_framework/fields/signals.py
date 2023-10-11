@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.relations import HyperlinkedIdentityField
+from rest_framework.request import Request
 
 from signals.apps.signals.models import Signal
 
@@ -38,7 +39,9 @@ class MySignalListLinksField(HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
         _format = self.context.get('format')
+        assert isinstance(_format, str)
 
         return OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request, format=_format))),
@@ -114,7 +117,9 @@ class MySignalDetailLinksField(HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
         _format = self.context.get('format')
+        assert isinstance(_format, str)
 
         representation = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request, format=_format))),
