@@ -2,9 +2,10 @@
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 
+from logs import get_configuration
 from signals import __version__
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 TRUE_VALUES = [True, 'True', 'true', '1']
 
@@ -12,8 +13,8 @@ TRUE_VALUES = [True, 'True', 'true', '1']
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Debug Logging
-DEBUG = False
-LOG_QUERIES = False
+DEBUG = os.getenv('DJANGO_DEBUG', False) in TRUE_VALUES
+LOG_QUERIES = os.getenv('LOG_QUERIES', False) in TRUE_VALUES
 LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
 
 # localhost and 127.0.0.1 are allowed because the deployment process checks the health endpoint with a
@@ -23,7 +24,10 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', DEFAULT_ALLOWED_HOSTS).split(',')
 
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'null').split(',')]
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'null').split(',')
+]
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', True) in TRUE_VALUES
 CORS_EXPOSE_HEADERS = [
     'Link',  # Added for the geography endpoints
@@ -42,7 +46,7 @@ SIGNAL_ID_DISPLAY_PREFIX = os.getenv('SIGNAL_ID_DISPLAY_PREFIX', 'SIG-')
 # default value covers The Netherlands
 BOUNDING_BOX = [float(i) for i in os.getenv('BOUNDING_BOX', '3.3,50.7,7.3,53.6').split(',')]
 
-# Django security settings
+# Django's security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
@@ -190,12 +194,16 @@ TEMPLATES = [
 ]
 
 # Database settings
-DATABASE_NAME = os.getenv('DATABASE_NAME', 'signals')
-DATABASE_USER = os.getenv('DATABASE_USER', 'signals')
-DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'insecure')
-DATABASE_HOST = os.getenv('DATABASE_HOST_OVERRIDE')
-DATABASE_PORT = os.getenv('DATABASE_PORT_OVERRIDE')
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'signals'), # noqa:
+        'USER': os.getenv('DATABASE_USER', 'signals'), # noqa
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'), # noqa
+        'HOST': os.getenv('DATABASE_HOST_OVERRIDE'), # noqa
+        'PORT': os.getenv('DATABASE_PORT_OVERRIDE', '5432') # noqa
+    },
+}
 
 # Django cache settings
 CACHES = {
@@ -208,8 +216,8 @@ CACHES = {
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', True) in TRUE_VALUES
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', True) in TRUE_VALUES
 
 
 # Internationalization
@@ -260,7 +268,7 @@ SIGNALS_AUTH = {
     'JWKS': os.getenv('PUB_JWKS'),
     'JWKS_URL': os.getenv('JWKS_URL'),
     'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(','),
-    'ALWAYS_OK': False,
+    'ALWAYS_OK': os.getenv('SIGNALS_AUTH_ALWAYS_OK', False) in TRUE_VALUES,
 }
 
 # Celery settings
@@ -464,3 +472,46 @@ SIGNAL_API_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS = int(os.getenv(
 SIGNALS_API_GEO_PAGINATE_BY = int(os.getenv(
     'SIGNALS_API_GEO_PAGINATE_BY', '4000'
 ))
+
+TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
+
+# Feature Flags
+FEATURE_FLAGS = {
+    'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
+
+    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
+    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
+
+    'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
+
+    # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
+    # the frontend
+    # TODO: Remove this when the frontend is updated
+    'EXCLUDED_PERMISSIONS_IN_RESPONSE': os.getenv('EXCLUDED_PERMISSIONS_IN_RESPONSE',
+                                                  'sia_delete_attachment_of_normal_signal,'
+                                                  'sia_delete_attachment_of_parent_signal,'
+                                                  'sia_delete_attachment_of_child_signal,'
+                                                  'sia_delete_attachment_of_other_user').split(','),
+
+    # Enable/disable system mail for Feedback Received
+    'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': os.getenv('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', False) in TRUE_VALUES,  # noqa
+
+    # Enable/disable status mail for Handled after negative feedback
+    'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', False) in TRUE_VALUES, # noqa
+
+    # Enable/disable only mail when Feedback allows_contact is True
+    'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True) in TRUE_VALUES, # noqa
+
+    # Enable/disable the deletion of signals in a certain state for a certain amount of time
+    'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
+
+    # Enable/Disable the "my signals" endpoint/flows (Disabled by default)
+    'MY_SIGNALS_ENABLED': os.getenv('MY_SIGNALS_ENABLED', False) in TRUE_VALUES,
+
+    # Run routing expressions again when updating signal subcategory or location
+    'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
+}
+
+# Logging
+LOGGING = get_configuration(local_apps=SIGNAL_APPS, logging_level=LOGGING_LEVEL) # noqa
