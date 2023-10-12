@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
-from abc import ABCMeta
-
+# Copyright (C) 2023 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from rest_framework import serializers
 from rest_framework.fields import ReadOnlyField, SerializerMethodField
@@ -21,7 +19,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
 
-class AbstractSignalSerializer(HALSerializer, metaclass=ABCMeta):
+class SignalSerializer(HALSerializer):
     _display = SerializerMethodField(method_name='get_display')
     id_display = ReadOnlyField(source='get_id_display')
     status = _NestedMySignalStatusSerializer()
@@ -30,7 +28,7 @@ class AbstractSignalSerializer(HALSerializer, metaclass=ABCMeta):
         return obj.get_id_display()
 
 
-class SignalListSerializer(AbstractSignalSerializer):
+class SignalListSerializer(SignalSerializer):
     serializer_url_field = MySignalListLinksField
 
     class Meta:
@@ -47,7 +45,7 @@ class SignalListSerializer(AbstractSignalSerializer):
         read_only_fields = fields
 
 
-class SignalDetailSerializer(AbstractSignalSerializer):
+class SignalDetailSerializer(SignalSerializer):
     serializer_url_field = MySignalDetailLinksField
 
     location = _NestedMySignalLocationSerializer()
