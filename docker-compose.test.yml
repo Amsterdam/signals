@@ -9,9 +9,7 @@ services:
       database:
         condition: service_healthy
     env_file:
-      - docker-compose/environments/.api
-    environment:
-      TESTING: 'true'
+      - docker-compose/environments/.test
 
   database:
     image: amsterdam/postgres11

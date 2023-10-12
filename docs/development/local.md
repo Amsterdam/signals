@@ -71,16 +71,6 @@ the following command:
 docker-compose exec api env
 ```
 
-### Or use the local settings
-In the [signals.settings](../../app/signals/settings) folder, there is a file
-called [local.py.dist](../../app/signals/settings/local.py.dist). This file
-contains a template for a local settings file that can be used for development.
-
-To create a local settings file, you can make a copy of this local.py.dist file
-and rename it to local.py. This new local.py file should be used to store any
-settings that are specific to your local environment, such as database
-credentials, secret keys, or other configuration options.
-
 ## Authentication and authorization
 The Signals backend authenticates users through an external OpenID Connect
 provider. The backend performs a case-insensitive match through the
@@ -103,40 +93,19 @@ Request an access token through the following URL: http://localhost:5556/auth?re
 After login is completed, copy `access_token` from the URL you are redirected
 to. You can use this token to make calls to the API.
 
-This section in the [local.py.dist](../../app/signals/settings/local.py.dist)
-file can be handy during local development or testing when you do not want to
-authenticate each API request with a bearer token.
-
-```python
-SIGNALS_AUTH = {
-    'JWKS_URL': 'http://localhost:5556/keys',
-    'ALWAYS_OK': True ,
-    'USER_ID_FIELDS': 'email'
-}
-TEST_LOGIN = 'signals.admin@example.com'
-```
-
-Setting the `ALWAYS_OK` key
-to `True` in the `SIGNALS_AUTH` dictionary will disable bearer token
-authentication and the API will add the user specified in the `TEST_LOGIN` key
-to all requests. This can save time and effort during local development and
-testing, as you can focus on testing the functionality of the API rather than
-worrying about authentication. However, it is important to note that this
-setting should not be used in production environments, as it could compromise
-the security of the API.
 
 ## Running the test suite and style checks
 When developing you may want to run the test suite and style checks from time
 to time. Run the test suite:
 
 ```console
-docker-compose run --rm api tox
+docker-compose -f docker-compose.test.yaml run --rm api tox
 ```
 
 Or if you only want to run a specific test or tests:
 
 ```console
-docker-compose run --rm api tox -e pytest signals/apps/api/tests/test_get_root.py -- -n0
+docker-compose -f docker-compose.test.yaml run --rm api tox -e pytest signals/apps/api/tests/test_get_root.py -- -n0
 ```
 
 **Make sure to check if the Tox checks succeed before submitting a pull request.**
@@ -168,8 +137,6 @@ SILK_ENABLED=True
 SILK_PROFILING_ENABLED=True
 SILK_AUTHENTICATION_ENABLED=True
 ```
-
-Or you can overwrite them in the `local.py` settings file.
 
 Note that if you enable authentication and authorization, you will need to log
 in to the Django admin interface as a superuser before you can access the Django
