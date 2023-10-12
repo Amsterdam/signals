@@ -14,6 +14,4 @@ class TokenFactory(DjangoModelFactory):
         model = Token
         skip_postgeneration_save = True
 
-    reporter_email = factory.LazyAttribute(
-        lambda o: fake.email()
-    )
+    reporter_email = factory.LazyFunction(fake.email)

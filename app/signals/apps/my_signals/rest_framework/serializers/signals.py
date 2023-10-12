@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2023 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from rest_framework import serializers
 from rest_framework.fields import ReadOnlyField, SerializerMethodField
@@ -19,12 +19,17 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
 
-class SignalListSerializer(HALSerializer):
-    serializer_url_field = MySignalListLinksField
-
+class SignalSerializer(HALSerializer):
     _display = SerializerMethodField(method_name='get_display')
     id_display = ReadOnlyField(source='get_id_display')
     status = _NestedMySignalStatusSerializer()
+
+    def get_display(self, obj: Signal) -> str:
+        return obj.get_id_display()
+
+
+class SignalListSerializer(SignalSerializer):
+    serializer_url_field = MySignalListLinksField
 
     class Meta:
         model = Signal
@@ -39,16 +44,10 @@ class SignalListSerializer(HALSerializer):
         )
         read_only_fields = fields
 
-    def get_display(self, obj):
-        return obj.get_id_display()
 
-
-class SignalDetailSerializer(SignalListSerializer):
+class SignalDetailSerializer(SignalSerializer):
     serializer_url_field = MySignalDetailLinksField
 
-    _display = SerializerMethodField(method_name='get_display')
-    id_display = ReadOnlyField(source='get_id_display')
-    status = _NestedMySignalStatusSerializer()
     location = _NestedMySignalLocationSerializer()
 
     class Meta:
@@ -65,9 +64,6 @@ class SignalDetailSerializer(SignalListSerializer):
             'created_at',
         )
         read_only_fields = fields
-
-    def get_display(self, obj):
-        return obj.get_id_display()
 
 
 class HistoryLogHalSerializer(HALSerializer):
