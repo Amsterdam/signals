@@ -41,7 +41,7 @@ class MySignalListLinksField(HyperlinkedIdentityField):
         request = self.context.get('request')
         assert isinstance(request, Request)
         _format = self.context.get('format')
-        assert isinstance(_format, str)
+        assert isinstance(_format, str) or _format is None
 
         return OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request, format=_format))),
@@ -119,7 +119,7 @@ class MySignalDetailLinksField(HyperlinkedIdentityField):
         request = self.context.get('request')
         assert isinstance(request, Request)
         _format = self.context.get('format')
-        assert isinstance(_format, str)
+        assert isinstance(_format, str) or _format is None
 
         representation = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request, format=_format))),
