@@ -25,7 +25,7 @@ class ReporterMailer:
         self._render_email_template = email_template_renderer
         self.from_email = from_email
 
-    def __call__(self, reporter: Reporter, template_key: str, context: dict = None) -> None:
+    def __call__(self, reporter: Reporter, template_key: str, context: dict | None = None) -> None:
         """Send the actual email.
 
         Parameters
