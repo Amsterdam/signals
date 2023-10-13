@@ -114,7 +114,8 @@ MIDDLEWARE: list[str] = [
 ]
 
 # Enable session cookies when authenticating using the bearer token
-SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION: bool = os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES
+SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION: bool = \
+    os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES
 if SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION:
     MIDDLEWARE.append('signals.apps.api.middleware.SessionLoginMiddleware')
     SESSION_EXPIRE_AT_BROWSER_CLOSE: bool = True
