@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
@@ -29,7 +29,7 @@ class EmailTemplateAdminForm(forms.ModelForm):
 
 
 @admin.register(EmailTemplate)
-class EmailTemplate(admin.ModelAdmin):
+class EmailTemplateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/change_email_template_form.html'
     formfield_overrides = {
         models.TextField: {'widget': AdminMarkdownxWidget},
@@ -42,13 +42,13 @@ class EmailTemplate(admin.ModelAdmin):
 
     actions = ['validate_templates']
 
+    @admin.action(description='Geselecteerde E-mail templates valideren')
     def validate_templates(self, request, queryset):
         for email_template in queryset.all():
             if validate_email_template(email_template=email_template):
                 self.message_user(request, f"De E-mail template '{email_template}', is valide.", messages.SUCCESS)
             else:
                 self.message_user(request, f"De E-mail template '{email_template}', is NIET valide.", messages.ERROR)
-    validate_templates.short_description = 'Geselecteerde E-mail templates valideren'
 
     def save_model(self, request, obj, form, change):
         obj.created_by = request.user.email
