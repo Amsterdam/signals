@@ -143,6 +143,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
     text = _cleanup_signal_text(signal.text, dry_run=dry_run)
     text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
 
+    assert signal.category_assignment is not None
     category = signal.category_assignment.category
     if category.parent and category.parent.public_name:
         # Category has a parent with a public name
@@ -154,6 +155,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         # Fallback to a blank parent category name, this should not happen
         parent_public_name = ''
 
+    assert signal.status is not None
     context = {
         'signal_id': signal.id,
         'formatted_signal_id': signal.get_id_display(),
