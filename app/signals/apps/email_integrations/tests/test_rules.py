@@ -18,6 +18,7 @@ from signals.apps.email_integrations.rules import (
     SignalReopenedRule,
     SignalScheduledRule
 )
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
 from signals.apps.signals import workflow
@@ -25,8 +26,8 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class RuleTestMixin:
-    rule = None
-    state = None
+    rule: AbstractRule
+    state: str
     send_email = False
 
     def test_happy_flow(self):
