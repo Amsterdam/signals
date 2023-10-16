@@ -6,7 +6,7 @@ from signals.apps.signals.models import Signal
 
 
 class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
-    _required_call_kwargs: list[str] = ('reaction_text', 'email_override')
+    _required_call_kwargs: list[str] = ['reaction_text', 'email_override']
 
     key: str = EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED
     subject: str = 'Melding {formatted_signal_id}: reactie ontvangen'
@@ -15,7 +15,11 @@ class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
     fallback_html_template: str = 'email/forward_to_external_reaction_received.html'
 
     def get_recipient_list(self, signal: Signal) -> list[str]:
+        assert self.kwargs is not None
+
         return [self.kwargs['email_override']]
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert self.kwargs is not None
+
         return {'reaction_text': self.kwargs['reaction_text']}
