@@ -16,6 +16,8 @@ class SignalOptionalAction(AbstractSignalStatusAction):
     note: str = 'De statusupdate is per e-mail verzonden aan de melder'
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert signal.status is not None
+
         return {
             'afhandelings_text': signal.status.text
         }

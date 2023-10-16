@@ -22,4 +22,7 @@ class SignalForwardToExternalAction(AbstractSignalStatusAction):
         return create_forward_to_external_and_mail_context(signal, dry_run)
 
     def get_recipient_list(self, signal: Signal) -> list[str]:
+        assert signal.status is not None
+        assert signal.status.email_override is not None
+
         return [signal.status.email_override]

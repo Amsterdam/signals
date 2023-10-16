@@ -21,6 +21,8 @@ class SignalReopenedAction(AbstractSignalStatusAction):
 
         if feedback_received:
             last_received_feedback = feedback_qs.order_by('submitted_at').last()
+            assert last_received_feedback is not None
+
             feedback_is_satisfied = last_received_feedback.is_satisfied
             feedback_text = last_received_feedback.text
             feedback_text_extra = last_received_feedback.text_extra

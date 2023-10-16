@@ -19,6 +19,8 @@ class SignalCreatedAction(AbstractSignalStatusAction):
     note: str = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert signal.category_assignment is not None
+
         context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
         if signal.reporter:
