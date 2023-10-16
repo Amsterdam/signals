@@ -8,7 +8,7 @@ from signals.apps.signals.models import Signal
 
 
 class FeedbackReceivedAction(AbstractSystemAction):
-    _required_call_kwargs: list[str] = ('feedback',)
+    _required_call_kwargs: list[str] = ['feedback']
 
     key: str = EmailTemplate.SIGNAL_FEEDBACK_RECEIVED
     subject: str = 'Bedankt voor uw feedback'
@@ -18,6 +18,8 @@ class FeedbackReceivedAction(AbstractSystemAction):
         return settings.FEATURE_FLAGS.get('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', True)
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert self.kwargs is not None
+
         return {
             'feedback_allows_contact': self.kwargs['feedback'].allows_contact,
             'feedback_is_satisfied': self.kwargs['feedback'].is_satisfied,
