@@ -25,7 +25,7 @@ class MailService:
 
     # Status actions are used when signals change status and are verified with
     # the rule parameters inside the actions
-    _status_actions: list[AbstractAction] = (
+    _status_actions: list[AbstractAction] = [
         SignalCreatedAction(EmailTemplateRenderer()),
         SignalHandledAction(EmailTemplateRenderer()),
         SignalScheduledAction(EmailTemplateRenderer()),
@@ -35,7 +35,7 @@ class MailService:
         SignalReactionRequestReceivedAction(EmailTemplateRenderer()),
         SignalHandledNegativeAction(EmailTemplateRenderer()),
         SignalForwardToExternalAction(EmailTemplateRenderer()),  # PS-261
-    )
+    ]
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions: dict[str, type[AbstractSystemAction]] = {
