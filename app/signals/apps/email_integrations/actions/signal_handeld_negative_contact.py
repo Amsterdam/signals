@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-import typing
-
-from signals.apps.email_integrations.actions.abstract import AbstractAction
+from signals.apps.email_integrations.actions.abstract import AbstractSignalStatusAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalHandledNegativeRule
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.signals.models import Signal
 
 
-class SignalHandledNegativeAction(AbstractAction):
-    rule: typing.Callable[[Signal], bool] = SignalHandledNegativeRule()
+class SignalHandledNegativeAction(AbstractSignalStatusAction):
+    rule: AbstractRule = SignalHandledNegativeRule()
 
     key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
     subject: str = 'Meer over uw melding {formatted_signal_id}'

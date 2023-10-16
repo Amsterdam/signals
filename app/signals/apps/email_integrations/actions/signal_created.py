@@ -2,15 +2,16 @@
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import typing
 
-from signals.apps.email_integrations.actions.abstract import AbstractAction
+from signals.apps.email_integrations.actions.abstract import AbstractSignalStatusAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalCreatedRule
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.services.domain.contact_details import ContactDetailsService
 from signals.apps.signals.models import Signal
 
 
-class SignalCreatedAction(AbstractAction):
-    rule: typing.Callable[[Signal], bool] = SignalCreatedRule()
+class SignalCreatedAction(AbstractSignalStatusAction):
+    rule: AbstractRule = SignalCreatedRule()
 
     key: str = EmailTemplate.SIGNAL_CREATED
     subject: str = 'Bedankt voor uw melding {formatted_signal_id}'
