@@ -23,7 +23,7 @@ class AssignedAction(AbstractSystemAction):
     This e-mail action is triggered when a signal is assigned to a
     user or the users' department
     """
-    _required_call_kwargs: list[str] = ('recipient', 'assigned_to')
+    _required_call_kwargs: list[str] = ['recipient', 'assigned_to']
 
     key: str = EmailTemplate.SIGNAL_ASSIGNED
     subject: str = (
@@ -32,6 +32,8 @@ class AssignedAction(AbstractSystemAction):
     )
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert self.kwargs is not None
+
         recipient = self.kwargs['recipient']
         assigned_to = self.kwargs['assigned_to']
 
@@ -46,6 +48,8 @@ class AssignedAction(AbstractSystemAction):
         """
         Get the recipient from keyword arguments
         """
+        assert self.kwargs is not None
+
         return [
             formataddr((self.kwargs['recipient'].get_full_name(), self.kwargs['recipient'].email))
         ]
