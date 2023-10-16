@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
-import typing
-
-from signals.apps.email_integrations.actions.abstract import AbstractAction
+from signals.apps.email_integrations.actions.abstract import AbstractSignalStatusAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalScheduledRule
-from signals.apps.signals.models import Signal
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 
 
-class SignalScheduledAction(AbstractAction):
-    rule: typing.Callable[[Signal], bool] = SignalScheduledRule()
+class SignalScheduledAction(AbstractSignalStatusAction):
+    rule: AbstractRule = SignalScheduledRule()
 
     key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND
     subject: str = 'Meer over uw melding {formatted_signal_id}'

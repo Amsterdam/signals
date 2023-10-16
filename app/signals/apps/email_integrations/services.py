@@ -25,7 +25,7 @@ class MailService:
 
     # Status actions are used when signals change status and are verified with
     # the rule parameters inside the actions
-    _status_actions: list[AbstractAction] = (
+    _status_actions: list[AbstractAction] = [
         SignalCreatedAction(EmailTemplateRenderer()),
         SignalHandledAction(EmailTemplateRenderer()),
         SignalScheduledAction(EmailTemplateRenderer()),
@@ -35,8 +35,8 @@ class MailService:
         SignalReactionRequestReceivedAction(EmailTemplateRenderer()),
         SignalHandledNegativeAction(EmailTemplateRenderer()),
         SignalForwardToExternalAction(EmailTemplateRenderer()),  # PS-261
-    )
-    # System actions are use to send specific emails
+    ]
+    # System actions are used to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions: dict[str, type[AbstractSystemAction]] = {
         'feedback_received': FeedbackReceivedAction,
@@ -63,7 +63,9 @@ class MailService:
         """
         Send a specific mail trigger based on the trigger name
         """
-        action = cls._system_actions.get(action_name)(EmailTemplateRenderer())
+        action_type = cls._system_actions.get(action_name)
+        assert action_type is not None
+        action = action_type(EmailTemplateRenderer())
         if not action:
             raise NotImplementedError(f'{action_name} is not implemented')
 

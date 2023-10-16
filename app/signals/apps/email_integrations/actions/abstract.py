@@ -2,7 +2,7 @@
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 import typing
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -11,6 +11,7 @@ from django.template import loader
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
 
@@ -25,9 +26,6 @@ class AbstractAction(ABC):
     SignalCreatedRule to determine if it should trigger and send the Signal created email.
     """
     _render: EmailTemplateRenderer
-
-    # A rule class based on the AbstractRule
-    rule: typing.Callable[[Signal], bool]
 
     # The key of the email template. Is used to retrieve the corresponding EmailTemplate from the database
     # If there is no EmailTemplate with this key a fallback email template is used.
@@ -50,14 +48,14 @@ class AbstractAction(ABC):
     def __init__(self, renderer: EmailTemplateRenderer):
         self._render = renderer
 
+    @abstractmethod
     def __call__(self, signal: Signal, dry_run: bool = False) -> bool:
-        if self.rule(signal):
-            if dry_run:
-                return True
+        if dry_run:
+            return True
 
-            if self.send_mail(signal):
-                self.add_note(signal)
-                return True
+        if self.send_mail(signal):
+            self.add_note(signal)
+            return True
 
         return False
 
@@ -78,6 +76,9 @@ class AbstractAction(ABC):
         """
         Email address, override if we do not want to mail the reporter
         """
+        assert signal.reporter is not None
+        assert signal.reporter.email is not None
+
         return [signal.reporter.email]
 
     def render_mail_data(self, context: dict) -> tuple[str, str, str]:
@@ -120,12 +121,19 @@ class AbstractAction(ABC):
             Signal.actions.create_note({'text': self.note}, signal=signal)
 
 
+class AbstractSignalStatusAction(AbstractAction):
+    rule: AbstractRule
+
+    def __call__(self, signal: Signal, dry_run: bool = False) -> bool:
+        if self.rule(signal):
+            return super(AbstractSignalStatusAction, self).__call__(signal, dry_run)
+
+        return False
+
+
 class AbstractSystemAction(AbstractAction):
     _required_call_kwargs: list[str]
     kwargs = None
-
-    # No rules are used by system actions so return True by default
-    rule: typing.Callable[[Signal], bool] = lambda self, signal: True
 
     def __call__(self, signal: Signal, dry_run: bool = False, **kwargs) -> bool:
         """
@@ -137,4 +145,10 @@ class AbstractSystemAction(AbstractAction):
 
         self.kwargs = kwargs
 
-        return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)
+        if self._validate():
+            return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)
+
+        return False
+
+    def _validate(self) -> bool:
+        return True

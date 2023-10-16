@@ -1118,16 +1118,9 @@ class TestSignalSystemActions(TestCase):
                                      title='Uw reactie is ontvangen',
                                      body='{{ reaction_text }} {{ signal_id }} {{ created_at }} {{ address }}')
 
-    def test_system_action_rule(self):
-        """
-        Mail actions from the _system_actions in MailService dont have a rule and always return True
-        """
-        for key, action in MailService._system_actions.items():
-            self.assertTrue(action(EmailTemplateRenderer()).rule('fake_signal'))
-
     def test_send_system_email_with_context(self):
         """
-        Check if the email with context is send to the user
+        Check if the email with context is sent to the user
         """
         action = MailService._system_actions.get('feedback_received')(EmailTemplateRenderer())
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')

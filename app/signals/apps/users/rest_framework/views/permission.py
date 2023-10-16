@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
-from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -27,12 +26,3 @@ class PermissionViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
 
     serializer_detail_class = PermissionSerializer
     serializer_class = PermissionSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        # TODO: Remove this when the frontend is updated
-        qs = super(PermissionViewSet, self).get_queryset(*args, **kwargs)
-
-        if exclude_permissions := settings.FEATURE_FLAGS.get('EXCLUDED_PERMISSIONS_IN_RESPONSE'):
-            return qs.exclude(codename__in=exclude_permissions)
-        else:
-            return qs

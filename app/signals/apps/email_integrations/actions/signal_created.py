@@ -2,15 +2,16 @@
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import typing
 
-from signals.apps.email_integrations.actions.abstract import AbstractAction
+from signals.apps.email_integrations.actions.abstract import AbstractSignalStatusAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalCreatedRule
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.services.domain.contact_details import ContactDetailsService
 from signals.apps.signals.models import Signal
 
 
-class SignalCreatedAction(AbstractAction):
-    rule: typing.Callable[[Signal], bool] = SignalCreatedRule()
+class SignalCreatedAction(AbstractSignalStatusAction):
+    rule: AbstractRule = SignalCreatedRule()
 
     key: str = EmailTemplate.SIGNAL_CREATED
     subject: str = 'Bedankt voor uw melding {formatted_signal_id}'
@@ -18,6 +19,8 @@ class SignalCreatedAction(AbstractAction):
     note: str = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
+        assert signal.category_assignment is not None
+
         context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
         if signal.reporter:

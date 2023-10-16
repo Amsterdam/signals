@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
-import typing
-
-from signals.apps.email_integrations.actions.abstract import AbstractAction
+from signals.apps.email_integrations.actions.abstract import AbstractSignalStatusAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import ForwardToExternalRule
+from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.email_integrations.utils import create_forward_to_external_and_mail_context
 from signals.apps.signals.models import Signal
 
 
-class SignalForwardToExternalAction(AbstractAction):
-    rule: typing.Callable[[Signal], bool] = ForwardToExternalRule()
+class SignalForwardToExternalAction(AbstractSignalStatusAction):
+    rule: AbstractRule = ForwardToExternalRule()
     key: str = EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL
     subject: str = 'Verzoek tot behandeling van Signalen melding {formatted_signal_id}'
 
@@ -23,4 +22,7 @@ class SignalForwardToExternalAction(AbstractAction):
         return create_forward_to_external_and_mail_context(signal, dry_run)
 
     def get_recipient_list(self, signal: Signal) -> list[str]:
+        assert signal.status is not None
+        assert signal.status.email_override is not None
+
         return [signal.status.email_override]

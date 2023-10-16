@@ -29,7 +29,7 @@ class TestReporterMailer(TestCase):
         renderer = Mock(return_value=(self.SUBJECT, self.MESSAGE, self.HTML_MESSAGE))
         mailer = ReporterMailer(renderer, self.FROM_EMAIL)
 
-        reporter = ReporterFactory(email=self.EMAIL)
+        reporter = ReporterFactory.create(email=self.EMAIL)
 
         with override_settings(ORGANIZATION_NAME=self.ORGANIZATION_NAME):
             mailer(reporter, self.TEMPLATE_KEY)
