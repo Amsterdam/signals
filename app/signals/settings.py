@@ -469,7 +469,7 @@ SPECTACULAR_SETTINGS: dict[str, str | float | int | bool | list[str]] = {
     ],
 }
 
-EMAIL_VERIFICATION_TOKEN_HOURS_VALID: str | int = os.getenv('EMAIL_VERIFICATION_TOKEN_HOURS_VALID', 24)
+EMAIL_VERIFICATION_TOKEN_HOURS_VALID: float = float(os.getenv('EMAIL_VERIFICATION_TOKEN_HOURS_VALID', 24))
 
 
 # Signals API settings
