@@ -78,6 +78,9 @@ class AbstractAction(ABC):
         """
         Email address, override if we do not want to mail the reporter
         """
+        assert signal.reporter is not None
+        assert signal.reporter.email is not None
+
         return [signal.reporter.email]
 
     def render_mail_data(self, context: dict) -> tuple[str, str, str]:
