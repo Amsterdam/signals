@@ -488,7 +488,7 @@ SIGNALS_API_GEO_PAGINATE_BY: int = int(os.getenv(
 TEST_LOGIN: str = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 # Feature Flags
-FEATURE_FLAGS: dict[str, bool | list[str]] = {
+FEATURE_FLAGS: dict[str, bool] = {
     'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
 
@@ -496,15 +496,6 @@ FEATURE_FLAGS: dict[str, bool | list[str]] = {
     'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
 
     'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
-
-    # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
-    # the frontend
-    # TODO: Remove this when the frontend is updated
-    'EXCLUDED_PERMISSIONS_IN_RESPONSE': os.getenv('EXCLUDED_PERMISSIONS_IN_RESPONSE',
-                                                  'sia_delete_attachment_of_normal_signal,'
-                                                  'sia_delete_attachment_of_parent_signal,'
-                                                  'sia_delete_attachment_of_child_signal,'
-                                                  'sia_delete_attachment_of_other_user').split(','),
 
     # Enable/disable system mail for Feedback Received
     'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': os.getenv('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', False) in TRUE_VALUES,  # noqa
