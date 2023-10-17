@@ -48,13 +48,13 @@ class ActiveTermsFacetSerializer(TermsFacetSerializer):
 
 
 class StatusMessageFacetSerializer(serializers.Serializer):
-    state = serializers.ListSerializer(child=StateTermsFacetSerializer())
-    active = serializers.ListSerializer(child=ActiveTermsFacetSerializer())
+    state = StateTermsFacetSerializer(many=True)
+    active = ActiveTermsFacetSerializer(many=True)
 
 
 class StatusMessageListSerializer(serializers.Serializer):
     count = serializers.SerializerMethodField()
-    results = serializers.ListSerializer(child=StatusMessageSearchResultSerializer(), source='hits')
+    results = StatusMessageSearchResultSerializer(many=True, source='hits')
     facets = StatusMessageFacetSerializer()
 
     def get_count(self, obj: Response) -> int:

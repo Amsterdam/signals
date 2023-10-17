@@ -25,7 +25,7 @@ from signals.schema import GenericErrorSerializer
 
 
 class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
 
     serializer_class = PrivateSignalSerializerList
@@ -105,7 +105,7 @@ class SearchView(DetailSerializerMixin, ReadOnlyModelViewSet):
 
 class StatusMessageSearchView(APIView):
     """View providing support for searching for status messages using elasticsearch."""
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
     # serializer_class is defined so that drf-spectacular can find out which serializer belongs with this view
     serializer_class = StatusMessageListSerializer
