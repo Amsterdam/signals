@@ -12,7 +12,7 @@ from django.contrib.gis.db.models.functions import MakeValid
 from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
 from django.db import transaction
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 from signals.apps.dataset.base import AreaLoader
 from signals.apps.signals.models import Area, AreaType
