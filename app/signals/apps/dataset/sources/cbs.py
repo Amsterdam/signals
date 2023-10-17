@@ -30,7 +30,7 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
         }
     }
 
-    PROVIDES = DATASET_INFO.keys()
+    PROVIDES = list(DATASET_INFO.keys())
 
     def __init__(self, **options):
         type_string = options['type_string']
