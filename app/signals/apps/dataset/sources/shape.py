@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 import zipfile
 from urllib.parse import urlsplit
@@ -14,11 +14,11 @@ from signals.apps.signals.models import Area, AreaType
 
 
 class ShapeBoundariesLoader(AreaLoader):
-    DATASET_INFO = {
+    DATASET_INFO: dict[str, dict[str, str]] = {
         'GENERIC': {}
     }
 
-    PROVIDES = DATASET_INFO.keys()
+    PROVIDES = list(DATASET_INFO.keys())
 
     def __init__(self, **options):
         type_string = options['type_string']
@@ -104,7 +104,7 @@ class ShapeBoundariesLoader(AreaLoader):
                     geometry=geos_geometry
                 )
 
-    def load(self):
+    def load(self) -> None:
         split_url = urlsplit(self.DATASET_URL)
         zip_name = os.path.split(split_url.path)[-1]
 

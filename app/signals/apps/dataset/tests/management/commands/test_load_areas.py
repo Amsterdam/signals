@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from io import StringIO
 from unittest.mock import patch
 
@@ -15,7 +15,7 @@ class FakeAreaLoader(AreaLoader):
     def __init__(self, **options):
         pass
 
-    def load(self):
+    def load(self) -> None:
         pass
 
 

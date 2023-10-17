@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import json
 
 from django.core.management import BaseCommand
@@ -10,20 +10,20 @@ from signals.apps.signals.models import Category
 
 class Command(BaseCommand):
     data = None
-    slugsdict = {}
+    slugsdict: dict[int, str] = {}
 
     def _init_slugs_dict(self) -> None:
         if self.data is not None:
             for cat in self.data:
                 self.slugsdict[cat['pk']] = cat['fields']['slug']
 
-    def _get_parent(self, id) -> Category:
+    def _get_parent(self, id) -> Category | None:
         if id in self.slugsdict:
             return self._get_cat(slug=self.slugsdict[id], parent=None)
         else:
             return None
 
-    def _get_cat(self, slug, parent) -> Category:
+    def _get_cat(self, slug, parent) -> Category | None:
         try:
             return Category.objects.get(slug=slug, parent=parent)
         except Exception as e:

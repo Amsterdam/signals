@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from signals.apps.dataset.sources.shape import ShapeBoundariesLoader
 from signals.apps.signals.models import AreaType
 
@@ -30,7 +30,7 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
         }
     }
 
-    PROVIDES = DATASET_INFO.keys()
+    PROVIDES = list(DATASET_INFO.keys())
 
     def __init__(self, **options):
         type_string = options['type_string']

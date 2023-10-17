@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 """
 Handle data from the Amsterdam Datapunt "Gebieden API"
 
@@ -12,7 +12,7 @@ from django.contrib.gis.db.models.functions import MakeValid
 from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
 from django.db import transaction
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 from signals.apps.dataset.base import AreaLoader
 from signals.apps.signals.models import Area, AreaType
@@ -103,7 +103,7 @@ class APIGebiedenLoader(AreaLoader):
             geometry=geometry
         )
 
-    def load(self):
+    def load(self) -> None:
         requests_session = self._get_session()
 
         with transaction.atomic():
