@@ -135,10 +135,16 @@ class SIAUserPermissions(SIABasePermission):
 class ReporterPermission(BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
         """
+        The user must have the permission to view contact details in general
+        AND at one of the following permissions:
+
         If the user has the permission to view all categories, they can view all reporters of that Signal
         OR
         If the user has the permission to view the category of the Signal, they can view all reporters of that Signal.
         """
+        if not request.user.has_perm('signals.sia_can_view_contact_details'):
+            return False
+
         return SignalPermissionService.has_signal_permission(
             user=request.user,
             signal=view.get_signal()
@@ -149,10 +155,16 @@ class ReporterPermission(BasePermission):
 
     def has_object_permission(self, request: Request, view: View, obj: Reporter) -> bool:
         """
+        The user must have the permission to view contact details in general
+        AND at one of the following permissions:
+
         If the user has the permission to view all categories, they can view a reporter of that Signal
         OR
         If the user has the permission to view the category of the Signal, they can view a reporter of that Signal.
         """
+        if not request.user.has_perm('signals.sia_can_view_contact_details'):
+            return False
+
         return SignalPermissionService.has_signal_permission(
             user=request.user,
             signal=obj._signal
