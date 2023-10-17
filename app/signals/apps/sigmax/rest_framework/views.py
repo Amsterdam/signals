@@ -26,7 +26,7 @@ class CityControlReceiver(APIView):
     """
     Receive SOAP messages from CityControl and handle them.
     """
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
 
     def post(self, request, format=None):
         """
