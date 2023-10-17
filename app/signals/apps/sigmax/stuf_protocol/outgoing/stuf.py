@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 import requests
 from django.conf import settings
 from lxml import etree
+from requests import Response
 
 from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
 
 
-def _stuf_response_ok(response):
+def _stuf_response_ok(response: Response) -> bool:
     """
     Checks that a response is a Bv03 message.
     """
@@ -28,7 +29,7 @@ def _stuf_response_ok(response):
     return True
 
 
-def _send_stuf_message(stuf_msg: str, soap_action: str):
+def _send_stuf_message(stuf_msg: str, soap_action: str) -> Response:
     """
     Send a STUF message to the server that is configured.
     """
@@ -38,7 +39,7 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     # Prepare our request to Sigmax
     encoded = stuf_msg.encode('utf-8')
 
-    headers = {
+    headers: dict[str, str | bytes] = {
         'SOAPAction': soap_action,
         'Content-Type': 'text/xml; charset=UTF-8',
         'Authorization': 'Basic ' + settings.SIGMAX_AUTH_TOKEN,
@@ -49,7 +50,7 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     if settings.SIGMAX_CLIENT_CERT and settings.SIGMAX_CLIENT_KEY:
         cert = (settings.SIGMAX_CLIENT_CERT, settings.SIGMAX_CLIENT_KEY)
 
-    verify = True
+    verify: bool | str = True
     if settings.SIGMAX_CA_BUNDLE:
         verify = settings.SIGMAX_CA_BUNDLE
 
