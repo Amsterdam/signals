@@ -109,7 +109,9 @@ services:
   elasticsearch:
     image: elasticsearch:7.17.9
     shm_size: '512m'
-    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1 -Expack.security.enabled=false
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx4g"
     ports:
       - "9200:9200"
       - "9300:9300"
