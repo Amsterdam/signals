@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestOutgoing(TestCase, XmlTestMixin):
-    def test_generate_creeerZaak_Lk01(self):
+    def test_generate_creeerZaak_Lk01(self) -> None:
         current_tz = timezone.get_current_timezone()
         location = Point(4.1234, 52.1234)
         signal = SignalFactory.create(incident_date_end=None, location__geometrie=location)
@@ -61,7 +61,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
             '<StUF:extraElement naam="Xcoordinaat">{}</StUF:extraElement>'.format(location.x),
             xml_message)
 
-    def test_generate_creeerZaak_Lk01_priority_high(self):
+    def test_generate_creeerZaak_Lk01_priority_high(self) -> None:
         current_tz = timezone.get_current_timezone()
         signal = SignalFactory.create(incident_date_end=None,
                                       priority__priority=Priority.PRIORITY_HIGH)
@@ -76,7 +76,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
 
-    def test_generate_creeerZaak_Lk01_priority_normal(self):
+    def test_generate_creeerZaak_Lk01_priority_normal(self) -> None:
         current_tz = timezone.get_current_timezone()
         signal = SignalFactory.create(incident_date_end=None,
                                       priority__priority=Priority.PRIORITY_NORMAL)
@@ -91,7 +91,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
 
-    def test_generate_creeerZaak_Lk01_priority_low(self):
+    def test_generate_creeerZaak_Lk01_priority_low(self) -> None:
         current_tz = timezone.get_current_timezone()
         signal = SignalFactory.create(incident_date_end=None,
                                       priority__priority=Priority.PRIORITY_LOW)
@@ -108,10 +108,10 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
 
 class TestGenerateOmschrijving(TestCase):
-    def setUp(self):
-        self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
+    def setUp(self) -> None:
+        self.signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
 
-    def test_generate_omschrijving_urgent(self):
+    def test_generate_omschrijving_urgent(self) -> None:
         stadsdeel = self.signal.location.stadsdeel
 
         correct = 'SIA-{}.02 URGENT {} {}'.format(
@@ -123,7 +123,7 @@ class TestGenerateOmschrijving(TestCase):
         seq_no = '02'
         self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
 
-    def test_generate_omschrijving_no_stadsdeel_urgent(self):
+    def test_generate_omschrijving_no_stadsdeel_urgent(self) -> None:
         # test that we get SD-- as part of the omschrijving when stadsdeel is missing
         self.signal.location.stadsdeel = None
         self.signal.location.save()
@@ -136,7 +136,7 @@ class TestGenerateOmschrijving(TestCase):
         seq_no = '04'
         self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
 
-    def test_stadsdeel_mapping(self):
+    def test_stadsdeel_mapping(self) -> None:
         # Check that all known STADSDELEN (city districts) have a code for use
         # by Sigmax/CityControl.
         seq_no = '01'
@@ -146,8 +146,8 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.refresh_from_db()
             self.assertNotRegex(_generate_omschrijving(self.signal, seq_no), 'SD--')
 
-    def test_generate_omschrijving_terugkerend(self):
-        signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_NORMAL)
+    def test_generate_omschrijving_terugkerend(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_NORMAL)
         stadsdeel = signal.location.stadsdeel
 
         correct = 'SIA-{}.01 Terugkerend {} {}'.format(
@@ -159,8 +159,8 @@ class TestGenerateOmschrijving(TestCase):
         seq_no = '01'
         self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
 
-    def test_generate_omschrijving_signalering(self):
-        signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_LOW)
+    def test_generate_omschrijving_signalering(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
         stadsdeel = signal.location.stadsdeel
 
         correct = 'SIA-{}.01 Signalering {} {}'.format(
@@ -174,19 +174,19 @@ class TestGenerateOmschrijving(TestCase):
 
 
 class TestAddressMatchesSigmaxExpectation(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.valid_address_dict = copy.copy(STADHUIS)  # has more fields than Location.address, so:
         self.valid_address_dict.pop('lon')
         self.valid_address_dict.pop('lat')
         self.valid_address_dict.pop('buurt_code')
         self.valid_address_dict.pop('stadsdeel')
 
-    def test_full_valid(self):
+    def test_full_valid(self) -> None:
         address_dict = copy.copy(self.valid_address_dict)
 
         self.assertEqual(True, _address_matches_sigmax_expectation(address_dict))
 
-    def test_minimum_valid(self):
+    def test_minimum_valid(self) -> None:
         address_dict = copy.copy(self.valid_address_dict)
         address_dict = {
             k: v for k, v in address_dict.items() if k in SIGMAX_REQUIRED_ADDRESS_FIELDS
@@ -194,10 +194,10 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
 
         self.assertEqual(True, _address_matches_sigmax_expectation(address_dict))
 
-    def test_empty(self):
+    def test_empty(self) -> None:
         self.assertEqual(False, _address_matches_sigmax_expectation({}))
 
-    def test_invalid(self):
+    def test_invalid(self) -> None:
         address_dict = copy.copy(self.valid_address_dict)
         address_dict.pop('woonplaats')
         self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
@@ -210,7 +210,7 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
         address_dict.pop('huisnummer')
         self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
 
-    def test_invalid_because_of_whitespace_values(self):
+    def test_invalid_because_of_whitespace_values(self) -> None:
         address_dict = copy.copy(self.valid_address_dict)
         address_dict['woonplaats'] = ' '
         self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
@@ -223,7 +223,7 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
         address_dict['woonplaats'] = ' '
         self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
 
-    def test_none_value(self):
+    def test_none_value(self) -> None:
         # simulate empty address field
         self.assertEqual(False, _address_matches_sigmax_expectation(None))
         self.assertEqual(False, _address_matches_sigmax_expectation({}))
@@ -231,28 +231,31 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
 
 class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.signal: Signal = SignalFactoryValidLocation.create(incident_date_start=timezone.now() - timedelta(days=1),
                                                                 incident_date_end=timezone.now())
         self.seq_no = _generate_sequence_number(self.signal)
 
-    def test_is_xml(self):
+    def test_is_xml(self) -> None:
         msg = _generate_creeerZaak_Lk01(self.signal, self.seq_no)
         self.assertXmlDocument(msg)
 
-    def test_escaping(self):
+    def test_escaping(self) -> None:
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
         msg = _generate_creeerZaak_Lk01(poison, self.seq_no)
         self.assertTrue('<poison>' not in msg)
 
-    def test_propagate_signal_properties_to_message_full_address(self):
+    def test_propagate_signal_properties_to_message_full_address(self) -> None:
         msg = _generate_creeerZaak_Lk01(self.signal, self.seq_no)
         current_tz = timezone.get_current_timezone()
 
         # first test that we have obtained valid XML
         root = etree.fromstring(msg)
         self.assertXmlDocument(msg)
+
+        assert self.signal.location is not None
+        assert self.signal.incident_date_end is not None
 
         # Check whether our properties made it over
         # (crudely, maybe use XPATH here)
@@ -308,7 +311,9 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
         self.assertEqual(len(need_to_find), 0)
 
-    def test_no_address_means_no_address_fields(self):
+    def test_no_address_means_no_address_fields(self) -> None:
+        assert self.signal.location is not None
+
         self.signal.location.address = None
         self.signal.save()
 
