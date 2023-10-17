@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 import zipfile
 from urllib.parse import urlsplit
@@ -104,7 +104,7 @@ class ShapeBoundariesLoader(AreaLoader):
                     geometry=geos_geometry
                 )
 
-    def load(self):
+    def load(self) -> None:
         split_url = urlsplit(self.DATASET_URL)
         zip_name = os.path.split(split_url.path)[-1]
 
