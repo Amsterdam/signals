@@ -14,11 +14,11 @@ from signals.apps.signals.models import Area, AreaType
 
 
 class ShapeBoundariesLoader(AreaLoader):
-    DATASET_INFO = {
+    DATASET_INFO: dict[str, dict[str, str]] = {
         'GENERIC': {}
     }
 
-    PROVIDES = DATASET_INFO.keys()
+    PROVIDES = list(DATASET_INFO.keys())
 
     def __init__(self, **options):
         type_string = options['type_string']
