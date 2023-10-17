@@ -9,7 +9,8 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN
 )
 from rest_framework.test import APITestCase
 
@@ -17,6 +18,7 @@ from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.signals.factories import ReporterFactory, SignalFactory
 from signals.apps.signals.models import Reporter
+from signals.apps.users.factories import UserFactory
 from signals.test.utils import SIAReadWriteUserMixin
 
 
@@ -36,6 +38,8 @@ class TestPrivateSignalReportersEndpointUnAuthorized(APITestCase):
 class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
     def setUp(self) -> None:
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_contact_details'))
+
         self.client.force_authenticate(user=self.sia_read_write_user)
 
     def test_list(self) -> None:
@@ -151,3 +155,49 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         self.assertIsNotNone(non_field_errors)
         self.assertEqual(len(non_field_errors), 1)
         self.assertEqual(non_field_errors[0], 'Cancelling this reporter is not possible.')
+
+    def test_403_forbidden(self):
+        """
+        A user without the permission "sia_can_view_contact_details" should not be allowed to create a new Reporter OR
+        update a transition to a new Reporter.
+        """
+        user_incorrect_permissions = UserFactory.create()
+        user_incorrect_permissions.user_permissions.add(self.sia_read)
+        user_incorrect_permissions.user_permissions.add(self.sia_write)
+        user_incorrect_permissions.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+
+        self.client.force_authenticate(user_incorrect_permissions)
+
+        signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
+
+        # Create
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/',
+            data={'email': 'test@example.com', 'phone': '0612345678', 'sharing_allowed': True},
+            format='json'
+        )
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+        # Cancel, signal not found
+        response = self.client.post(
+            '/signals/v1/private/signals/11145/reporters/1/cancel',
+            data={},
+            format='json',
+        )
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+        # Cancel, reporter not found
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/11145/cancel',
+            data={},
+            format='json',
+        )
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+        # Cancel
+        response = self.client.post(
+            f'/signals/v1/private/signals/{signal.pk}/reporters/{signal.reporter.pk}/cancel',
+            data={},
+            format='json',
+        )
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)

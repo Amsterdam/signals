@@ -21,7 +21,8 @@ def given_read_write_user() -> User:
         'sia_signal_create_initial',
         'sia_signal_create_note',
         'sia_signal_change_status',
-        'sia_signal_change_category'
+        'sia_signal_change_category',
+        'sia_can_view_contact_details',
     ))
     sia_test_group = GroupFactory.create(name='Test Group')
     sia_test_group.permissions.add(*permissions)
