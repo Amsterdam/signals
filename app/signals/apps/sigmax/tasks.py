@@ -82,6 +82,8 @@ def is_signal_applicable(signal: Signal) -> bool:
     >>> is_signal_applicable(s)
     False
     """
+    assert signal.status is not None
+
     return _is_status_applicable(signal.status)
 
 
@@ -111,8 +113,8 @@ def push_to_sigmax(signal_id: int) -> None:
     """
     try:
         signal = Signal.objects.get(pk=signal_id)
-    except Signal.DoesNotExist:
-        logger.exception()
+    except Signal.DoesNotExist as e:
+        logger.exception(e)
     else:
         if is_signal_applicable(signal):
             handle(signal)
@@ -136,7 +138,7 @@ def fail_stuck_sending_signals() -> None:
     >>> fail_stuck_sending_signals()
     # If there are signals stuck in the sending state for too long, they will be marked as failed
     """
-    before = timezone.now() - timedelta(minutes=settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES)
+    before = timezone.now() - timedelta(minutes=float(settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES))
     stuck_signals = Signal.objects.filter(status__state=workflow.TE_VERZENDEN,
                                           status__target_api=Status.TARGET_API_SIGMAX,
                                           status__updated_at__lte=before)
