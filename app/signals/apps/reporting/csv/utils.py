@@ -57,7 +57,7 @@ def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
                 os.remove(file_to_be_deleted)
 
 
-def save_csv_files(csv_files: list, using: str, path: str = None) -> list:
+def save_csv_files(csv_files: list, using: str, path: str | None = None) -> list[str]:
     """
     Writes the CSV files to the configured storage backend
     This could either be the AzureStorage or FileSystemStorage

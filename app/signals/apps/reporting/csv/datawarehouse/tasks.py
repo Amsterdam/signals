@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import tempfile
 from typing import Callable
 
@@ -27,7 +27,7 @@ from signals.celery import app
 
 
 @app.task
-def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse') -> None:
+def save_csv_file_datawarehouse(func: Callable[[str], str], using: str = 'datawarehouse') -> list[str]:
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
@@ -45,7 +45,7 @@ def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse
 
 
 @app.task
-def save_csv_files_datawarehouse(using='datawarehouse'):
+def save_csv_files_datawarehouse(using: str = 'datawarehouse') -> list[str]:
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
@@ -71,7 +71,7 @@ def save_csv_files_datawarehouse(using='datawarehouse'):
 
 
 @app.task
-def zip_csv_files_endpoint(files: list):
+def zip_csv_files_endpoint(files: list[str]) -> None:
     """
     Create zip file of generated csv files
 
@@ -81,7 +81,7 @@ def zip_csv_files_endpoint(files: list):
 
 
 @app.task
-def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30):
+def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30) -> None:
     """
     Create zip file of generated csv files
 
@@ -93,7 +93,7 @@ def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30):
 
 
 @app.task
-def task_clean_datawarehouse_disk():
+def task_clean_datawarehouse_disk() -> None:
     """
     Clean up local disk storage used by Datawarehouse dumps. Use only if
     Signalen is configured to use local disk.

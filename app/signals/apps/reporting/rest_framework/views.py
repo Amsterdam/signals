@@ -16,7 +16,7 @@ from signals.auth.backend import JWTAuthBackend
 
 
 class _PrivateReportViewSet(GenericViewSet):
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
     queryset = Signal.objects.all()
     filter_backends = (DjangoFilterBackend,)

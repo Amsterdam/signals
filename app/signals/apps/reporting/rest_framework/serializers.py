@@ -11,13 +11,13 @@ class _SimpleCategorySerializer(serializers.Serializer):
     name = serializers.CharField()
     departments = serializers.SerializerMethodField(method_name='get_departments')
 
-    def get_departments(self, obj: Category) -> tuple[str, str]:
-        return obj.categorydepartment_set.filter(
+    def get_departments(self, obj: Category) -> list[str]:
+        return list(obj.categorydepartment_set.filter(
             is_responsible=True
         ).values_list(
             'department__code',
             flat=True
-        ).order_by('department__code')
+        ).order_by('department__code'))
 
 
 class _SignalsPerCategoryCount(serializers.Serializer):
@@ -25,7 +25,7 @@ class _SignalsPerCategoryCount(serializers.Serializer):
     signal_count = serializers.IntegerField(source='per_category_count')
 
     @extend_schema_field(_SimpleCategorySerializer)
-    def get_category(self, obj: QuerySet) -> dict:
+    def get_category(self, obj: dict) -> dict:
         category = Category.objects.get(id=obj['category_assignment__category_id'])
         serializer = _SimpleCategorySerializer(category, context=self.context)
         return serializer.data
@@ -36,7 +36,7 @@ class ReportSignalsPerCategory(serializers.Serializer):
     results = serializers.SerializerMethodField()
 
     @extend_schema_field(_SignalsPerCategoryCount)
-    def get_results(self, obj: QuerySet) -> dict:
+    def get_results(self, obj: dict) -> dict:
         serializer = _SignalsPerCategoryCount(obj, many=True, context=self.context)
         return serializer.data
 
