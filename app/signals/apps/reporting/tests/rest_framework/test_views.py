@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import os
 
 from django.contrib.auth import get_user_model
@@ -35,7 +35,7 @@ urlpatterns = [
 
 
 class NameSpace:
-    pass
+    urlpatterns: list
 
 
 test_urlconf = NameSpace()
