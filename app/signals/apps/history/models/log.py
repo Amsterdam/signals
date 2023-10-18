@@ -67,6 +67,8 @@ class Log(models.Model):
         """
         Present for backwards compatibility
         """
+        assert self.object
+
         content_type_translations = {
             'category assignment': 'category_assignment',
             'service level objective': 'sla',
@@ -76,7 +78,7 @@ class Log(models.Model):
 
         if content_type_name in content_type_translations:
             return content_type_translations[content_type_name]
-        elif content_type_name == 'signal departments' and self.object:
+        elif content_type_name == 'signal departments':
             if self.object.relation_type == SignalDepartments.REL_ROUTING:
                 content_type_name = 'routing_assignment'
             elif self.object.relation_type == SignalDepartments.REL_DIRECTING:
@@ -197,10 +199,12 @@ class Log(models.Model):
         "get_description" copied from History
         Present for backwards compatibility
         """
+        assert self.object
+
         what = self.what
-        if what == 'UPDATE_LOCATION' and self.object:
+        if what == 'UPDATE_LOCATION':
             description = self.object.get_description()
-        elif what == 'RECEIVE_FEEDBACK' and self.object:
+        elif what == 'RECEIVE_FEEDBACK':
             description = self.object.get_description()
         elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
