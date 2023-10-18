@@ -142,9 +142,6 @@ signals/apps/search/documents/status_message.py:0: error: Skipping analyzing "el
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl.query": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/reporting/csv/utils.py:0: error: Skipping analyzing "storages.backends.azure_storage": module is installed, but missing library stubs or py.typed marker  [import]
-signals/apps/reporting/csv/utils.py:0: error: Incompatible default for argument "path" (default has type "None", argument has type "str")  [assignment]
-signals/apps/reporting/csv/utils.py:0: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-signals/apps/reporting/csv/utils.py:0: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
 signals/apps/questionnaires/factories.py:0: error: Need type annotation for "first_question"  [var-annotated]
 signals/apps/questionnaires/factories.py:0: error: Need type annotation for "question"  [var-annotated]
 signals/apps/questionnaires/factories.py:0: error: Need type annotation for "graph"  [var-annotated]
@@ -224,12 +221,6 @@ signals/apps/api/tests/scenarios/context/user.py:0: error: Variable "signals.app
 signals/apps/api/tests/scenarios/context/user.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#variables-vs-type-aliases
 signals/auth/tokens.py:0: error: Skipping analyzing "jwcrypto.jws": module is installed, but missing library stubs or py.typed marker  [import]
 signals/auth/tokens.py:0: error: Skipping analyzing "jwcrypto.jwt": module is installed, but missing library stubs or py.typed marker  [import]
-signals/apps/reporting/rest_framework/serializers.py:0: error: Incompatible return value type (got "_QuerySet[CategoryDepartment, str]", expected "tuple[str, str]")  [return-value]
-signals/apps/reporting/rest_framework/serializers.py:0: error: No overload variant of "__getitem__" of "_QuerySet" matches argument type "str"  [call-overload]
-signals/apps/reporting/rest_framework/serializers.py:0: note: Possible overload variants:
-signals/apps/reporting/rest_framework/serializers.py:0: note: def __getitem__(self, int, /) -> Any
-signals/apps/reporting/rest_framework/serializers.py:0: note: def __getitem__(self, slice, /) -> _QuerySet[Any, Any]
-signals/apps/reporting/csv/datawarehouse/tasks.py:0: error: No return value expected  [return-value]
 signals/apps/questionnaires/rest_framework/viewsets.py:0: error: Skipping analyzing "datapunt_api.pagination": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/questionnaires/rest_framework/viewsets.py:0: error: Skipping analyzing "datapunt_api.rest": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/questionnaires/rest_framework/viewsets.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import]
@@ -295,7 +286,6 @@ signals/apps/signals/tests/scenarios/context/signals.py:0: error: Module "django
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_voegZaakdocumentToe_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_creeerZaak_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/search/apps.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import]
-signals/apps/reporting/tests/rest_framework/test_views.py:0: error: "NameSpace" has no attribute "urlpatterns"  [attr-defined]
 signals/apps/questionnaires/admin/admins.py:0: error: "Callable[[SessionAdmin, Any], Any]" has no attribute "short_description"  [attr-defined]
 signals/apps/questionnaires/admin/admins.py:0: error: "Callable[[SessionAdmin, Any], Any]" has no attribute "short_description"  [attr-defined]
 signals/apps/questionnaires/admin/admins.py:0: error: "Callable[[SessionAdmin, Any], Any]" has no attribute "boolean"  [attr-defined]
@@ -350,7 +340,7 @@ signals/apps/api/serializers/signal_context.py:0: error: Incompatible return val
 signals/apps/api/serializers/attachment.py:0: error: Skipping analyzing "datapunt_api.rest": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/serializers/attachment.py:0: error: "SignalAttachmentSerializerMixin" has no attribute "context"  [attr-defined]
 signals/apps/api/serializers/attachment.py:0: error: "SignalAttachmentSerializerMixin" has no attribute "context"  [attr-defined]
-signals/apps/reporting/rest_framework/views.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
+signals/apps/reporting/rest_framework/views.py:0: error: List item 0 has incompatible type "type[JWTAuthBackend]"; expected "type[BaseAuthentication]"  [list-item]
 signals/apps/my_signals/rest_framework/views/signals.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import]
 signals/apps/api/views/source.py:0: error: Incompatible types in assignment (expression has type "tuple[type[JWTAuthBackend]]", base class "APIView" defined the type as "Sequence[type[BaseAuthentication]]")  [assignment]
 signals/apps/api/views/signals/private/signal_reporters.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import]
