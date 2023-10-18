@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.contrib.gis.db import models
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.files import FieldFile
@@ -59,7 +59,7 @@ class TrackFields:
     has been called. Also adds a function that returns the changed data. All data stored and checked are based on the
     set track_fields.
     """
-    track_fields = []
+    track_fields: list = []
 
     @classmethod
     def from_db(cls, db, field_names, values):

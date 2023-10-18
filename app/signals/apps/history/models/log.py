@@ -76,7 +76,7 @@ class Log(models.Model):
 
         if content_type_name in content_type_translations:
             return content_type_translations[content_type_name]
-        elif content_type_name == 'signal departments':
+        elif content_type_name == 'signal departments' and self.object:
             if self.object.relation_type == SignalDepartments.REL_ROUTING:
                 content_type_name = 'routing_assignment'
             elif self.object.relation_type == SignalDepartments.REL_DIRECTING:
@@ -142,10 +142,16 @@ class Log(models.Model):
         """
         what = self.what
         if what == 'UPDATE_STATUS':
-            action = f'Status gewijzigd naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
+            _status_choice = 'Onbekend'
+            if self.extra:
+                _status_choice = dict(STATUS_CHOICES).get(self.extra, 'Onbekend')
+
+            action = f'Status gewijzigd naar: {_status_choice}'
         elif what == 'UPDATE_PRIORITY':
-            translated = {'high': 'Hoog', 'normal': 'Normaal', 'low': 'Laag'}.get(self.extra, 'Onbekend')
-            action = f'Urgentie gewijzigd naar: {translated}'
+            _priority = 'Onbekend'
+            if self.extra:
+                _priority = {'high': 'Hoog', 'normal': 'Normaal', 'low': 'Laag'}.get(self.extra, 'Onbekend')
+            action = f'Urgentie gewijzigd naar: {_priority}'
         elif what == 'UPDATE_CATEGORY_ASSIGNMENT':
             action = f'Categorie gewijzigd naar: {self.extra}'
         elif what == 'UPDATE_LOCATION':
@@ -159,7 +165,8 @@ class Log(models.Model):
         elif what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
             action = f'Regie gewijzigd naar: {self.extra or "Verantwoordelijke afdeling"}'
         elif what == 'UPDATE_ROUTING_ASSIGNMENT':
-            action = f'Routering: afdeling/afdelingen gewijzigd naar: {self.extra or "Verantwoordelijke afdeling (routering)"}'  # noqa
+            _route_assignment = self.extra or 'Verantwoordelijke afdeling (routering)'
+            action = f'Routering: afdeling/afdelingen gewijzigd naar: {_route_assignment}'
         elif what == 'UPDATE_USER_ASSIGNMENT':
             if self.extra:
                 action = f'Melding toewijzing gewijzigd naar: {self.extra}'
@@ -169,9 +176,15 @@ class Log(models.Model):
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
-        elif what == 'RECEIVE_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+        elif (what == 'RECEIVE_SESSION'
+              and self.object
+              and self.object.questionnaire
+              and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
             action = 'Toelichting ontvangen'
-        elif what == 'NOT_RECEIVED_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+        elif (what == 'NOT_RECEIVED_SESSION'
+              and self.object
+              and self.object.questionnaire
+              and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
             action = 'Geen toelichting ontvangen'
         elif what == 'UPDATE_REPORTER':
             action = 'Contactgegevens melder:'
@@ -185,9 +198,9 @@ class Log(models.Model):
         Present for backwards compatibility
         """
         what = self.what
-        if what == 'UPDATE_LOCATION':
+        if what == 'UPDATE_LOCATION' and self.object:
             description = self.object.get_description()
-        elif what == 'RECEIVE_FEEDBACK':
+        elif what == 'RECEIVE_FEEDBACK' and self.object:
             description = self.object.get_description()
         elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
