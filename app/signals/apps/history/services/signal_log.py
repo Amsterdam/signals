@@ -28,18 +28,27 @@ class SignalLogService:
             # `_signal` defined on the Log model. So for now Log rules for a specific Signal are created as seen here:
             Log.objects.create(
                 action=Log.ACTION_CREATE,
-                extra=signal.id,
+                extra=str(signal.id),
                 object=signal,
                 created_by=None,
                 created_at=signal.created_at,
                 _signal=signal.parent,
             )
 
-        SignalLogService.log_update_location(signal.location)
-        SignalLogService.log_update_status(signal.status)
-        SignalLogService.log_update_category_assignment(signal.category_assignment)
-        SignalLogService.log_update_priority(signal.priority)
-        SignalLogService.log_update_type(signal.type_assignment)
+        if signal.location:
+            SignalLogService.log_update_location(signal.location)
+
+        if signal.status:
+            SignalLogService.log_update_status(signal.status)
+
+        if signal.category_assignment:
+            SignalLogService.log_update_category_assignment(signal.category_assignment)
+
+        if signal.priority:
+            SignalLogService.log_update_priority(signal.priority)
+
+        if signal.type_assignment:
+            SignalLogService.log_update_type(signal.type_assignment)
 
     @staticmethod
     def log_create_note(note: Note) -> None:
@@ -61,13 +70,15 @@ class SignalLogService:
             return
 
         if category_assignment.category.slo.exists() and category_assignment._signal.categories.count() == 1:
-            category_assignment.category.slo.first().history_log.create(
-                action=Log.ACTION_UPDATE,
-                description=category_assignment.stored_handling_message,
-                created_by=category_assignment.created_by,
-                created_at=category_assignment.created_at,
-                _signal=category_assignment._signal,
-            )
+            _slo = category_assignment.category.slo.first()
+            if _slo:
+                _slo.history_log.create(
+                    action=Log.ACTION_UPDATE,
+                    description=category_assignment.stored_handling_message,
+                    created_by=category_assignment.created_by,
+                    created_at=category_assignment.created_at,
+                    _signal=category_assignment._signal,
+                )
 
         category_assignment.history_log.create(
             action=Log.ACTION_UPDATE,
@@ -190,7 +201,9 @@ class SignalLogService:
 
         tz = pytz.timezone(settings.TIME_ZONE)
 
-        when = session._signal_status.created_at.astimezone(tz).strftime('%d-%m-%Y %H:%M')
+        when = 'onbekend'
+        if session._signal_status:
+            when = session._signal_status.created_at.astimezone(tz).strftime('%d-%m-%Y %H:%M')
         description = f'Toelichting externe behandelaar op vraag van {when} {reaction}'
 
         session.history_log.create(
@@ -213,8 +226,13 @@ class SignalLogService:
         if session.frozen or session.invalidated:
             return
 
-        external_user = session._signal_status.email_override
-        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
+        external_user = 'onbekend'
+        if session._signal_status and session._signal_status.email_override:
+            external_user = session._signal_status.email_override
+
+        when = 'onbekend'
+        if session._signal_status:
+            when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
         description = f'Geen toelichting ontvangen van behandelaar {external_user} op vraag van {when}'
 
         session.history_log.create(
