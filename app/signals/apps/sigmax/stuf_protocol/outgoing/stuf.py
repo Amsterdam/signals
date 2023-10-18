@@ -24,8 +24,12 @@ def _stuf_response_ok(response: Response) -> bool:
 
     found = tree.xpath('//stuf:stuurgegevens/stuf:berichtcode', namespaces=namespaces)
 
-    if len(found) != 1 or found[0].text != 'Bv03':
+    if not isinstance(found, list) or len(found) != 1:
         return False
+
+    if not isinstance(found[0], etree._Element) or found[0].text != 'Bv03':
+        return False
+
     return True
 
 
