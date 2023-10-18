@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from django.db.models import QuerySet
 from rest_framework import serializers
 
 from signals.apps.signals.models import Department
 from signals.apps.users.models import Profile
 
 
-def _get_departments_queryset():
+def _get_departments_queryset() -> QuerySet[Department]:
     return Department.objects.all()
 
 
@@ -27,8 +28,8 @@ class ProfileListSerializer(serializers.ModelSerializer):
             'updated_at',
         )
 
-    def get_departments(self, obj) -> list[str]:
-        return obj.departments.values_list('name', flat=True)
+    def get_departments(self, obj: Profile) -> list[str]:
+        return list(obj.departments.values_list('name', flat=True))
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
@@ -51,4 +52,4 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
         )
 
     def get_departments(self, obj: Profile) -> list[str]:
-        return obj.departments.values_list('name', flat=True)
+        return list(obj.departments.values_list('name', flat=True))
