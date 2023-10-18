@@ -168,7 +168,8 @@ class Signal(CreatedUpdatedModel):
         if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
             return True
 
-        try:
-            return self.feedback.filter(submitted_at__isnull=False).order_by('submitted_at').last().allows_contact
-        except AttributeError:
+        feedback_qs = self.feedback.filter(submitted_at__isnull=False)
+        if not feedback_qs.exists():
             return True
+
+        return feedback_qs.order_by('-submitted_at')[0].allows_contact
