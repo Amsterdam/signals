@@ -27,7 +27,7 @@ from signals.celery import app
 
 
 @app.task
-def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse') -> None:
+def save_csv_file_datawarehouse(func: Callable[[str], str], using: str = 'datawarehouse') -> list[str]:
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
