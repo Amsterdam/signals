@@ -140,6 +140,8 @@ class Log(models.Model):
         "get_action" copied from History
         Present for backwards compatibility
         """
+        assert self.object
+
         what = self.what
         if what == 'UPDATE_STATUS':
             _status_choice = 'Onbekend'
@@ -177,12 +179,10 @@ class Log(models.Model):
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
         elif (what == 'RECEIVE_SESSION'
-              and self.object
               and self.object.questionnaire
               and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
             action = 'Toelichting ontvangen'
         elif (what == 'NOT_RECEIVED_SESSION'
-              and self.object
               and self.object.questionnaire
               and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
             action = 'Geen toelichting ontvangen'
