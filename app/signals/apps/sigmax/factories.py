@@ -12,5 +12,5 @@ class CityControlRoundtripFactory(factory.django.DjangoModelFactory):
         model = CityControlRoundtrip
         skip_postgeneration_save = True
 
-    _signal = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
+    _signal: factory.SubFactory = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
     when = fuzzy.FuzzyDateTime(timezone.now())
