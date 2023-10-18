@@ -65,7 +65,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         # Check if the Signal needs to be reopened
-        if instance._signal.status.state != workflow.AFGEHANDELD:
+        if instance._signal.status and instance._signal.status.state != workflow.AFGEHANDELD:
             # The signal is not in the handled state, so no need to reopen
             return instance
 

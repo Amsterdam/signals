@@ -26,7 +26,7 @@ class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'topic name: {}'.format(n))
     description = factory.Sequence(lambda n: 'topic text: {}'.format(n))
-    order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
+    order: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
 
 
 class StandardAnswerFactory(factory.django.DjangoModelFactory):
@@ -35,10 +35,10 @@ class StandardAnswerFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
     text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
-    is_visible = fuzzy.FuzzyChoice([True, False])
-    is_satisfied = fuzzy.FuzzyChoice([True, False])
-    topic = factory.SubFactory(StandardAnswerTopicFactory)
-    order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
+    is_visible: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([True, False])
+    is_satisfied: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([True, False])
+    topic: factory.SubFactory = factory.SubFactory(StandardAnswerTopicFactory)
+    order: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
 
 
 class FeedbackFactory(factory.django.DjangoModelFactory):
@@ -46,9 +46,9 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
         model = Feedback
         skip_postgeneration_save = True
 
-    _signal = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
+    _signal: factory.SubFactory = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
     created_at = factory.LazyFunction(timezone.now)
     submitted_at = None
 
-    is_satisfied = fuzzy.FuzzyChoice([True, False])
-    allows_contact = fuzzy.FuzzyChoice([True, False])
+    is_satisfied: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([True, False])
+    allows_contact: fuzzy.FuzzyChoice = fuzzy.FuzzyChoice([True, False])
