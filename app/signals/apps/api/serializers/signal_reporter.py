@@ -55,9 +55,12 @@ class SignalReporterSerializer(serializers.ModelSerializer):
                 reporter.save()
 
     def _log_to_history(self, reporter: Reporter, description: str, signal: Signal) -> None:
+        request = self.context.get('request')
+        assert request is not None
+
         reporter.history_log.create(
             action=Log.ACTION_UPDATE,
-            created_by=self.context.get('request').user.username,
+            created_by=request.user.username,
             created_at=timezone.now(),
             description=description,
             _signal=signal,
@@ -83,7 +86,9 @@ class SignalReporterSerializer(serializers.ModelSerializer):
         reporter = Reporter()
         reporter.email = validated_data.get('email')
         reporter.phone = validated_data.get('phone')
-        reporter.sharing_allowed = validated_data.get('sharing_allowed')
+        sharing_allowed = validated_data.get('sharing_allowed')
+        assert isinstance(sharing_allowed, bool)
+        reporter.sharing_allowed = sharing_allowed
         reporter._signal = signal
         reporter.save()
 
@@ -94,6 +99,7 @@ class SignalReporterSerializer(serializers.ModelSerializer):
         # we can transition to approved
         if not verify_email_successful:
             try:
+                assert reporter._signal.reporter is not None
                 old_reporter = reporter._signal.reporter
                 reporter.approve()
                 reporter.save()
