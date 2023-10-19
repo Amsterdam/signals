@@ -15,8 +15,8 @@ fake = Faker()
 class DepartmentFactory(DjangoModelFactory):
     code = FuzzyText(length=3, chars=ascii_uppercase)
     name = LazyFunction(lambda: ' '.join(fake.words(nb=3)))
-    is_intern = FuzzyChoice(choices=[True, False])
-    can_direct = FuzzyChoice(choices=[True, False])
+    is_intern :FuzzyChoice = FuzzyChoice(choices=[True, False])
+    can_direct :FuzzyChoice = FuzzyChoice(choices=[True, False])
 
     class Meta:
         model = Department

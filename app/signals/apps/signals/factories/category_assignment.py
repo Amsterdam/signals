@@ -11,8 +11,8 @@ class CategoryAssignmentFactory(DjangoModelFactory):
         model = CategoryAssignment
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', category_assignment=None)
-    category = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', category_assignment=None)
+    category: SubFactory = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

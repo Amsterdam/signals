@@ -9,8 +9,8 @@ from signals.apps.signals.models import StoredSignalFilter
 
 class StoredSignalFilterFactory(DjangoModelFactory):
     name = FuzzyText(length=100)
-    created_by = SubFactory('signals.apps.users.factories.UserFactory')
-    refresh = FuzzyChoice((True, False))
+    created_by: SubFactory = SubFactory('signals.apps.users.factories.UserFactory')
+    refresh :FuzzyChoice = FuzzyChoice((True, False))
     show_on_overview = False
 
     class Meta:

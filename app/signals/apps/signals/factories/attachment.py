@@ -11,7 +11,7 @@ class AttachmentFactory(DjangoModelFactory):
         model = Attachment
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
     created_by = Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     file = FileField()
 

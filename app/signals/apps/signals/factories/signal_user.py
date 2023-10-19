@@ -11,9 +11,9 @@ class SignalUserFactory(DjangoModelFactory):
         model = SignalUser
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
     created_by = Sequence(lambda n: 'beheerder{}@example.com'.format(n))
-    user = SubFactory('signals.apps.users.factories.UserFactory')
+    user: SubFactory = SubFactory('signals.apps.users.factories.UserFactory')
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

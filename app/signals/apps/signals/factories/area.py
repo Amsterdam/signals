@@ -46,5 +46,5 @@ class AreaFactory(DjangoModelFactory):
 
     name = Sequence(lambda n: f'Gebied type {n}')
     code = Sequence(lambda n: f'gebied-type-code-{n}')
-    _type = SubFactory(AreaTypeFactory)
+    _type: SubFactory = SubFactory(AreaTypeFactory)
     geometry = MultiPolygon([get_random_bbox()])

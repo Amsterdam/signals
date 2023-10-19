@@ -19,7 +19,7 @@ class ExpressionTypeFactory(DjangoModelFactory):
 class ExpressionFactory(DjangoModelFactory):
     name = FuzzyText(length=3)
     code = FuzzyText(length=100)
-    _type = SubFactory(ExpressionTypeFactory)
+    _type: SubFactory = SubFactory(ExpressionTypeFactory)
 
     class Meta:
         model = Expression
@@ -32,5 +32,5 @@ class ExpressionContextFactory(DjangoModelFactory):
         skip_postgeneration_save = True
 
     identifier = Sequence(lambda n: f'ident_{n}')
-    identifier_type = FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
-    _type = SubFactory(ExpressionTypeFactory)
+    identifier_type :FuzzyChoice = FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
+    _type: SubFactory = SubFactory(ExpressionTypeFactory)

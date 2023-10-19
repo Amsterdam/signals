@@ -12,8 +12,8 @@ class CategoryDepartmentFactory(DjangoModelFactory):
         model = CategoryDepartment
         skip_postgeneration_save = True
 
-    category = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
-    department = SubFactory('signals.apps.signals.factories.department.DepartmentFactory')
+    category: SubFactory = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
+    department: SubFactory = SubFactory('signals.apps.signals.factories.department.DepartmentFactory')
 
-    is_responsible = FuzzyChoice((True, False))
-    can_view = FuzzyChoice((True, False))
+    is_responsible :FuzzyChoice = FuzzyChoice((True, False))
+    can_view :FuzzyChoice = FuzzyChoice((True, False))

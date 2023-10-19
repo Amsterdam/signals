@@ -10,8 +10,8 @@ from signals.apps.signals.models import Category
 
 class ParentCategoryFactory(DjangoModelFactory):
     name = Sequence(lambda n: 'Parent category {}'.format(n))
-    slug = LazyAttribute(lambda o: slugify(o.name))
-    handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+    slug: LazyAttribute = LazyAttribute(lambda o: slugify(o.name))
+    handling :FuzzyChoice = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (parent category)'
     is_active = True
     questionnaire = None
@@ -35,10 +35,10 @@ class ParentCategoryFactory(DjangoModelFactory):
 
 
 class CategoryFactory(DjangoModelFactory):
-    parent = SubFactory('signals.apps.signals.factories.category.ParentCategoryFactory')
+    parent: SubFactory = SubFactory('signals.apps.signals.factories.category.ParentCategoryFactory')
     name = Sequence(lambda n: 'Category {}'.format(n))
-    slug = LazyAttribute(lambda o: slugify(o.name))
-    handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+    slug: LazyAttribute = LazyAttribute(lambda o: slugify(o.name))
+    handling :FuzzyChoice = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (child category)'
     is_active = True
     questionnaire = None

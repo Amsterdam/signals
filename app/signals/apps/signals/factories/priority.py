@@ -12,7 +12,7 @@ class PriorityFactory(DjangoModelFactory):
         model = Priority
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', priority=None)
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', priority=None)
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

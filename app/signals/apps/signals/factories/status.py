@@ -14,12 +14,12 @@ class StatusFactory(DjangoModelFactory):
         model = Status
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', status=None)
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', status=None)
 
     text = FuzzyText(length=400)
     user = Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     state = GEMELD  # Initial state is always 'm'
-    extern = FuzzyChoice((True, False))
+    extern :FuzzyChoice = FuzzyChoice((True, False))
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

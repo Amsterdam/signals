@@ -11,7 +11,7 @@ class SignalDepartmentsFactory(DjangoModelFactory):
         model = SignalDepartments
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', category_assignment=None)
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', category_assignment=None)
     created_by = Sequence(lambda n: 'beheerder{}@example.com'.format(n))
     relation_type = SignalDepartments.REL_DIRECTING
 
