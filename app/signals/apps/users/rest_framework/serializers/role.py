@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, Permission
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from rest_framework import serializers
 
 from signals.apps.users.rest_framework.serializers import PermissionSerializer
 
 
-def _get_permissions_queryset():
+def _get_permissions_queryset() -> QuerySet[Permission]:
     return Permission.objects.filter(Q(codename__istartswith='sia_') | Q(codename='push_to_sigmax'))
 
 
