@@ -26,7 +26,7 @@ class StatusMessage(CreatedUpdatedModel):
     state : str
         When transitioning a signal to this state, this status message should be
         available to inform the reporter.
-    categories : List[Category]
+    categories : ManyRelatedManager[Category]
         The categories that this status message is attached to.
     """
     title = models.CharField(max_length=255)
