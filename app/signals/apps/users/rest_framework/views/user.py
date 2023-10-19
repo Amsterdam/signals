@@ -54,7 +54,7 @@ class UserViewSet(DetailSerializerMixin, ModelViewSet):
         'profile__departments',
     ).order_by(Lower('username'))
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAUserPermissions,)
 
     serializer_detail_class = UserDetailHALSerializer
@@ -102,7 +102,7 @@ class LoggedInUserView(RetrieveAPIView):
     """
     queryset = User.objects.none()
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
 
     serializer_class = UserDetailHALSerializer
@@ -119,7 +119,7 @@ class AutocompleteUsernameListView(ListAPIView):
     """
     queryset = User.objects.all().order_by(Lower('username'))
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
 
     serializer_class = UserNameListSerializer

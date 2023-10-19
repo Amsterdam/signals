@@ -4,6 +4,7 @@ from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, User
 from django.core.validators import EmailValidator
+from django.db.models import QuerySet
 from rest_framework import serializers
 
 from signals.apps.api.generics.mixins import WriteOnceMixin
@@ -17,7 +18,7 @@ from signals.apps.users.rest_framework.serializers import (
 )
 
 
-def _get_groups_queryset():
+def _get_groups_queryset() -> QuerySet[Group]:
     return Group.objects.all()
 
 
