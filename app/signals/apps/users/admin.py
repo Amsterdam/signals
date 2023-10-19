@@ -30,12 +30,11 @@ class SignalsUserAdmin(UserAdmin):
 
     actions = ['download_csv']
 
+    @admin.display(description='Afdeling(en)')
     def departments(self, obj):
         if obj.profile and obj.profile.departments.exists():
             return ', '.join(obj.profile.departments.values_list('code', flat=True).order_by('code'))
         return ''
-    departments.short_description = 'Afdeling(en)'
-    departments.allow_tags = True
 
     @admin.action(description='Download CSV')
     def download_csv(self, request, queryset):
