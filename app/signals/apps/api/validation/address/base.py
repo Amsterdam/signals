@@ -9,7 +9,7 @@ class NoResultsException(Exception):
 
 
 class BaseAddressValidation:
-    address_validation_url = None
+    address_validation_url: str
 
     def _search(self, address, *args, **kwargs):
         raise NotImplementedError('The search functionality should be implemented derived class')
