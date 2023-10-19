@@ -26,7 +26,7 @@ class RoleViewSet(DetailSerializerMixin, ModelViewSet):
         'permissions__content_type',
     ).order_by(Lower('name'))
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions & DjangoModelPermissions, )
 
     serializer_detail_class = RoleSerializer
