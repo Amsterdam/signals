@@ -31,11 +31,11 @@ class StatusMessage(CreatedUpdatedModel):
     categories : List[Category]
         The categories that this status message is attached to.
     """
-    title: str = models.CharField(max_length=255)
-    text: str = models.TextField()
-    active: bool = models.BooleanField(default=False)
-    state: str = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
-    categories: List[Category] = models.ManyToManyField(Category, through='StatusMessageCategory')
+    title = models.CharField(max_length=255)
+    text = models.TextField()
+    active = models.BooleanField(default=False)
+    state = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
+    categories = models.ManyToManyField(Category, through='StatusMessageCategory')
 
     class Meta:
         permissions = (
@@ -72,9 +72,9 @@ class StatusMessageCategory(models.Model):
         attached to a category. This field should be used to order the status messages
         for a specific category. That way they can be displayed in the configured order.
     """
-    status_message: StatusMessage = models.ForeignKey(StatusMessage, on_delete=models.CASCADE)
-    category: Category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    position: int = models.IntegerField()
+    status_message = models.ForeignKey(StatusMessage, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    position = models.IntegerField()
 
     class Meta:
         constraints = [
