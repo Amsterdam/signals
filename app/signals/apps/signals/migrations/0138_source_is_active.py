@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.db import migrations, models
 
 
@@ -56,6 +56,6 @@ class Migration(migrations.Migration):
             name='is_active',
             field=models.BooleanField(default=False),
         ),
-        migrations.RunPython(activate_sources, lambda x, y: True),  # noqa No reverse needed because the is_active flag will be removed
-        migrations.RunPython(_add_sources, lambda x, y: True),  # No reverse possible
+        migrations.RunPython(activate_sources),
+        migrations.RunPython(_add_sources),
     ]
