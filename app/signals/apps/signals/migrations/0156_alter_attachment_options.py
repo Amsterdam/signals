@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.db import migrations
 
 
@@ -42,5 +42,5 @@ class Migration(migrations.Migration):
                 ]
             },
         ),
-        migrations.RunPython(_change_permission, lambda x, y: True),  # Reverse function does nothing
+        migrations.RunPython(_change_permission),
     ]
