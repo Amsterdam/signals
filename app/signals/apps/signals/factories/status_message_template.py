@@ -13,7 +13,7 @@ class StatusMessageTemplateFactory(DjangoModelFactory):
     text = FuzzyText(length=100)
     order = 0
     category: SubFactory = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
-    state :FuzzyChoice = FuzzyChoice(STATUS_CHOICES_API)
+    state: FuzzyChoice = FuzzyChoice(STATUS_CHOICES_API)
     is_active = True
 
     class Meta:

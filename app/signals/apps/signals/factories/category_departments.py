@@ -15,5 +15,5 @@ class CategoryDepartmentFactory(DjangoModelFactory):
     category: SubFactory = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
     department: SubFactory = SubFactory('signals.apps.signals.factories.department.DepartmentFactory')
 
-    is_responsible :FuzzyChoice = FuzzyChoice((True, False))
-    can_view :FuzzyChoice = FuzzyChoice((True, False))
+    is_responsible: FuzzyChoice = FuzzyChoice((True, False))
+    can_view: FuzzyChoice = FuzzyChoice((True, False))

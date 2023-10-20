@@ -32,5 +32,5 @@ class ExpressionContextFactory(DjangoModelFactory):
         skip_postgeneration_save = True
 
     identifier = Sequence(lambda n: f'ident_{n}')
-    identifier_type :FuzzyChoice = FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
+    identifier_type: FuzzyChoice = FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
     _type: SubFactory = SubFactory(ExpressionTypeFactory)

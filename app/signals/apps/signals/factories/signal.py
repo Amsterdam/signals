@@ -36,15 +36,15 @@ class SignalFactory(DjangoModelFactory):
     text_extra = LazyFunction(fake.paragraph)
 
     # Creating (reverse FK) related objects after this `Signal` is created.
-    location :RelatedFactory = RelatedFactory('signals.apps.signals.factories.location.LocationFactory', '_signal')
-    status :RelatedFactory = RelatedFactory('signals.apps.signals.factories.status.StatusFactory', '_signal')
-    category_assignment :RelatedFactory = RelatedFactory(
+    location: RelatedFactory = RelatedFactory('signals.apps.signals.factories.location.LocationFactory', '_signal')
+    status: RelatedFactory = RelatedFactory('signals.apps.signals.factories.status.StatusFactory', '_signal')
+    category_assignment: RelatedFactory = RelatedFactory(
         'signals.apps.signals.factories.category_assignment.CategoryAssignmentFactory',
         '_signal',
     )
-    reporter :RelatedFactory = RelatedFactory('signals.apps.signals.factories.reporter.ReporterFactory', '_signal')
-    priority :RelatedFactory = RelatedFactory('signals.apps.signals.factories.priority.PriorityFactory', '_signal')
-    type_assignment :RelatedFactory = RelatedFactory('signals.apps.signals.factories.type.TypeFactory', '_signal')
+    reporter: RelatedFactory = RelatedFactory('signals.apps.signals.factories.reporter.ReporterFactory', '_signal')
+    priority: RelatedFactory = RelatedFactory('signals.apps.signals.factories.priority.PriorityFactory', '_signal')
+    type_assignment: RelatedFactory = RelatedFactory('signals.apps.signals.factories.type.TypeFactory', '_signal')
 
     incident_date_start = FuzzyDateTime(timezone.now() - timedelta(days=100), timezone.now())
     incident_date_end: LazyAttribute = LazyAttribute(lambda o: _incident_date_end(o.incident_date_start))
@@ -52,7 +52,9 @@ class SignalFactory(DjangoModelFactory):
 
     # SIG-884
     parent = None
-    user_assignment :RelatedFactory = RelatedFactory('signals.apps.signals.factories.signal_user.SignalUserFactory', '_signal', user=None) # noqa
+    user_assignment: RelatedFactory = RelatedFactory(
+        'signals.apps.signals.factories.signal_user.SignalUserFactory', '_signal', user=None
+    ) # noqa
 
     @post_generation
     def set_one_to_one_relations(self, create, extracted, **kwargs):
@@ -77,8 +79,12 @@ class SignalFactory(DjangoModelFactory):
 
 
 class SignalFactoryWithImage(SignalFactory):
-    attachment :RelatedFactory = RelatedFactory('signals.apps.signals.factories.attachment.ImageAttachmentFactory', '_signal')
+    attachment: RelatedFactory = RelatedFactory(
+        'signals.apps.signals.factories.attachment.ImageAttachmentFactory', '_signal'
+    )
 
 
 class SignalFactoryValidLocation(SignalFactory):
-    location :RelatedFactory = RelatedFactory('signals.apps.signals.factories.location.ValidLocationFactory', '_signal')
+    location: RelatedFactory = RelatedFactory(
+        'signals.apps.signals.factories.location.ValidLocationFactory', '_signal'
+    )

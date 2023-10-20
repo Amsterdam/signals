@@ -19,7 +19,7 @@ class StatusFactory(DjangoModelFactory):
     text = FuzzyText(length=400)
     user = Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     state = GEMELD  # Initial state is always 'm'
-    extern :FuzzyChoice = FuzzyChoice((True, False))
+    extern: FuzzyChoice = FuzzyChoice((True, False))
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

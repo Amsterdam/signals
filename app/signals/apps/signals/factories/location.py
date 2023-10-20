@@ -30,7 +30,7 @@ class LocationFactory(DjangoModelFactory):
     _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', location=None)
 
     buurt_code = FuzzyText(length=4)
-    stadsdeel :FuzzyChoice = FuzzyChoice(choices=(s[0] for s in STADSDELEN))
+    stadsdeel: FuzzyChoice = FuzzyChoice(choices=(s[0] for s in STADSDELEN))
     geometrie = get_puntje()
     address = {'openbare_ruimte': 'Sesamstraat',
                'huisnummer': 666,
