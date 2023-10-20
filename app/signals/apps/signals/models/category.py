@@ -148,8 +148,8 @@ class Category(TrackFields, models.Model):
     )
 
     # History log
-    track_fields = ('name', 'description', 'is_active', 'slo', 'handling_message', 'public_name',
-                    'is_public_accessible', 'icon', )
+    track_fields = ['name', 'description', 'is_active', 'slo', 'handling_message', 'public_name',
+                    'is_public_accessible', 'icon', ]
     history_log = GenericRelation('history.Log', object_id_field='object_pk')
     # End History log
 
