@@ -436,7 +436,7 @@ API_PDF_LOGO_STATIC_FILE: str = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-
 API_PDF_RESIZE_IMAGES_TO: int = 800
 
 # Maximum size for attachments
-API_MAX_UPLOAD_SIZE: str | int = os.getenv('API_MAX_UPLOAD_SIZE', 20*1024*1024)  # 20MB = 20*1024*1024
+API_MAX_UPLOAD_SIZE: int = int(os.getenv('API_MAX_UPLOAD_SIZE', '20971520'))  # 20MB
 
 # Enable public map geo endpoint
 ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT: bool = os.getenv('ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT', False) in TRUE_VALUES
