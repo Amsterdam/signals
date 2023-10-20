@@ -3,6 +3,7 @@
 import logging
 import uuid
 import warnings
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import transaction
@@ -40,14 +41,14 @@ def delete_signals_in_state_for_x_days(state: str, days: int):
     signal_qs = Signal.objects.filter(
         parent_id__isnull=True,
         status__state=state,
-        status__created_at__lt=timezone.now() - timezone.timedelta(days=days)
+        status__created_at__lt=timezone.now() - timedelta(days=days)
     )
     for signal in signal_qs:
         delete_signal.delay(signal.id, batch_uuid)
 
 
 @app.task(prio=0)
-def delete_signal(signal_id: int, batch_uuid: uuid.UUID = None):  # noqa C901
+def delete_signal(signal_id: int, batch_uuid: uuid.UUID | None = None):  # noqa C901
     """
     Delete a signal and associated data.
 
@@ -67,9 +68,11 @@ def delete_signal(signal_id: int, batch_uuid: uuid.UUID = None):  # noqa C901
             delete_signal(child_signal.id, batch_uuid)
 
     if signal.is_child:
+        assert signal.parent and signal.parent.status
         note = (f'Parent signal was in state "{signal.parent.status.get_state_display()}" '
                 f'for {(timezone.now() - signal.parent.status.created_at).days} days')
     else:
+        assert signal.status
         note = (f'Signal was in state "{signal.status.get_state_display()}" '
                 f'for {(timezone.now() - signal.status.created_at).days} days')
 
@@ -87,7 +90,7 @@ def delete_signal(signal_id: int, batch_uuid: uuid.UUID = None):  # noqa C901
 
 
 @app.task
-def delete_closed_signals(days=365):
+def delete_closed_signals(days: int =365):
     """
     Delete Signals in one of the Signalen system's closed states
     """
