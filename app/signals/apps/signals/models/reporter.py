@@ -95,7 +95,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         previous approved reporter.
         """
         assert self._signal.reporter
-        return self._signal.reporter and self._signal.reporter.email != self.email
+        return self._signal.reporter.email != self.email
 
     def is_approvable(self) -> bool:
         """
