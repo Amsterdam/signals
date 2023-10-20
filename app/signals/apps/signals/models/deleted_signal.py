@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 import uuid
 from typing import TYPE_CHECKING
 
@@ -13,13 +13,21 @@ if TYPE_CHECKING:
 
 
 class DeleteSignalManager(models.Manager):
-    def create_from_signal(self, signal: "Signal", action: str, note: str, deleted_by: str = None,
-                           batch_uuid: uuid = None):
+    def create_from_signal(self, signal: "Signal", action: str, note: str, deleted_by: str | None = None,
+                           batch_uuid: uuid.UUID | None = None):
+        assert signal.status
+        assert signal.category_assignment and signal.category_assignment.category
+
         return super().create(
             # Fields to store from the given Signal
-            signal_id=signal.id, signal_uuid=signal.uuid, parent_signal_id=signal.parent_id,
-            category=signal.category_assignment.category, signal_state=signal.status.state,
-            signal_state_set_at=signal.status.created_at, signal_created_at=signal.created_at,
+            signal_id=signal.id,
+            signal_uuid=signal.uuid,
+            parent_signal_id=signal.parent_id,
+            category=signal.category_assignment.category,
+            signal_state=signal.status.state,
+            signal_state_set_at=signal.status.created_at,
+            signal_created_at=signal.created_at,
+
             # Administration fields
             deleted_by=deleted_by, action=action, note=note, batch_uuid=batch_uuid
         )

@@ -13,8 +13,8 @@ class ServiceLevelObjectiveFactory(DjangoModelFactory):
         model = ServiceLevelObjective
         skip_postgeneration_save = True
 
-    category = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
+    category: SubFactory = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
     n_days = FuzzyInteger(3, 7)
-    use_calendar_days = FuzzyChoice((True, False))
+    use_calendar_days: FuzzyChoice = FuzzyChoice((True, False))
     created_by = Sequence(lambda n: 'beheerder{}@example.com'.format(n))
     created_at = FuzzyDateTime(timezone.now())

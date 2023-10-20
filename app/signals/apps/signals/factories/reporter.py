@@ -15,7 +15,7 @@ class ReporterFactory(DjangoModelFactory):
         model = Reporter
         skip_postgeneration_save = True
 
-    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', reporter=None)
+    _signal: SubFactory = SubFactory('signals.apps.signals.factories.signal.SignalFactory', reporter=None)
 
     email = Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     email_anonymized = False

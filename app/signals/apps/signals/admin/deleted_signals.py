@@ -22,11 +22,11 @@ class DeletedSignalAdmin(admin.ModelAdmin):
 
     search_fields = ['signal_id__exact', ]
 
-    @admin.action(description='category')
+    @admin.display(description='category')
     def get_category_name(self, obj):
         return obj.category.name
 
-    @admin.action(description='deleted by')
+    @admin.display(description='deleted by')
     def get_deleted_by(self, obj):
         return obj.deleted_by or 'Signalen system'
 

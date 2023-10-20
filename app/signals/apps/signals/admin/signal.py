@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.contrib import admin
 from django.db import transaction
 
@@ -23,6 +23,7 @@ class SignalAdmin(admin.ModelAdmin):
     # signals need to be in workflow.VERZONDEN state.
     actions = ['free_signals']
 
+    @admin.action(description='Free SIA signals (meldingen) stuck in state VERZONDEN.')
     def free_signals(self, request, queryset):
         filtered_signals = queryset.filter(status__state=workflow.VERZONDEN)
 
@@ -49,18 +50,14 @@ class SignalAdmin(admin.ModelAdmin):
 
             transaction.on_commit(lambda: self.message_user(request, msg))
 
-    free_signals.short_description = 'Free SIA signals (meldingen) stuck in state VERZONDEN.'
-
-    # Get the human readable status and category:
+    # Get the human-readable status and category:
+    @admin.display(description='status')
     def get_status_display(self, obj):
         return obj.status.get_state_display()
 
-    get_status_display.short_description = 'status'
-
+    @admin.display(description='category')
     def get_category(self, obj):
         return obj.category_assignment.category.name
-
-    get_category.short_description = 'category'
 
     # Disable editing on this model (change page customization)
     def has_add_permission(self, request):

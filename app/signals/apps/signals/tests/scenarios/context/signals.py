@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from datetime import timedelta
+
 import freezegun
 from django.utils import timezone
 from pytest_bdd import given, parsers, then
@@ -19,10 +21,10 @@ def given_a_signal_exists_in_state_for_x_years(state: str,
     days = nr_of_days_in_years(years)
 
     now = timezone.now()
-    with freezegun.freeze_time(now - timezone.timedelta(days=days-1)):
+    with freezegun.freeze_time(now - timedelta(days=days-1)):
         signal = SignalFactory.create()
 
-    with freezegun.freeze_time(now - timezone.timedelta(days=days)):
+    with freezegun.freeze_time(now - timedelta(days=days)):
         status = StatusFactory.create(
             state=get_state_code(state),
             _signal=signal
@@ -60,10 +62,10 @@ def given_x_signals_exists_in_state_for_x_years(nr_of_signals: int,
     signals = []
     for _ in range(nr_of_signals):
         now = timezone.now()
-        with freezegun.freeze_time(now - timezone.timedelta(days=days-1)):
+        with freezegun.freeze_time(now - timedelta(days=days-1)):
             signal = SignalFactory.create()
 
-        with freezegun.freeze_time(now - timezone.timedelta(days=days)):
+        with freezegun.freeze_time(now - timedelta(days=days)):
             status = StatusFactory.create(
                 state=get_state_code(state),
                 _signal=signal

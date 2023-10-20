@@ -94,6 +94,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         Used as state machine transition condition to check if email changed from the
         previous approved reporter.
         """
+        assert self._signal.reporter
         return self._signal.reporter.email != self.email
 
     def is_approvable(self) -> bool:
@@ -107,6 +108,8 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         if not self.is_not_original():
             return True
+
+        assert self._signal.reporter
 
         if self._signal.reporter.phone != self.phone:
             if self.email is None or self.email == self._signal.reporter.email:
@@ -153,6 +156,8 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
         mail_reporter = ReporterMailer(EmailTemplateRenderer())
 
         # Let the current reporter know that a change was requested
+        assert self._signal.reporter
+
         current_reporter = self._signal.reporter
         if current_reporter.email:
             mail_reporter(current_reporter, EmailTemplate.NOTIFY_CURRENT_REPORTER)

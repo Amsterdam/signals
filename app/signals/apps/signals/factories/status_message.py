@@ -10,7 +10,7 @@ from signals.apps.signals.workflow import STATUS_CHOICES_API
 class StatusMessageFactory(DjangoModelFactory):
     title = FuzzyText(length=100)
     text = FuzzyText(length=1000)
-    state = FuzzyChoice([status_choice[0] for status_choice in STATUS_CHOICES_API])
+    state: FuzzyChoice = FuzzyChoice([status_choice[0] for status_choice in STATUS_CHOICES_API])
     active = True
 
     class Meta:

@@ -11,8 +11,8 @@ class RoutingExpressionFactory(DjangoModelFactory):
         model = RoutingExpression
         skip_postgeneration_save = True
 
-    _expression = SubFactory('signals.apps.signals.factories.expression.ExpressionFactory')
-    _department = SubFactory('signals.apps.signals.factories.expression.DepartmentFactory')
+    _expression: SubFactory = SubFactory('signals.apps.signals.factories.expression.ExpressionFactory')
+    _department: SubFactory = SubFactory('signals.apps.signals.factories.expression.DepartmentFactory')
     _user = None
     order = Sequence(lambda n: n)
     is_active = True
