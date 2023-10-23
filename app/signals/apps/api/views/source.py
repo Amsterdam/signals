@@ -17,7 +17,7 @@ class PrivateSourcesViewSet(ReadOnlyModelViewSet):
 
     queryset = Source.objects.all()
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PrivateSourceFilterSet

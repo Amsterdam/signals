@@ -31,7 +31,7 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
 
     serializer_class = SignalReporterSerializer
 
-    authentication_classes = (JWTAuthBackend, )
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (ReporterPermission, )
 
     def get_signal(self) -> Signal:

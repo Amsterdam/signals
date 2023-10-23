@@ -33,7 +33,7 @@ class PrivateDepartmentViewSet(CreateModelMixin, DetailSerializerMixin, UpdateMo
     serializer_class = PrivateDepartmentSerializerList
     serializer_detail_class = PrivateDepartmentSerializerDetail
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions & ModelWritePermissions,)
 
     @extend_schema(responses={HTTP_201_CREATED: PrivateDepartmentSerializerDetail},

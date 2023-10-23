@@ -32,7 +32,7 @@ class StatusMessagesViewSet(ModelViewSet):
     """
     queryset = StatusMessage.objects.all()
     serializer_class = StatusMessageSerializer
-    authentication_classes = (JWTAuthBackend, )
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions & ModelWritePermissions, )
     filter_backends = (DjangoFilterBackend, OrderingFilter, )
     filterset_class = StatusMessagesFilterSet
@@ -58,7 +58,7 @@ class StatusMessagesCategoryPositionViewSet(CreateModelMixin, GenericViewSet):
     queryset = StatusMessageCategory.objects.all()
     serializer_class = StatusMessageCategoryPositionSerializer
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions & ModelWritePermissions,)
     filter_backends = ()
 

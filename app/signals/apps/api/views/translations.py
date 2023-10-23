@@ -18,7 +18,7 @@ I18NEXT_TRANSLATION_FILE_PATH = 'i18next/translations.json'
 
 
 class PrivateCreateI18NextTranslationFileView(APIView):
-    authentication_classes = (JWTAuthBackend, )
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (CanCreateI18NextTranslationFile, )
 
     def post(self, request: Request) -> Response:
@@ -33,10 +33,6 @@ class PrivateCreateI18NextTranslationFileView(APIView):
         """
         # Create ContentFile from JSON data and save to storage
         latest_file_content = json.dumps(request.data)
-
-        # Ensure new_content is already in bytes format (if not, you can encode it)
-        if not isinstance(latest_file_content, bytes):
-            latest_file_content = latest_file_content.encode('utf-8')
 
         if default_storage.exists(I18NEXT_TRANSLATION_FILE_PATH):
             # Delete the old file
