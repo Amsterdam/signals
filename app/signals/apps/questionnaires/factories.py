@@ -37,7 +37,7 @@ class QuestionFactory(DjangoModelFactory):
 
 class QuestionGraphFactory(DjangoModelFactory):
     name = Sequence(lambda n: f'Question Graph {n}')
-    first_question = SubFactory(QuestionFactory)
+    first_question: SubFactory = SubFactory(QuestionFactory)
 
     class Meta:
         model = QuestionGraph
@@ -45,7 +45,7 @@ class QuestionGraphFactory(DjangoModelFactory):
 
 
 class ChoiceFactory(DjangoModelFactory):
-    question = SubFactory(QuestionFactory)
+    question: SubFactory = SubFactory(QuestionFactory)
 
     class Meta:
         model = Choice
@@ -53,10 +53,10 @@ class ChoiceFactory(DjangoModelFactory):
 
 
 class EdgeFactory(DjangoModelFactory):
-    graph = SubFactory(QuestionGraphFactory)
-    question = SubFactory(QuestionFactory)
-    next_question = SubFactory(QuestionFactory)
-    choice = SubFactory(ChoiceFactory)
+    graph: SubFactory = SubFactory(QuestionGraphFactory)
+    question: SubFactory = SubFactory(QuestionFactory)
+    next_question: SubFactory = SubFactory(QuestionFactory)
+    choice: SubFactory = SubFactory(ChoiceFactory)
 
     class Meta:
         model = Edge
@@ -64,8 +64,8 @@ class EdgeFactory(DjangoModelFactory):
 
 
 class TriggerFactory(DjangoModelFactory):
-    graph = SubFactory(QuestionGraphFactory)
-    question = SubFactory(QuestionFactory)
+    graph: SubFactory = SubFactory(QuestionGraphFactory)
+    question: SubFactory = SubFactory(QuestionFactory)
 
     class Meta:
         model = Trigger
@@ -73,7 +73,7 @@ class TriggerFactory(DjangoModelFactory):
 
 
 class QuestionnaireFactory(DjangoModelFactory):
-    graph = SubFactory(QuestionGraphFactory)
+    graph: SubFactory = SubFactory(QuestionGraphFactory)
 
     flow = Questionnaire.EXTRA_PROPERTIES
 
@@ -90,7 +90,7 @@ class SessionFactory(DjangoModelFactory):
     started_at = None  # session is not yet active
     submit_before = None  # session has no submission deadline
 
-    questionnaire = SubFactory(QuestionnaireFactory)
+    questionnaire: SubFactory = SubFactory(QuestionnaireFactory)
 
     class Meta:
         model = Session
@@ -98,8 +98,8 @@ class SessionFactory(DjangoModelFactory):
 
 
 class AnswerFactory(DjangoModelFactory):
-    session = SubFactory(SessionFactory)
-    question = SelfAttribute('session.questionnaire.first_question')
+    session: SubFactory = SubFactory(SessionFactory)
+    question: SelfAttribute = SelfAttribute('session.questionnaire.first_question')
     payload = None
 
     class Meta:
