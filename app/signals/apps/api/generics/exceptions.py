@@ -16,3 +16,6 @@ class NotImplementedException(APIException):
 
 class UnsupportedViewException(Exception):
     """Raised when view is not supported."""
+
+class UnsupportedModelTypeException(Exception):
+    """Raised when type of model is not supported."""
