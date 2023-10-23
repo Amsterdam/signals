@@ -53,7 +53,7 @@ urlpatterns = [
 
 
 class NameSpace:
-    pass
+    urlpatterns: list
 
 
 class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
