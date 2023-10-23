@@ -6,7 +6,6 @@ from rest_framework.permissions import BasePermission, DjangoModelPermissions
 from rest_framework.request import Request
 
 from signals.apps.api.generics.exceptions import UnsupportedViewException
-from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Reporter
 
@@ -144,6 +143,8 @@ class ReporterPermission(BasePermission):
         OR
         If the user has the permission to view the category of the Signal, they can view all reporters of that Signal.
         """
+        from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
+
         if not isinstance(view, PrivateSignalReporterViewSet):
             raise UnsupportedViewException('Currently only PrivateSignalReporterViewSet is supported!')
 
