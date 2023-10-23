@@ -16,7 +16,7 @@ from signals.auth.backend import JWTAuthBackend
 class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = SignalIdListSerializer
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
 
     filter_backends = (DjangoFilterBackend,)
