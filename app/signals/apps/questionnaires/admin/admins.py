@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -29,6 +29,7 @@ class QuestionnaireAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
     @mark_safe
+    @admin.display(description='Visual representation (mermaid.js)')
     def mermaid_js(self, obj):
         from signals.apps.questionnaires.services import QuestionGraphService
         from signals.apps.questionnaires.utils.mermaidx import mermaidx
@@ -36,9 +37,6 @@ class QuestionnaireAdmin(admin.ModelAdmin):
         question_graph_service = QuestionGraphService(q_graph=obj.graph)
         return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
                '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
-
-    mermaid_js.short_description = 'Visual representation (mermaid.js)'
-    mermaid_js.allow_tags = True
 
 
 class QuestionGraphAdmin(admin.ModelAdmin):
@@ -50,6 +48,7 @@ class QuestionGraphAdmin(admin.ModelAdmin):
     list_per_page = 20
 
     @mark_safe
+    @admin.display(description='Visual representation (mermaid.js)')
     def mermaid_js(self, obj):
         from signals.apps.questionnaires.services import QuestionGraphService
         from signals.apps.questionnaires.utils.mermaidx import mermaidx
@@ -57,8 +56,6 @@ class QuestionGraphAdmin(admin.ModelAdmin):
         question_graph_service = QuestionGraphService(q_graph=obj)
         return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
                '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
-    mermaid_js.short_description = 'Visual representation (mermaid.js)'
-    mermaid_js.allow_tags = True
 
 
 class QuestionAdmin(admin.ModelAdmin):
@@ -116,22 +113,22 @@ class SessionAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return obj and not obj.started_at
 
+    @admin.display(description='Questionnaire')
     def view_questionnaire_link(self, obj):
         url = reverse('admin:questionnaires_questionnaire_change', kwargs={'object_id': obj.questionnaire.pk})
         return format_html('<a href="{}">{}</a>', url, obj.questionnaire.name or obj.questionnaire.uuid)
-    view_questionnaire_link.short_description = "Questionnaire"
 
+    @admin.display(description='Signal')
     def view_signal_link(self, obj):
         if obj._signal:
             url = reverse('admin:signals_signal_change', kwargs={'object_id': obj._signal.pk})
             return format_html('<a href="{}">{}</a>', url, obj._signal.sia_id)
         else:
             return '-'
-    view_signal_link.short_description = "Signal"
 
-    def too_late(self, obj):
+    @admin.display(boolean=True)
+    def too_late(self, obj) -> bool:
         return obj.too_late
-    too_late.boolean = True
 
     def freeze(self, request, queryset):
         if not request.user.has_perm('questionnaires.change_session'):
