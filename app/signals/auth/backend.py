@@ -40,11 +40,11 @@ class JWTAuthBackend(BaseAuthentication):
             raise exceptions.AuthenticationFailed('User inactive')
         return user
 
-    """
-    Authenticate. Check if required scope is present and get user_email from JWT token.
-    use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
-    """
     def authenticate(self, request: Request) -> tuple[User, str]:
+        """
+        Authenticate. Check if required scope is present and get user_email from JWT token.
+        use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
+        """
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         _, user_id = JWTAccessToken.token_data(auth_header)
         if user_id == "ALWAYS_OK":
