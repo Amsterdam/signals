@@ -3,7 +3,6 @@
 import os
 from typing import Any, Callable
 
-from logs import get_configuration
 from signals import __version__
 
 BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +14,6 @@ SECRET_KEY: str | None = os.getenv('SECRET_KEY')
 
 # Debug Logging
 DEBUG: bool = os.getenv('DJANGO_DEBUG', False) in TRUE_VALUES
-LOG_QUERIES: bool = os.getenv('LOG_QUERIES', False) in TRUE_VALUES
 LOGGING_LEVEL: str = os.getenv('LOGGING_LEVEL', 'INFO')
 
 # localhost and 127.0.0.1 are allowed because the deployment process checks the health endpoint with a
@@ -70,8 +68,7 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-    'signals.apps.my_signals',
-    'logs'
+    'signals.apps.my_signals'
 ]
 
 INSTALLED_APPS: list[str] = [
@@ -517,4 +514,50 @@ FEATURE_FLAGS: dict[str, bool] = {
 }
 
 # Logging
-LOGGING = get_configuration(local_apps=SIGNAL_APPS, logging_level=LOGGING_LEVEL) # noqa
+LOGGING_HANDLERS = {
+    'console': {
+        'class': 'logging.StreamHandler',
+    },
+}
+LOGGER_HANDLERS = ['console', ]
+if AZURE_APPLICATION_INSIGHTS_ENABLED:
+    LOGGING_HANDLERS.update({
+        'azure': {
+            'class': 'opencensus.ext.azure.log_exporter.AzureLogHandler',
+            'connection_string': os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING'),
+        }
+    })
+    LOGGER_HANDLERS.append('azure')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'elaborate': {
+            'format': '{levelname} {module}.{filename} {message}',
+            'style': '{'
+        }
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': LOGGING_HANDLERS,
+    'loggers': {
+        'django': {
+            'level': LOGGING_LEVEL,
+            'handlers': LOGGER_HANDLERS,
+        },
+        'django.db.backends': {
+            'level': LOGGING_LEVEL,
+            'handlers': LOGGER_HANDLERS,
+            'filters': ['require_debug_true', ],
+            'propagate': False,
+        },
+        'django.utils.autoreload': {
+            'level': 'ERROR',
+            'propagate': False,
+        }
+    },
+}
