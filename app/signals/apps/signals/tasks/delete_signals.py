@@ -47,7 +47,7 @@ def delete_signals_in_state_for_x_days(state: str, days: int):
         delete_signal.delay(signal.id, batch_uuid)
 
 
-@app.task(prio=0)
+@app.task(priority=0)
 def delete_signal(signal_id: int, batch_uuid: uuid.UUID | None = None):  # noqa C901
     """
     Delete a signal and associated data.
