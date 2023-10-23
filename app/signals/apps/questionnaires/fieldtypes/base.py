@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
+from typing import Any
+
 import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
 from jsonschema.exceptions import SchemaError as js_schema_error
@@ -10,7 +12,8 @@ class FieldType:
     """All field types should subclass this, so that they become visible as a choice"""
 
     # Overwrite this class variable in subclasses, will default to the class name
-    verbose_name = None
+    verbose_name: str | None = None
+    submission_schema: dict[str, Any] = {}
 
     # _multiple_answers_schema contains the JSONSchema that will be used to validate if the given answer meets the min
     # and max items required.
@@ -27,7 +30,7 @@ class FieldType:
     #       "maxItems": 5
     #   }
     # }
-    _multiple_answers_schema = {
+    _multiple_answers_schema: dict[str, str | int | dict[str, Any]] = {
         'type': 'array',
         'items': {},  # Default value, will be overridden with the correct schema for the given field_type
         'minItems': 1,  # Default value
@@ -47,7 +50,8 @@ class FieldType:
         # from model.clean functions and services that underlie REST API calls.
         if self.multiple_answers_allowed:
             schema = self._multiple_answers_schema
-            schema['items'].update(self.submission_schema)
+            if isinstance(schema['items'], dict):
+                schema['items'].update(self.submission_schema)
             schema['minItems'] = self._min_items
             schema['maxItems'] = self._max_items
         else:

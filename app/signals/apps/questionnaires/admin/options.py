@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 
 # TODO: Make this available for the whole project
 
@@ -7,13 +7,11 @@ from functools import partial
 
 from django.contrib import admin
 from django.contrib.admin.checks import InlineModelAdminChecks
-from django.contrib.admin.options import flatten_fieldsets
-from django.contrib.admin.utils import NestedObjects
+from django.contrib.admin.utils import NestedObjects, flatten_fieldsets
 from django.core.exceptions import ValidationError
 from django.db import router
-from django.forms import ALL_FIELDS
 from django.forms.formsets import DELETION_FIELD_NAME
-from django.forms.models import modelform_defines_fields
+from django.forms.models import ALL_FIELDS, modelform_defines_fields
 from django.utils.text import get_text_list
 from django.utils.translation import gettext as _
 
