@@ -3,6 +3,7 @@
 factory-boy
 flake8
 freezegun
+celery-types
 django-stubs[compatible-mypy]
 djangorestframework-stubs[compatible-mypy]
 django-filter-stubs

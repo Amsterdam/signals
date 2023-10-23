@@ -67,6 +67,8 @@ celery==5.3.4
     #   django-celery-email
     #   django-celery-results
     #   flower
+celery-types==0.20.0
+    # via -r requirements/requirements_test.txt
 certifi==2023.7.22
     # via
     #   -r requirements/requirements_test.txt
@@ -688,6 +690,7 @@ typing-extensions==4.8.0
     #   -r requirements/requirements_test.txt
     #   azure-core
     #   azure-storage-blob
+    #   celery-types
     #   django-filter-stubs
     #   django-stubs
     #   django-stubs-ext
