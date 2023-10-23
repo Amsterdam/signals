@@ -90,7 +90,7 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
     serializer_class = PrivateSignalSerializerList
     serializer_detail_class = PrivateSignalSerializerDetail
 
-    authentication_classes = (JWTAuthBackend, )
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SignalCreateInitialPermission, )
     object_permission_classes = (SignalViewObjectPermission, )
 
