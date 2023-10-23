@@ -27,7 +27,7 @@ class PrivateDepartmentSerializerList(HALSerializer):
             'can_direct',
         )
 
-    def get_category_names(self, obj: Department) -> list[str, str]:
+    def get_category_names(self, obj: Department) -> list[str]:
         return list(obj.category_set.filter(is_active=True).values_list('name', flat=True))
 
 
