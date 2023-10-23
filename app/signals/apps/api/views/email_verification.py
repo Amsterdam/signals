@@ -25,6 +25,8 @@ class EmailVerificationView(APIView):
         reporter = serializer.reporter
         signal = reporter._signal
         old_reporter = signal.reporter
+        assert old_reporter is not None
+
         reporter.email_verified = True
         reporter.approve()
         reporter.save()
