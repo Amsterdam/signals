@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django.contrib.auth.models import AbstractUser
 from pytest_bdd import given, parsers, then, when
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from signals.apps.signals.factories import ReporterFactory
 from signals.apps.signals.models import Signal
-from signals.apps.users.models import User
 
 
 @given(parsers.parse('the signal has a reporter with phone number {phone},'
@@ -23,12 +23,12 @@ def create_reporter(
         phone: str,
         email: str,
         signal: Signal,
-        read_write_user: User,
+        read_write_user: AbstractUser,
         api_client: APIClient
 ) -> Response:
     api_client.force_authenticate(read_write_user)
 
-    data = {'sharing_allowed': True}
+    data: dict[str, bool | str] = {'sharing_allowed': True}
     if email != 'null':
         data['email'] = email
     if phone != 'null':
@@ -54,7 +54,7 @@ def verify_token(email: str, signal: Signal, api_client: APIClient) -> Response:
 
 @then(parsers.parse('the reporter of the signal should have phone number {phone}, '
                     'email address {email} and state {state}'))
-def then_signal_updated(phone: str, email: str, state: str, signal: Signal) -> None:
+def then_signal_updated(phone: str | None, email: str | None, state: str, signal: Signal) -> None:
     signal.refresh_from_db()
 
     if email == 'null':
@@ -62,6 +62,7 @@ def then_signal_updated(phone: str, email: str, state: str, signal: Signal) -> N
     if phone == 'null':
         phone = None
 
+    assert signal.reporter is not None
     assert signal.reporter.phone == phone
     assert signal.reporter.email == email
     assert signal.reporter.state == state
