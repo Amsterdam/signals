@@ -10,7 +10,7 @@ from signals.apps.signals.models import Reporter, Signal
     parsers.parse('there is a signal with reporter phone number {phone} and email address {email}'),
     target_fixture='signal',
 )
-def given_signal_reporter(phone: str, email: str) -> Signal:
+def given_signal_reporter(phone: str | None, email: str | None) -> Signal:
     if email == 'null':
         email = None
 
