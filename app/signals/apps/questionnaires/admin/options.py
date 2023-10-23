@@ -7,7 +7,7 @@ from functools import partial
 
 from django.contrib import admin
 from django.contrib.admin.checks import InlineModelAdminChecks
-from django.contrib.admin.utils import flatten_fieldsets, NestedObjects
+from django.contrib.admin.utils import NestedObjects, flatten_fieldsets
 from django.core.exceptions import ValidationError
 from django.db import router
 from django.forms.formsets import DELETION_FIELD_NAME
