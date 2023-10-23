@@ -94,8 +94,10 @@ class TestBackend(SignalsBaseApiTestCase):
             mock_token_data.return_value = claims, 'idonotexist'
             mock_cache.get.return_value = None
 
+            backend = JWTAuthBackend()
+
             with self.assertRaises(AuthenticationFailed) as cm:
-                JWTAuthBackend.authenticate(mock_request)
+                backend.authenticate(mock_request)
 
             e = cm.exception
             self.assertEqual(str(e), 'User {} is not authorized'.format('idonotexist'))

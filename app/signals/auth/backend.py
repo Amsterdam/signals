@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from rest_framework import exceptions
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.request import Request
 
 from .tokens import JWTAccessToken
 
@@ -11,12 +13,12 @@ USER_NOT_AUTHORIZED = "User {} is not authorized"
 USER_DOES_NOT_EXIST = -1
 
 
-class JWTAuthBackend():
+class JWTAuthBackend(BaseAuthentication):
     """
     Retrieve user from backend and cache the result
     """
-    @staticmethod  # noqa: C901
-    def get_user(user_id):
+    @staticmethod
+    def get_user(user_id: int) -> User:
         # Now we know we have a Amsterdam municipal employee (may or may not be allowed acceess)
         # or external user with access to the `signals` application, we retrieve the Django user.
         user = cache.get(user_id)
@@ -38,23 +40,21 @@ class JWTAuthBackend():
             raise exceptions.AuthenticationFailed('User inactive')
         return user
 
-    """
-    Authenticate. Check if required scope is present and get user_email from JWT token.
-    use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
-    """
-    @staticmethod  # noqa: C901
-    def authenticate(request):
+    def authenticate(self, request: Request) -> tuple[User, str]:
+        """
+        Authenticate. Check if required scope is present and get user_email from JWT token.
+        use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
+        """
         auth_header = request.META.get('HTTP_AUTHORIZATION')
-        claims, user_id = JWTAccessToken.token_data(auth_header)
+        _, user_id = JWTAccessToken.token_data(auth_header)
         if user_id == "ALWAYS_OK":
             user_id = settings.TEST_LOGIN
 
         auth_user = JWTAuthBackend.get_user(user_id)
-        # We return only when we have correct scope, and user is known to `signals`.
-        # TODO remove default empty scope
+
         return auth_user, ''
 
-    def authenticate_header(self, request):
+    def authenticate_header(self, request: Request) -> str:
         """
         Return a string to be used as the value of the `WWW-Authenticate`
         header in a `401 Unauthenticated` response, or `None` if the
