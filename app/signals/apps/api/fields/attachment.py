@@ -2,10 +2,12 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
+from django.db.models import Model
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.request import Request
 
+from signals.apps.api.generics.exceptions import UnsupportedModelTypeException
 from signals.apps.signals.models import Attachment
 
 
@@ -14,6 +16,7 @@ class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Attachment):
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('self',
@@ -41,6 +44,7 @@ class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
 class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value: Attachment) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('self', dict(href=self.reverse("private-signals-attachments-detail",
@@ -57,7 +61,10 @@ class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
     'example': 'https://api.example.com/signals/v1/private/signals/1/attachments/1'
 })
 class PrivateSignalAttachmentRelatedField(serializers.HyperlinkedRelatedField):
-    def get_url(self, obj: Attachment, view_name: str, request: Request, format: str) -> str:
+    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str:
+        if not isinstance(obj, Attachment):
+            raise UnsupportedModelTypeException('Only Attachment type models are supported!')
+
         return self.reverse("private-signals-attachments-detail",
                             kwargs={'parent_lookup__signal__pk': obj._signal_id, 'pk': obj.pk},
                             request=request)
