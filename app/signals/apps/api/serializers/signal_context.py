@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam
+import datetime
+
 from datapunt_api.rest import HALSerializer
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
@@ -104,13 +106,15 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             },
         },
     })
-    def get_feedback(self, obj) -> dict:
+    def get_feedback(self, obj) -> dict | None:
         """
-        Returns the lastest feedback object if it exists else None
+        Returns the latest feedback object if it exists else None
         """
         if obj.feedback.exists():
             latest_feedback = obj.feedback.first()
             return {'is_satisfied': latest_feedback.is_satisfied, 'submitted_at': latest_feedback.submitted_at, }
+
+        return None
 
     def get_can_view_signal(self, obj) -> bool:
         return Signal.objects.filter(pk=obj.pk).filter_for_user(self.context['request'].user).exists()
@@ -152,7 +156,7 @@ class SignalContextSerializer(HALSerializer):
             distance_from_point__lte=settings.SIGNAL_API_CONTEXT_GEOGRAPHY_RADIUS,
             category_assignment__category_id=obj.category_assignment.category.pk,
             created_at__gte=(
-                timezone.now() - timezone.timedelta(weeks=settings.SIGNAL_API_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
+                timezone.now() - datetime.timedelta(weeks=settings.SIGNAL_API_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
             ),
         ).exclude(pk=obj.pk)
 
@@ -192,7 +196,7 @@ class SignalContextSerializer(HALSerializer):
             },
         ],
     })
-    def get_reporter(self, obj) -> dict:
+    def get_reporter(self, obj) -> dict | None:
         if not obj.reporter.email:
             return None
 

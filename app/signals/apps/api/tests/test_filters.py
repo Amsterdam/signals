@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datetime import datetime, timedelta
 from random import shuffle
 
@@ -24,7 +24,7 @@ from signals.apps.signals.factories import (
     StatusFactory,
     TypeFactory
 )
-from signals.apps.signals.models import Priority, Signal, SignalDepartments
+from signals.apps.signals.models import Category, Priority, Signal, SignalDepartments
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from signals.test.utils import SignalsBaseApiTestCase
 
@@ -36,9 +36,9 @@ class TestFilters(SignalsBaseApiTestCase):
     SUBCATEGORY_CNT = 5
     LIST_ENDPOINT = '/signals/v1/private/signals/'
 
-    signals = []
-    sub_categories = []
-    states = []
+    signals: list[Signal] = []
+    sub_categories: list[Category] = []
+    states: list[str] = []
 
     @classmethod
     def _create_signals(cls):

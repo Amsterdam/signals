@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
 from django.db.models import signals
+from django.db.models.signals import post_delete, post_save
 from factory.django import mute_signals
 
 from signals.apps.signals.factories import CategoryFactory
@@ -894,7 +895,7 @@ class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
         self.assertEqual(403, response.status_code)
 
 
-@mute_signals('post_save', 'post_delete')
+@mute_signals(post_save, post_delete)
 class TestStatusMessageCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     PATH = '/signals/v1/private/status-messages/category'
 

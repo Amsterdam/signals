@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+from rest_framework.request import Request
 
 from signals.apps.signals.models import Signal
 
@@ -100,6 +101,7 @@ from signals.apps.signals.models import Signal
 class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse("signal-namespace", request=request))),
@@ -113,6 +115,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         ])
 
         if value.is_child:
+            assert value.parent is not None
             result.update({
                 'sia:parent':
                 dict(href=self.get_url(value.parent, "private-signals-detail", request, None))
@@ -146,6 +149,7 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
@@ -203,6 +207,7 @@ class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
@@ -221,6 +226,7 @@ class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
+        assert isinstance(request, Request)
 
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "public-signals-detail", request, None))),

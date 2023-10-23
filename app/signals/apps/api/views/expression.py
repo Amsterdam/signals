@@ -27,7 +27,7 @@ class PrivateExpressionViewSet(ModelViewSet):
     """
     private ViewSet to display/process expressions in the database
     """
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions & ModelWritePermissions,)
 
     queryset = Expression.objects.all()

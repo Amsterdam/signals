@@ -47,7 +47,7 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
 
         now = timezone.now()
         for i in range(1, 5):
-            with freeze_time(now + timedelta(hours=i)):
+            with freeze_time((now + timedelta(hours=i)).timestamp()):
                 ReporterFactory.create(_signal=signal)
 
         response = self.client.get(f'/signals/v1/private/signals/{signal.pk}/reporters/')

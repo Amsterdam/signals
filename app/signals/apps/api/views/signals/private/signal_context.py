@@ -31,7 +31,7 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     serializer_class = SignalContextSerializer
     serializer_detail_class = SignalContextSerializer
 
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
     permission_classes = (SIAPermissions,)
 
     def get_queryset(self, *args, **kwargs):

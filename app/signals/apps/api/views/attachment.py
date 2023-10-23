@@ -61,7 +61,7 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, GenericViewSet):
 class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
     queryset = Attachment.objects.all()
     serializer_class = PrivateSignalAttachmentSerializer
-    authentication_classes = (JWTAuthBackend,)
+    authentication_classes = [JWTAuthBackend]
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user

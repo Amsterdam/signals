@@ -20,6 +20,9 @@ class EmailVerificationSerializer(serializers.Serializer):
         if self.reporter.email_verified:
             raise serializers.ValidationError("Token already verified!")
 
+        if self.reporter.email_verification_token_expires is None:
+            raise serializers.ValidationError("Invalid token!")
+
         if self.reporter.email_verification_token_expires < timezone.now():
             raise serializers.ValidationError("Token expired!")
 

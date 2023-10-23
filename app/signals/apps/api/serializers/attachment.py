@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -20,7 +20,10 @@ from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD
 PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
 
 
-class SignalAttachmentSerializerMixin:
+class BaseSignalAttachmentSerializer(HALSerializer):
+    _display = DisplayField()
+    location = serializers.FileField(source='file', required=False, read_only=True)
+
     def create(self, validated_data: dict) -> Attachment:
         user = self.context['request'].user
         signal = self.context['view'].get_signal()
@@ -41,10 +44,8 @@ class SignalAttachmentSerializerMixin:
         return attachment
 
 
-class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):
+class PublicSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
     serializer_url_field = PublicSignalAttachmentLinksField
-    _display = DisplayField()
-    location = serializers.FileField(source='file', required=False, read_only=True)
 
     class Meta:
         model = Attachment
@@ -94,11 +95,9 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
         return attachment
 
 
-class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):
+class PrivateSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
     serializer_url_field = PrivateSignalAttachmentLinksField
 
-    _display = DisplayField()
-    location = serializers.FileField(source='file', required=False, read_only=True)
     public = serializers.BooleanField(required=False)
     caption = serializers.CharField(required=False)
 

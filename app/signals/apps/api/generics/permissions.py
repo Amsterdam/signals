@@ -5,12 +5,13 @@ from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
 from rest_framework.request import Request
 
+from signals.apps.api.generics.exceptions import UnsupportedViewException
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Reporter
 
 
 class SIABasePermission(BasePermission):
-    perms_map = {
+    perms_map: dict[str, list[str]] = {
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
@@ -142,6 +143,13 @@ class ReporterPermission(BasePermission):
         OR
         If the user has the permission to view the category of the Signal, they can view all reporters of that Signal.
         """
+        from signals.apps.api.views.signals.private.signal_reporters import (
+            PrivateSignalReporterViewSet
+        )
+
+        if not isinstance(view, PrivateSignalReporterViewSet):
+            raise UnsupportedViewException('Currently only PrivateSignalReporterViewSet is supported!')
+
         if not request.user.has_perm('signals.sia_can_view_contact_details'):
             return False
 
@@ -175,16 +183,9 @@ class ReporterPermission(BasePermission):
 
 
 class CanCreateI18NextTranslationFile(BasePermission):
-    def has_permission(self, request: Request, *args: set, **kwargs: dict) -> bool:
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check if the user has permission to create an I18Next translation file.
-
-        Args:
-            request (Request): The incoming request.
-            **kwargs (dict): Additional keyword arguments.
-
-        Returns:
-            bool: True if the user has permission, False otherwise.
         """
         # Allow access to root user or users with the specific permission
         return (

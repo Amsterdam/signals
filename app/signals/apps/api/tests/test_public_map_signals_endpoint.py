@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 
 from django.test import override_settings
@@ -12,8 +12,8 @@ from signals.test.utils import SignalsBaseApiTestCase
 THIS_DIR = os.path.dirname(__file__)
 
 
-class NameSpace():
-    pass
+class NameSpace:
+    urlpatterns: list[str]
 
 
 # we need to simulate a new route or unit test, urls.py is evaluated once, and cannot be unit tested with settings

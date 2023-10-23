@@ -195,12 +195,12 @@ class PublicSignalViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
             queryset = queryset.values('child_category_id').annotate(created_at=Min('created_at'))
 
         # Paginate our queryset and turn it into a GeoJSON feature collection:
-        headers = []
         feature_collection = {'type': 'FeatureCollection', 'features': []}
         paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage',
                                                      page_size=settings.SIGNALS_API_GEO_PAGINATE_BY)
         page_qs = paginator.paginate_queryset(queryset, self.request, view=self)
 
+        headers = {}
         if page_qs is not None:
             features = page_qs.aggregate(features=JSONAgg('feature'))
             feature_collection.update(features)

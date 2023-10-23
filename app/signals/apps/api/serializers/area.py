@@ -46,6 +46,8 @@ class AreaSerializer(HALSerializer):
         'example': [4.728764, 52.278987, 5.068003, 52.431229],
         'description': 'Bounding box as [min_x, min_y, max_x, max_y]',
     })
-    def get_bbox(self, obj: Area) -> tuple[float, float, float, float]:
+    def get_bbox(self, obj: Area) -> tuple[float, float, float, float] | None:
         if obj.geometry:
             return obj.geometry.extent
+
+        return None

@@ -13,3 +13,11 @@ class GatewayTimeoutException(APIException):
 class NotImplementedException(APIException):
     status_code = HTTP_501_NOT_IMPLEMENTED
     default_detail = _('Not implemented.')
+
+
+class UnsupportedViewException(Exception):
+    """Raised when view is not supported."""
+
+
+class UnsupportedModelTypeException(Exception):
+    """Raised when type of model is not supported."""

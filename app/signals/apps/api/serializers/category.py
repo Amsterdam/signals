@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
+from rest_framework.utils.serializer_helpers import ReturnDict
 
 from signals.apps.api.fields import (
     CategoryHyperlinkedIdentityField,
@@ -134,7 +135,7 @@ class PrivateCategorySerializer(HALSerializer):
             'slug',
         )
 
-    def get_sla(self, obj: Category) -> PrivateCategorySLASerializer:
+    def get_sla(self, obj: Category) -> ReturnDict:
         return PrivateCategorySLASerializer(obj.slo.first()).data
 
     def update(self, instance, validated_data):
