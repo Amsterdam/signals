@@ -181,16 +181,9 @@ class ReporterPermission(BasePermission):
 
 
 class CanCreateI18NextTranslationFile(BasePermission):
-    def has_permission(self, request: Request, *args: set, **kwargs: dict) -> bool:
+    def has_permission(self, request: Request, view: View) -> bool:
         """
         Check if the user has permission to create an I18Next translation file.
-
-        Args:
-            request (Request): The incoming request.
-            **kwargs (dict): Additional keyword arguments.
-
-        Returns:
-            bool: True if the user has permission, False otherwise.
         """
         # Allow access to root user or users with the specific permission
         return (
