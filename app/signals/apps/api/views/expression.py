@@ -60,9 +60,9 @@ class PrivateExpressionViewSet(ModelViewSet):
     @action(detail=False, url_path='validate')
     def validate(self, request: Request) -> Response:
         """Validate expression for a certain expression type"""
-        exp_type = request.query_params.get('type', False)
-        exp = request.query_params.get('expression', False)
-        if not exp or not exp_type:
+        exp_type: str | None = request.query_params.get('type')
+        exp: str | None = request.query_params.get('expression')
+        if exp is None or exp_type is None:
             raise ValidationError({'result': 'type and expression required'})
 
         # populate context based on exp_type
