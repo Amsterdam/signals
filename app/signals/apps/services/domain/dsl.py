@@ -1,28 +1,29 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import time
 
 from django.utils import timezone
 
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
+from signals.apps.dsl.evaluators.evaluator import Evaluator
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
 
 
 class DslService:
     compiler = ExpressionEvaluator()
-    _code_cache = {}
+    _code_cache: dict[str, Evaluator] = {}
 
-    def _compile(self, code):
+    def _compile(self, code: str) -> Evaluator:
         if code not in self._code_cache:
             self._code_cache[code] = self.compiler.compile(code)
         return self._code_cache[code]
 
-    def evaluate(self, context, code):
+    def evaluate(self, context, code: str):
         evaluator = self._compile(code)
         return evaluator.evaluate(context)
 
-    def validate(self, context, code):
+    def validate(self, context, code: str) -> str | None:
         try:
             self.evaluate(context, code)
             return None
