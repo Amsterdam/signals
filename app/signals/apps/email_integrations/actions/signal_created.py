@@ -61,7 +61,7 @@ class SignalCreatedAction(AbstractSignalStatusAction):
                 context[extra_property['label']].append(self._get_answer_from_extra_property(extra_property['answer']))
         return context
 
-    def _get_answer_from_extra_property(self, extra_property: typing.Union[str, dict]) -> str | dict[str, typing.Any]: # noqa C901
+    def _get_answer_from_extra_property(self, extra_property: str | dict) -> str | dict[str, typing.Any]: # noqa C901
         """
         Returns the first option that is available in the extra property and not empty as the answer.
         Defaults to '-' if no option is available.
