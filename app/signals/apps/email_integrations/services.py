@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
-from typing import Union
-
 from signals.apps.email_integrations.actions import (
     AssignedAction,
     FeedbackReceivedAction,
@@ -45,12 +43,14 @@ class MailService:
     }
 
     @classmethod
-    def status_mail(cls, signal: Union[int, Signal], dry_run: bool = False) -> bool:
+    def status_mail(cls, signal: int | Signal, dry_run: bool = False) -> bool:
         """
         Send a mail based on the update status from a signal
         """
         if not isinstance(signal, Signal):
             signal = Signal.objects.select_related('status').get(pk=signal)
+
+        assert isinstance(signal, Signal)
 
         for action in cls._status_actions:
             if action(signal, dry_run=dry_run):
@@ -59,7 +59,7 @@ class MailService:
         return False
 
     @classmethod
-    def system_mail(cls, signal: Union[int, Signal], action_name: str, dry_run: bool = False, **kwargs) -> bool:
+    def system_mail(cls, signal: int | Signal, action_name: str, dry_run: bool = False, **kwargs) -> bool:
         """
         Send a specific mail trigger based on the trigger name
         """
