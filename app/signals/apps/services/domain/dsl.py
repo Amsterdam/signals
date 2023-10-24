@@ -4,8 +4,8 @@ import time
 
 from django.utils import timezone
 
-from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 from signals.apps.dsl.evaluators.evaluator import Evaluator
+from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
 
