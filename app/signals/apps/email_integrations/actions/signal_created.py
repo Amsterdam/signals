@@ -21,7 +21,7 @@ class SignalCreatedAction(AbstractSignalStatusAction):
     def get_additional_context(self, signal: Signal, dry_run: bool = False) -> dict:
         assert signal.category_assignment is not None
 
-        context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
+        context: dict[str, typing.Any] = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
         if signal.reporter:
             if signal.reporter.phone:
@@ -51,7 +51,7 @@ class SignalCreatedAction(AbstractSignalStatusAction):
         if not extra_properties:
             return {}
 
-        context = {}
+        context: dict[str, typing.Any] = {}
         for extra_property in extra_properties:
             context[extra_property['label']] = []
             if isinstance(extra_property['answer'], (list, tuple)):
@@ -61,7 +61,7 @@ class SignalCreatedAction(AbstractSignalStatusAction):
                 context[extra_property['label']].append(self._get_answer_from_extra_property(extra_property['answer']))
         return context
 
-    def _get_answer_from_extra_property(self, extra_property: typing.Union[str, dict]) -> str: # noqa C901
+    def _get_answer_from_extra_property(self, extra_property: typing.Union[str, dict]) -> str | dict[str, typing.Any]: # noqa C901
         """
         Returns the first option that is available in the extra property and not empty as the answer.
         Defaults to '-' if no option is available.

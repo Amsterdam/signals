@@ -52,6 +52,8 @@ class MailService:
         if not isinstance(signal, Signal):
             signal = Signal.objects.select_related('status').get(pk=signal)
 
+        assert isinstance(signal, Signal)
+
         for action in cls._status_actions:
             if action(signal, dry_run=dry_run):
                 return True
