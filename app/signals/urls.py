@@ -3,9 +3,9 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from signals.admin.oidc import views as admin_oidc_views
 from signals.apps.api.generics.routers import BaseSignalsAPIRootView
 
 # Remove "view website" button in the Django admin
@@ -35,7 +35,7 @@ if settings.DEBUG:
 
 if settings.OIDC_RP_CLIENT_ID:
     urlpatterns += [
-        path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
+        path('signals/oidc/login_failure/', TemplateView.as_view(template_name='admin/oidc/login_failure.html')),
         path('signals/oidc/', include('mozilla_django_oidc.urls')),
     ]
 

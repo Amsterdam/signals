@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Delta10 B.V.
+# Copyright (C) 2022 - 2023 Delta10 B.V., Gemeente Amsterdam
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 
@@ -13,6 +13,3 @@ class AuthenticationBackend(OIDCAuthenticationBackend):
 
     def create_user(self, claims):
         return None  # do not create users when they do not exist in the database
-
-    def update_user(self, user, claims):
-        return user  # do not update any attributes in the database based on claims
