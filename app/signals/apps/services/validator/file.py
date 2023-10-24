@@ -46,6 +46,7 @@ class MimeTypeIntegrityValidator:
             raise ValidationError('Failed to resolve mime type from file content!')
 
         try:
+            assert value.name is not None
             resolve_mime_from_filename = self.mimetype_from_filename_resolver_factory(value.name)
             mime_from_filename = resolve_mime_from_filename()
         except MimeTypeResolvingError:
