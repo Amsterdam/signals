@@ -53,6 +53,10 @@ class SignalContext:
 
         t = timezone.make_naive(signal.incident_date_start).strftime("%H:%M:%S")
 
+        assert signal.category_assignment is not None
+        assert signal.category_assignment.category is not None
+        assert signal.category_assignment.category.parent is not None
+        assert signal.location is not None
         tmp = {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
@@ -84,7 +88,7 @@ class SignalContext:
 
 class SignalDslService(DslService):
     context_func = SignalContext()
-    signal_manager = SignalManager()
+    signal_manager: SignalManager = SignalManager()
 
     def process_routing_rules(self, signal):  # noqa C901
         ctx = self.context_func(signal)
