@@ -359,7 +359,11 @@ mypy-baseline==0.6.0
 mypy-extensions==1.0.0
     # via mypy
 networkx==3.2
-    # via -r requirements/requirements.txt
+    # via
+    #   -r requirements/requirements.txt
+    #   networkx-stubs
+networkx-stubs==0.0.1
+    # via -r requirements/requirements_test.in
 o365==2.0.31
     # via
     #   -r requirements/requirements.txt
