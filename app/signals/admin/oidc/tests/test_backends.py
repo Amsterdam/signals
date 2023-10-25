@@ -29,17 +29,3 @@ class BackendsTest(TestCase):
             users_from_backend = backend.filter_users_by_claims(claims)
 
             self.assertEqual(users_from_backend.count(), 0)
-
-    def test_create_user(self):
-        backend = AuthenticationBackend()
-        result = backend.create_user({})
-
-        self.assertEqual(result, None)
-
-    def test_update_user(self):
-        user = UserFactory.create()
-
-        backend = AuthenticationBackend()
-        result = backend.update_user(user, {})
-
-        self.assertEqual(result, user)

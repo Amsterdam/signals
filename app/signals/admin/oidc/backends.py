@@ -10,6 +10,3 @@ class AuthenticationBackend(OIDCAuthenticationBackend):
             return self.UserModel.objects.none()
 
         return self.UserModel.objects.filter(username__iexact=email)
-
-    def create_user(self, claims):
-        return None  # do not create users when they do not exist in the database
