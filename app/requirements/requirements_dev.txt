@@ -46,7 +46,7 @@ billiard==4.1.0
     # via
     #   -r requirements/requirements_test.txt
     #   celery
-cachetools==5.3.1
+cachetools==5.3.2
     # via
     #   -r requirements/requirements_test.txt
     #   google-auth
@@ -119,7 +119,7 @@ cron-descriptor==1.4.0
     # via
     #   -r requirements/requirements_test.txt
     #   django-celery-beat
-cryptography==41.0.4
+cryptography==41.0.5
     # via
     #   -r requirements/requirements_test.txt
     #   azure-identity
@@ -135,8 +135,6 @@ cssselect2==0.7.0
     #   -r requirements/requirements_test.txt
     #   cairosvg
     #   weasyprint
-datapunt-authorization-django==1.3.3
-    # via -r requirements/requirements_test.txt
 defusedxml==0.7.1
     # via
     #   -r requirements/requirements_test.txt
@@ -153,7 +151,6 @@ distlib==0.3.7
 django==3.2.22
     # via
     #   -r requirements/requirements_test.txt
-    #   datapunt-authorization-django
     #   django-appconf
     #   django-celery-beat
     #   django-celery-email
@@ -203,7 +200,7 @@ django-silk==5.0.4
     # via -r requirements/requirements_test.txt
 django-storages==1.14.2
     # via -r requirements/requirements_test.txt
-django-stubs[compatible-mypy]==4.2.5
+django-stubs[compatible-mypy]==4.2.6
     # via
     #   -r requirements/requirements_test.txt
     #   django-filter-stubs
@@ -224,7 +221,7 @@ djangorestframework==3.14.0
     #   drf-amsterdam
     #   drf-extensions
     #   drf-spectacular
-djangorestframework-csv==2.1.1
+djangorestframework-csv==3.0.1
     # via
     #   -r requirements/requirements_test.txt
     #   drf-amsterdam
@@ -264,7 +261,7 @@ factory-boy==3.3.0
     # via
     #   -r requirements/requirements_test.txt
     #   types-factory-boy
-faker==19.11.0
+faker==19.12.0
     # via
     #   -r requirements/requirements_test.txt
     #   factory-boy
@@ -334,9 +331,7 @@ jsonschema-specifications==2023.7.1
     #   -r requirements/requirements_test.txt
     #   jsonschema
 jwcrypto==1.5.0
-    # via
-    #   -r requirements/requirements_test.txt
-    #   datapunt-authorization-django
+    # via -r requirements/requirements_test.txt
 kombu==5.3.2
     # via
     #   -r requirements/requirements_test.txt
@@ -518,7 +513,7 @@ pyproject-api==1.6.1
     # via
     #   -r requirements/requirements_test.txt
     #   tox
-pytest==7.4.2
+pytest==7.4.3
     # via
     #   -r requirements/requirements_test.txt
     #   pytest-bdd
@@ -578,7 +573,6 @@ requests==2.31.0
     # via
     #   -r requirements/requirements_test.txt
     #   azure-core
-    #   datapunt-authorization-django
     #   djangorestframework-stubs
     #   google-api-core
     #   mozilla-django-oidc
@@ -607,7 +601,6 @@ six==1.16.0
     # via
     #   -r requirements/requirements_test.txt
     #   azure-core
-    #   djangorestframework-csv
     #   elasticsearch-dsl
     #   html5lib
     #   isodate
@@ -712,10 +705,6 @@ tzlocal==4.3.1
     # via
     #   -r requirements/requirements_test.txt
     #   o365
-unicodecsv==0.14.1
-    # via
-    #   -r requirements/requirements_test.txt
-    #   djangorestframework-csv
 uritemplate==4.1.1
     # via
     #   -r requirements/requirements_test.txt
@@ -733,7 +722,7 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.24.5
+virtualenv==20.24.6
     # via
     #   -r requirements/requirements_test.txt
     #   tox

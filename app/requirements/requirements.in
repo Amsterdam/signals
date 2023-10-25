@@ -1,7 +1,6 @@
 azure-storage-blob
 beautifulsoup4
 Celery
-datapunt-authorization-django
 Django>=3.2,<4
 django-celery-beat
 django-celery-email
@@ -22,6 +21,7 @@ drf-spectacular[sidecar]
 elasticsearch-dsl>=7.0.0,<8.0.0
 flower
 jsonschema
+jwcrypto
 lxml
 mozilla-django-oidc
 networkx
