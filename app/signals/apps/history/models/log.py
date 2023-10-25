@@ -67,8 +67,6 @@ class Log(models.Model):
         """
         Present for backwards compatibility
         """
-        assert self.object
-
         content_type_translations = {
             'category assignment': 'category_assignment',
             'service level objective': 'sla',
@@ -79,10 +77,13 @@ class Log(models.Model):
         if content_type_name in content_type_translations:
             return content_type_translations[content_type_name]
         elif content_type_name == 'signal departments':
+            assert self.object
+
             if self.object.relation_type == SignalDepartments.REL_ROUTING:
                 content_type_name = 'routing_assignment'
             elif self.object.relation_type == SignalDepartments.REL_DIRECTING:
                 content_type_name = 'directing_departments_assignment'
+
         return content_type_name
 
     @staticmethod
@@ -142,8 +143,7 @@ class Log(models.Model):
         "get_action" copied from History
         Present for backwards compatibility
         """
-        assert self.object
-
+        action = 'Actie onbekend.'
         what = self.what
         if what == 'UPDATE_STATUS':
             _status_choice = 'Onbekend'
@@ -180,38 +180,39 @@ class Log(models.Model):
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
-        elif (what == 'RECEIVE_SESSION'
-              and self.object.questionnaire
-              and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
-            action = 'Toelichting ontvangen'
-        elif (what == 'NOT_RECEIVED_SESSION'
-              and self.object.questionnaire
-              and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL):
-            action = 'Geen toelichting ontvangen'
+        elif what == 'RECEIVE_SESSION':
+            assert self.object
+            assert self.object.questionnaire
+
+            if self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+                action = 'Toelichting ontvangen'
+        elif what == 'NOT_RECEIVED_SESSION':
+            assert self.object
+            assert self.object.questionnaire
+
+            if self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+                action = 'Geen toelichting ontvangen'
         elif what == 'UPDATE_REPORTER':
             action = 'Contactgegevens melder:'
-        else:
-            action = 'Actie onbekend.'
+
         return action
 
-    def get_description(self) -> str:
+    def get_description(self) -> str | None:
         """
         "get_description" copied from History
         Present for backwards compatibility
         """
-        assert self.object
-
+        description = self.description
         what = self.what
-        if what == 'UPDATE_LOCATION':
-            description = self.object.get_description()
-        elif what == 'RECEIVE_FEEDBACK':
+        if what == 'UPDATE_LOCATION' or what == 'RECEIVE_FEEDBACK':
+            assert self.object
+
             description = self.object.get_description()
         elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
         elif what == 'UPDATE_SLA' and self.description is None:
             description = 'Servicebelofte onbekend'
-        else:
-            description = self.description
+
         return description
 
     # END - Backwards compatibility functions
