@@ -1,0 +1,16 @@
+from _typeshed import Incomplete
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend as OIDCAuthenticationBackend
+from mozilla_django_oidc.utils import import_from_settings as import_from_settings, parse_www_authenticate_header as parse_www_authenticate_header
+from rest_framework import authentication
+
+LOGGER: Incomplete
+
+def get_oidc_backend(): ...
+
+class OIDCAuthentication(authentication.BaseAuthentication):
+    www_authenticate_realm: str
+    backend: Incomplete
+    def __init__(self, backend: Incomplete | None = ...) -> None: ...
+    def authenticate(self, request): ...
+    def get_access_token(self, request): ...
+    def authenticate_header(self, request): ...
