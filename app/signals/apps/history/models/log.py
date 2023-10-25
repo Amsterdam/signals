@@ -197,7 +197,7 @@ class Log(models.Model):
 
         return action
 
-    def get_description(self) -> str:
+    def get_description(self) -> str | None:
         """
         "get_description" copied from History
         Present for backwards compatibility
