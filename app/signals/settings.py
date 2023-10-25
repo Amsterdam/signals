@@ -165,6 +165,7 @@ OIDC_OP_USER_ENDPOINT: str | None = os.getenv('OIDC_OP_USER_ENDPOINT')
 OIDC_OP_JWKS_ENDPOINT: str | None = os.getenv('OIDC_OP_JWKS_ENDPOINT')
 if OIDC_OP_JWKS_ENDPOINT is not None:
     OIDC_RP_SIGN_ALGO: str = 'RS256'
+OIDC_CREATE_USER = False
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
