@@ -3,6 +3,7 @@
 import os
 
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from signals.apps.signals.factories import (
     CategoryFactory,
@@ -11,7 +12,14 @@ from signals.apps.signals.factories import (
     SignalFactory
 )
 from signals.apps.signals.models import Attachment, Note
+from signals.apps.users.factories import UserFactory
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+
+small_gif = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+    b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+    b'\x02\x4c\x01\x00\x3b'
+)
 
 
 class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -400,3 +408,88 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         n = Note.objects.filter(_signal=self.signal).first()
         self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
+
+    def test_add_attachment(self):
+        user = UserFactory.create()
+        user.user_permissions.add(
+            *Permission.objects.filter(codename__in=[
+                'sia_read',
+                'sia_write',
+                'sia_add_attachment',
+                'sia_can_view_all_categories'
+            ])
+        )
+
+        self.client.force_authenticate(user=user)
+        response = self.client.post(
+            f'/signals/v1/private/signals/{self.signal.id}/attachments/',
+            data={
+                'file': SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+            }
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_attachment_incorrect_permissions(self):
+        user = UserFactory.create()
+        user.user_permissions.add(
+            *Permission.objects.filter(codename__in=[
+                'sia_read',
+                'sia_write',
+                'sia_can_view_all_categories'
+            ])
+        )
+
+        self.client.force_authenticate(user=user)
+        response = self.client.post(
+            f'/signals/v1/private/signals/{self.signal.id}/attachments/',
+            data={
+                'file': SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+            }
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_change_attachment(self):
+        user = UserFactory.create()
+        user.user_permissions.add(
+            *Permission.objects.filter(codename__in=[
+                'sia_read',
+                'sia_write',
+                'sia_change_attachment',
+                'sia_can_view_all_categories'
+            ])
+        )
+
+        self.client.force_authenticate(user=user)
+        response = self.client.patch(
+            f'/signals/v1/private/signals/{self.signal.id}/attachments/{self.attachment.id}',
+            data={
+                'public': True,
+                'caption': 'test'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_change_attachment_incorrect_permissions(self):
+        user = UserFactory.create()
+        user.user_permissions.add(
+            *Permission.objects.filter(codename__in=[
+                'sia_read',
+                'sia_write',
+                'sia_can_view_all_categories'])
+        )
+
+        self.client.force_authenticate(user=user)
+        response = self.client.patch(
+            f'/signals/v1/private/signals/{self.signal.id}/attachments/{self.attachment.id}',
+            data={
+                'public': True,
+                'caption': 'test'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 403)

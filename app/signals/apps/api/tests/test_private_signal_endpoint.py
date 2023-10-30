@@ -134,7 +134,11 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals_{pk}_history.json')  # noqa
         )
 
-        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.sia_read_write_user.user_permissions.add(
+            *Permission.objects.filter(codename__in=['sia_can_view_all_categories',
+                                                     'sia_add_attachment',
+                                                     'sia_change_attachment'])
+        )
         self.client.force_authenticate(user=self.sia_read_write_user)
 
     # -- Read tests --
@@ -1723,7 +1727,11 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
             self.create_initial_data = json.load(f)
         self.create_initial_data['source'] = 'valid-source'
 
-        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.sia_read_write_user.user_permissions.add(
+            *Permission.objects.filter(codename__in=['sia_can_view_all_categories',
+                                                     'sia_add_attachment',
+                                                     'sia_change_attachment'])
+        )
         self.client.force_authenticate(user=self.sia_read_write_user)
 
     def test_image_upload(self):
