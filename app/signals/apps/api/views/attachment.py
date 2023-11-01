@@ -15,6 +15,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+from signals.apps.api.generics.permissions import SIAAttachmentPermissions
 from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
@@ -62,6 +63,7 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
     queryset = Attachment.objects.all()
     serializer_class = PrivateSignalAttachmentSerializer
     authentication_classes = [JWTAuthBackend]
+    permission_classes = [SIAAttachmentPermissions]
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user

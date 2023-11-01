@@ -71,6 +71,8 @@ class Attachment(CreatedUpdatedModel):
             models.Index(fields=['_signal', 'is_image']),
         ]
         permissions = [
+            ('sia_add_attachment', 'Kan bijlage aan een melding toevoegen.'),
+            ('sia_change_attachment', 'Kan gegevens van een bijlage bewerken.'),
             ('sia_delete_attachment_of_normal_signal', 'Kan bijlage bij standaard melding verwijderen.'),
             ('sia_delete_attachment_of_parent_signal', 'Kan bijlage bij hoofdmelding verwijderen.'),
             ('sia_delete_attachment_of_child_signal',  'Kan bijlage bij deelmelding verwijderen.'),

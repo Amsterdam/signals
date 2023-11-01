@@ -192,3 +192,31 @@ class CanCreateI18NextTranslationFile(BasePermission):
                 request.user.is_superuser or
                 request.user.has_perm('signals.sia_add_i18next_translation_file')
         )
+
+
+class SIAAttachmentPermissions(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+
+        match request.method.upper():
+            case 'POST':
+                _permissions = [
+                    'signals.sia_write',
+                    'signals.sia_add_attachment',
+                ]
+                _has_permission = SignalPermissionService.has_permissions(request.user, permissions=_permissions)
+            case 'PUT' | 'PATCH':
+                _permissions = [
+                    'signals.sia_write',
+                    'signals.sia_change_attachment',
+                ]
+                _has_permission = SignalPermissionService.has_permissions(request.user, permissions=_permissions)
+            case _:
+                # Allow GET, HEAD and OPTIONS.
+                #
+                # TODO: Refactor DELETE permission checks. Currently these checks are handled in the
+                #       PrivateSignalAttachmentsViewSet.
+                _has_permission = True
+
+        return _has_permission
