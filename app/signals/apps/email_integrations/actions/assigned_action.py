@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 - 2023 Gemeente Amsterdam, Delta10 B.V.
 import logging
-from email.utils import formataddr
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -50,9 +49,7 @@ class AssignedAction(AbstractSystemAction):
         """
         assert self.kwargs is not None
 
-        return [
-            formataddr((self.kwargs['recipient'].get_full_name(), self.kwargs['recipient'].email))
-        ]
+        return [self.kwargs['recipient'].email]
 
     def render_mail_data(self, context: dict) -> tuple[str, str, str]:
         """
