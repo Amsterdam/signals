@@ -395,6 +395,7 @@ SEARCH: dict[str, int | dict[str, str]] = {
         'INDEX': os.getenv('ELASTICSEARCH_INDEX', 'signals'),
         'STATUS_MESSAGE_INDEX': os.getenv('ELASTICSEARCH_STATUS_MESSAGE_INDEX', 'status_messages'),
     },
+    'TIMEOUT': int(os.getenv('ELASTICSEARCH_TIMEOUT', 10)),
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE: str = 'sia-stadsdeel'
