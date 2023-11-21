@@ -14,7 +14,7 @@ def _get_permissions_queryset() -> QuerySet[Permission]:
 
 
 class RoleSerializer(HALSerializer):
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     permissions = PermissionSerializer(many=True, required=False, read_only=True)
     permission_ids = serializers.PrimaryKeyRelatedField(
         many=True, required=False, read_only=False, write_only=True,

@@ -23,7 +23,7 @@ def _get_groups_queryset() -> QuerySet[Group]:
 
 
 class UserListHALSerializer(WriteOnceMixin, HALSerializer):
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     roles = serializers.SerializerMethodField()
     role_ids = serializers.PrimaryKeyRelatedField(
         many=True, required=False, read_only=False, write_only=True,
@@ -57,7 +57,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
 
 class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
     serializer_url_field = UserHyperlinkedIdentityField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     roles = RoleSerializer(source='groups', many=True, read_only=True)
     role_ids = serializers.PrimaryKeyRelatedField(
         many=True, required=False, read_only=False, write_only=True,
