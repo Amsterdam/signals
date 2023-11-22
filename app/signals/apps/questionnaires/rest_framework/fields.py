@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
+from typing import Mapping, Any
 
 from datapunt_api.serializers import LinksField
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers
+from django.db.models import Model
 from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.models import Questionnaire, Session, Answer
-from signals.apps.questionnaires.rest_framework.mixins import LinksFieldMixin
+from signals.apps.questionnaires.models import Questionnaire, Session, Answer, Question
 
 
 class UUIDRelatedField(RelatedField):
@@ -39,7 +39,23 @@ class EmptyHyperlinkedIdentityField(LinksField):
         return OrderedDict()
 
 
-class QuestionnairePublicLinksField(LinksFieldMixin, LinksField):
+class BaseQuestionnaireLinksField(LinksField):
+    def _get_url(self, obj: Model, view_name: str) -> str | None:
+        request = self.context.get('request')
+        namespace = request.resolver_match.namespace if request else None
+        if namespace:
+            view_name = f'{namespace}:{view_name}'
+        return super().get_url(obj=obj, view_name=view_name, request=request, format=self.context.get('format'))
+
+    def _reverse(self, view_name: str, kwargs: Mapping[str, Any]) -> str:
+        request = self.context.get('request')
+        namespace = request.resolver_match.namespace if request else None
+        if namespace:
+            view_name = f'{namespace}:{view_name}'
+        return reverse(view_name, kwargs=kwargs, request=request, format=self.context.get('format'))
+
+
+class QuestionnairePublicLinksField(BaseQuestionnaireLinksField):
     lookup_field = 'uuid'
 
     def to_representation(self, value: Questionnaire) -> OrderedDict:
@@ -53,20 +69,27 @@ class QuestionnairePublicLinksField(LinksFieldMixin, LinksField):
         ])
 
 
-class QuestionHyperlinkedIdentityField(LinksFieldMixin, serializers.HyperlinkedIdentityField):
+class QuestionHyperlinkedIdentityField(BaseQuestionnaireLinksField):
     lookup_field = 'retrieval_key'
 
-    def to_representation(self, value):
+    def to_representation(self, value: Question) -> OrderedDict:
         return OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
-            ('self', dict(href=self._get_url(value, 'public-question-detail'))),
-            ('sia:uuid-self', dict(href=self._reverse('public-question-detail', kwargs={'retrieval_key': value.uuid}))),
-            ('sia:post-answer', dict(href=self._reverse('public-question-answer',
-                                                        kwargs={'retrieval_key': value.retrieval_key or value.uuid}))),
+            ('curies', {
+                'name': 'sia',
+                'href': reverse('signal-namespace', request=self.context.get('request'))
+            }),
+            ('self', {'href': self._get_url(value, 'public-question-detail')}),
+            ('sia:uuid-self', {'href': self._reverse('public-question-detail', kwargs={'retrieval_key': value.uuid})}),
+            ('sia:post-answer', {
+                'href': self._reverse(
+                    'public-question-answer',
+                    kwargs={'retrieval_key': value.retrieval_key or value.uuid}
+                )
+            }),
         ])
 
 
-class SessionPublicLinksField(LinksFieldMixin, LinksField):
+class SessionPublicLinksField(BaseQuestionnaireLinksField):
     lookup_field = 'uuid'
 
     def to_representation(self, value: Session) -> OrderedDict:
