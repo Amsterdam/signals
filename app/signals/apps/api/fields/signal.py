@@ -208,19 +208,20 @@ class PrivateSignalLinksField(LinksField):
         },
     }
 })
-class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
-
+class PrivateSignalWithContextLinksField(LinksField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(href=self.get_url(value, 'private-signal-context', request, None))),
-            ('sia:context-reporter-detail', dict(href=self.get_url(
-                value, 'private-signal-context-reporter', request, None))),
-            ('sia:context-geography-detail', dict(href=self.get_url(
-                value, 'private-signal-context-near-geography', request, None))),
+            ('curies', {'name': 'sia', 'href': reverse('signal-namespace', request=request)}),
+            ('self', {'href': self.get_url(value, 'private-signal-context', request, None)}),
+            ('sia:context-reporter-detail', {
+                'href': self.get_url(value, 'private-signal-context-reporter', request, None)
+            }),
+            ('sia:context-geography-detail', {
+                'href': self.get_url(value, 'private-signal-context-near-geography', request, None)
+            }),
         ])
 
         return result
