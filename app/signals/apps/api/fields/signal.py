@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
 
+from datapunt_api.serializers import LinksField
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.request import Request
@@ -145,14 +146,13 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         }
     }
 })
-class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
-
+class PrivateSignalLinksField(LinksField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
+            ('self', {'href': self.get_url(value, "private-signals-detail", request, None)}),
         ])
 
         return result
