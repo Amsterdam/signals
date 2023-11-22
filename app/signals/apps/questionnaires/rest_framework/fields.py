@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
 
+from datapunt_api.serializers import LinksField
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.relations import RelatedField
+from rest_framework.reverse import reverse
 
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.rest_framework.mixins import HyperlinkedRelatedFieldMixin
 
 
@@ -36,14 +39,17 @@ class EmptyHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         return OrderedDict()
 
 
-class QuestionnairePublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
+class QuestionnairePublicLinksField(HyperlinkedRelatedFieldMixin, LinksField):
     lookup_field = 'uuid'
 
-    def to_representation(self, value):
+    def to_representation(self, value: Questionnaire) -> OrderedDict:
         return OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
-            ('self', dict(href=self._get_url(value, 'public-questionnaire-detail'))),
-            ('sia:create-session', dict(href=self._get_url(value, 'public-questionnaire-create-session'))),
+            ('curies', {
+                'name': 'sia',
+                'href': reverse('signal-namespace', request=self.context.get('request'))
+            }),
+            ('self', {'href': self._get_url(value, 'public-questionnaire-detail')}),
+            ('sia:create-session', {'href': self._get_url(value, 'public-questionnaire-create-session')}),
         ])
 
 
