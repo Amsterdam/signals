@@ -11,7 +11,7 @@ from signals.apps.signals.models import Category, CategoryDepartment, Department
 
 
 class PrivateDepartmentSerializerList(HALSerializer):
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     category_names = serializers.SerializerMethodField()
 
     class Meta:
@@ -40,7 +40,7 @@ class TemporaryCategoryHALSerializer(HALSerializer):
     TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
     """
     serializer_url_field = CategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     departments = serializers.SerializerMethodField()
 
     class Meta:
@@ -118,7 +118,7 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
 
 
 class PrivateDepartmentSerializerDetail(HALSerializer):
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     categories = CategoryDepartmentSerializer(source='active_categorydepartment_set', many=True, required=False)
 

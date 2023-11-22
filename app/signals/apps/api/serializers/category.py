@@ -15,7 +15,7 @@ from signals.apps.signals.models import Category, CategoryDepartment, ServiceLev
 
 class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     departments = serializers.SerializerMethodField()
     questionnaire = serializers.UUIDField(source='questionnaire.uuid', required=False, read_only=True)
 
@@ -45,7 +45,7 @@ class CategoryHALSerializer(HALSerializer):
 
 class ParentCategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='children')
     is_public_accessible = serializers.SerializerMethodField(method_name='get_is_public_accessible')
     configuration = serializers.JSONField(required=False)
@@ -104,7 +104,7 @@ class _NestedPrivateCategoryDepartmentSerializer(serializers.ModelSerializer):
 
 class PrivateCategorySerializer(HALSerializer):
     serializer_url_field = PrivateCategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     sla = serializers.SerializerMethodField()
     new_sla = PrivateCategorySLASerializer(write_only=True)
 

@@ -10,7 +10,7 @@ from signals.apps.questionnaires.rest_framework.fields import QuestionHyperlinke
 class PublicQuestionSerializer(HALSerializer):
     serializer_url_field = QuestionHyperlinkedIdentityField
     next_rules = serializers.SerializerMethodField()
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     key = serializers.CharField(source='retrieval_key')
 
     class Meta:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
@@ -19,7 +19,7 @@ from signals.apps.questionnaires.rest_framework.serializers.public.questions imp
 class PublicSessionSerializer(HALSerializer):
     serializer_url_field = SessionPublicHyperlinkedIdentityField
 
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     questionnaire_explanation = NestedPublicIllustratedTextSerializer(source='questionnaire.explanation')
     signal_snapshot = serializers.SerializerMethodField()

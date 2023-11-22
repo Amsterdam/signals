@@ -110,7 +110,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     This serializer is used for the detail endpoint and when updating the instance
     """
     serializer_url_field = PrivateSignalLinksFieldWithArchives
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     location = _NestedLocationModelSerializer(
         required=False,
@@ -264,7 +264,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     This serializer is used for the list endpoint and when creating a new instance
     """
     serializer_url_field = PrivateSignalLinksField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     signal_id = serializers.UUIDField(source='uuid', required=False, read_only=True)
 
