@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 from signals.apps.api.generics.mixins import WriteOnceMixin
 from signals.apps.history.models import Log
-from signals.apps.users.rest_framework.fields.user import UserHyperlinkedIdentityField
+from signals.apps.users.rest_framework.fields.user import UserLinksField
 from signals.apps.users.rest_framework.serializers import (
     PermissionSerializer,
     ProfileDetailSerializer,
@@ -56,7 +56,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
 
 
 class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
-    serializer_url_field = UserHyperlinkedIdentityField
+    serializer_url_field = UserLinksField
     _display: DisplayField = DisplayField()
     roles = RoleSerializer(source='groups', many=True, read_only=True)
     role_ids = serializers.PrimaryKeyRelatedField(
