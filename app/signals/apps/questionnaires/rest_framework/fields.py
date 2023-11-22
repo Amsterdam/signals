@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 from datapunt_api.serializers import LinksField
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,7 +9,7 @@ from django.db.models import Model
 from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.models import Questionnaire, Session, Answer, Question
+from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
 
 
 class UUIDRelatedField(RelatedField):

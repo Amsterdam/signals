@@ -4,10 +4,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
 
-from signals.apps.api.fields import (
-    CategoryLinksField,
-    PrivateCategoryLinksField
-)
+from signals.apps.api.fields import CategoryLinksField, PrivateCategoryLinksField
 from signals.apps.api.serializers.nested import _NestedPublicDepartmentSerializer
 from signals.apps.history.models import Log
 from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective

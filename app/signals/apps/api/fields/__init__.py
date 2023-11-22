@@ -6,8 +6,8 @@ from signals.apps.api.fields.attachment import (
     PublicSignalAttachmentLinksField
 )
 from signals.apps.api.fields.category import (
-    CategoryLinksField,
     CategoryHyperlinkedRelatedField,
+    CategoryLinksField,
     PrivateCategoryLinksField
 )
 from signals.apps.api.fields.signal import (

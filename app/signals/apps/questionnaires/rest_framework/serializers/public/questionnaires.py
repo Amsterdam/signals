@@ -3,9 +3,7 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 
 from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.questionnaires.rest_framework.fields import (
-    QuestionnairePublicLinksField
-)
+from signals.apps.questionnaires.rest_framework.fields import QuestionnairePublicLinksField
 from signals.apps.questionnaires.rest_framework.serializers.public.illustrated_text import (
     NestedPublicIllustratedTextSerializer
 )
