@@ -235,7 +235,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
                                            f'{EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED}',
                                      body='{{ reaction_text }} {{ signal_id }} {{ created_at }} {{ address }}')
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session(self, patched_get_url):
         """
@@ -250,7 +250,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(response.status_code, 200)
         self.assertJsonSchema(self.session_detail_schema, response_json)
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session_check_location_serialization(self, patched_get_url):
         """
@@ -283,7 +283,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(response_json['signal_snapshot']['location']['stadsdeel'], None)
         self.assertEqual(response_json['signal_snapshot']['location']['area_name'], 'AREA NAME')
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session_no_signal_means_no_signal_snapshot(self, patched_get_url):
         """
@@ -342,7 +342,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(response.status_code, 410)
         self.assertEqual(response_json['detail'], 'Expired!')
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session_forward_to_external_several_open(self, patched_get_url):
         """
@@ -375,7 +375,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(response.status_code, 200)
         self.assertJsonSchema(self.session_detail_schema, response.json())
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session_signal_state_not_DOORGEZET_NAAR_EXTERN(self, patched_get_url):
         """
@@ -410,7 +410,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
             response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_and_fill_out(self, patched_get_url):
         """
@@ -504,7 +504,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
 
         # TODO: add support for thank-you message
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_and_fill_out_multiple_uploaded_files(self, patched_get_url):
         """
@@ -599,7 +599,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
 
         # TODO: add support for thank-you message
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_and_fill_out_and_triggered_mail(self, patched_get_url):
         """
@@ -663,7 +663,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         log_entry = Log.objects.first()
         self.assertIn(answer_text, log_entry.description)
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_and_fill_out_after_status_update_and_triggered_mail(self, patched_get_url):
         """

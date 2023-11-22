@@ -8,8 +8,8 @@ from rest_framework import serializers
 from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.questionnaires.rest_framework.mixins import HyperlinkedRelatedFieldMixin
+from signals.apps.questionnaires.models import Questionnaire, Session
+from signals.apps.questionnaires.rest_framework.mixins import LinksFieldMixin
 
 
 class UUIDRelatedField(RelatedField):
@@ -39,7 +39,7 @@ class EmptyHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         return OrderedDict()
 
 
-class QuestionnairePublicLinksField(HyperlinkedRelatedFieldMixin, LinksField):
+class QuestionnairePublicLinksField(LinksFieldMixin, LinksField):
     lookup_field = 'uuid'
 
     def to_representation(self, value: Questionnaire) -> OrderedDict:
@@ -53,7 +53,7 @@ class QuestionnairePublicLinksField(HyperlinkedRelatedFieldMixin, LinksField):
         ])
 
 
-class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
+class QuestionHyperlinkedIdentityField(LinksFieldMixin, serializers.HyperlinkedIdentityField):
     lookup_field = 'retrieval_key'
 
     def to_representation(self, value):
@@ -66,28 +66,31 @@ class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers
         ])
 
 
-class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
+class SessionPublicLinksField(LinksFieldMixin, LinksField):
     lookup_field = 'uuid'
 
-    def to_representation(self, value):
+    def to_representation(self, value: Session) -> OrderedDict:
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
-            ('self', dict(href=self._get_url(value, 'public-session-detail'))),
-            ('sia:questionnaire', dict(href=self._reverse('public-questionnaire-detail',
-                                                          kwargs={'uuid': value.questionnaire.uuid}))),
-            ('sia:post-answers', dict(href=self._reverse('public-session-answers',
-                                                         kwargs={'uuid': value.uuid}))),
-            ('sia:post-attachments', dict(href=self._reverse('public-session-attachments',
-                                                             kwargs={'uuid': value.uuid}))),
-            ('sia:post-submit', dict(href=self._reverse('public-session-submit',
-                                                        kwargs={'uuid': value.uuid})))
+            ('curies', {
+                'name': 'sia',
+                'href': reverse('signal-namespace', request=self.context.get('request'))
+            }),
+            ('self', {'href': self._get_url(value, 'public-session-detail')}),
+            ('sia:questionnaire', {
+                'href': self._reverse('public-questionnaire-detail', kwargs={'uuid': value.questionnaire.uuid})
+            }),
+            ('sia:post-answers', {'href': self._reverse('public-session-answers', kwargs={'uuid': value.uuid})}),
+            ('sia:post-attachments', {
+                'href': self._reverse('public-session-attachments', kwargs={'uuid': value.uuid})
+            }),
+            ('sia:post-submit', {'href': self._reverse('public-session-submit', kwargs={'uuid': value.uuid})}),
         ])
 
         if value._signal:
             result.update({
-                'sia:public-signal': dict(
-                    href=self.get_url(value._signal, 'public-signals-detail', self.context.get('request'), None)
-                )
+                'sia:public-signal': {
+                    'href': self.get_url(value._signal, 'public-signals-detail', self.context.get('request'), None)
+                }
             })
 
         return result

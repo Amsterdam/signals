@@ -4,7 +4,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.questionnaires.models import Session
-from signals.apps.questionnaires.rest_framework.fields import SessionPublicHyperlinkedIdentityField
+from signals.apps.questionnaires.rest_framework.fields import SessionPublicLinksField
 from signals.apps.questionnaires.rest_framework.serializers.public.illustrated_text import (
     NestedPublicIllustratedTextSerializer
 )
@@ -17,7 +17,7 @@ from signals.apps.questionnaires.rest_framework.serializers.public.questions imp
 
 
 class PublicSessionSerializer(HALSerializer):
-    serializer_url_field = SessionPublicHyperlinkedIdentityField
+    serializer_url_field = SessionPublicLinksField
 
     _display: DisplayField = DisplayField()
 
