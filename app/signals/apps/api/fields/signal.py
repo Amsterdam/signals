@@ -221,7 +221,7 @@ class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
         return result
 
 
-class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
+class PublicSignalLinksField(LinksField):
     lookup_field = 'signal_id'
 
     def to_representation(self, value: Signal) -> OrderedDict:
@@ -229,7 +229,7 @@ class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "public-signals-detail", request, None))),
+            ('self', {'href': self.get_url(value, "public-signals-detail", request, None)}),
         ])
 
         return result
