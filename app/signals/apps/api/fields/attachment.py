@@ -13,16 +13,16 @@ from signals.apps.api.generics.exceptions import UnsupportedModelTypeException
 from signals.apps.signals.models import Attachment
 
 
-class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
+class PublicSignalAttachmentLinksField(LinksField):
     lookup_field = 'uuid'
 
-    def to_representation(self, value: Attachment):
+    def to_representation(self, value: Attachment) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
             ('self',
-             dict(href=self.get_url(value._signal, "public-signals-attachments", request, None))),
+             {'href':self.get_url(value._signal, "public-signals-attachments", request, None)}),
         ])
 
         return result
