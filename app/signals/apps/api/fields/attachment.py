@@ -22,7 +22,7 @@ class PublicSignalAttachmentLinksField(LinksField):
 
         result = OrderedDict([
             ('self',
-             {'href':self.get_url(value._signal, "public-signals-attachments", request, None)}),
+             {'href': self.get_url(value._signal, "public-signals-attachments", request, None)}),
         ])
 
         return result
