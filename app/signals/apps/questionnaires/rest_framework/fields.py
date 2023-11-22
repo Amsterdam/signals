@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.relations import RelatedField
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.models import Questionnaire, Session
+from signals.apps.questionnaires.models import Questionnaire, Session, Answer
 from signals.apps.questionnaires.rest_framework.mixins import LinksFieldMixin
 
 
@@ -34,8 +34,8 @@ class UUIDRelatedField(RelatedField):
         return getattr(obj, self.uuid_field)
 
 
-class EmptyHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
-    def to_representation(self, value):
+class EmptyHyperlinkedIdentityField(LinksField):
+    def to_representation(self, value: Answer) -> OrderedDict:
         return OrderedDict()
 
 
