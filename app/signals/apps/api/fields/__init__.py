@@ -6,9 +6,9 @@ from signals.apps.api.fields.attachment import (
     PublicSignalAttachmentLinksField
 )
 from signals.apps.api.fields.category import (
-    CategoryHyperlinkedIdentityField,
+    CategoryLinksField,
     CategoryHyperlinkedRelatedField,
-    PrivateCategoryHyperlinkedIdentityField
+    PrivateCategoryLinksField
 )
 from signals.apps.api.fields.signal import (
     PrivateSignalLinksField,
@@ -19,9 +19,9 @@ from signals.apps.api.fields.signal import (
 from signals.apps.api.fields.stored_signal_filter import StoredSignalFilterLinksField
 
 __all__ = [
-    'CategoryHyperlinkedIdentityField',
+    'CategoryLinksField',
     'CategoryHyperlinkedRelatedField',
-    'PrivateCategoryHyperlinkedIdentityField',
+    'PrivateCategoryLinksField',
     'PrivateSignalAttachmentLinksField',
     'PrivateSignalAttachmentRelatedField',
     'PrivateSignalLinksField',

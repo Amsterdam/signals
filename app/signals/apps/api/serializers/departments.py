@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_field
 from rest_framework import serializers
 
-from signals.apps.api.fields import CategoryHyperlinkedIdentityField
+from signals.apps.api.fields import CategoryLinksField
 from signals.apps.api.serializers.nested import _NestedPublicDepartmentSerializer
 from signals.apps.signals.models import Category, CategoryDepartment, Department
 
@@ -39,7 +39,7 @@ class TemporaryCategoryHALSerializer(HALSerializer):
     """
     TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
     """
-    serializer_url_field = CategoryHyperlinkedIdentityField
+    serializer_url_field = CategoryLinksField
     _display: DisplayField = DisplayField()
     departments = serializers.SerializerMethodField()
 
@@ -73,7 +73,7 @@ class TemporaryParentCategoryHALSerializer(TemporaryCategoryHALSerializer):
 
     TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
     """
-    serializer_url_field = CategoryHyperlinkedIdentityField
+    serializer_url_field = CategoryLinksField
 
 
 class CategoryDepartmentSerializer(serializers.ModelSerializer):

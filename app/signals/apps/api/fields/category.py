@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
+from datapunt_api.serializers import LinksField
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.reverse import reverse
@@ -75,19 +76,23 @@ def category_public_url(category, request, format=None):
         },
     }
 })
-class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class CategoryLinksField(LinksField):
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
+            ('curies', {'name': 'sia', 'href': reverse('signal-namespace', request=request)}),
             ('self', {'href': category_public_url(value, request)}),
         ])
 
         if value.questionnaire:
             result.update({
-                'sia:questionnaire': dict(href=self.reverse('questionnaires:public-questionnaire-detail',
-                                                            kwargs={'uuid': value.questionnaire.uuid},
-                                                            request=request)),
+                'sia:questionnaire': {
+                    'href': reverse(
+                        'questionnaires:public-questionnaire-detail',
+                        kwargs={'uuid': value.questionnaire.uuid},
+                        request=request,
+                    )
+                },
             })
 
         if value.has_icon():
@@ -171,7 +176,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
         },
     }
 })
-class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class PrivateCategoryLinksField(LinksField):
     def _get_public_url(self, obj, request=None):
         return category_public_url(obj, request=request)
 
@@ -180,34 +185,38 @@ class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFie
             viewname, kwargs = 'private-status-message-templates-child', {'slug': obj.parent.slug, 'sub_slug': obj.slug}
         else:
             viewname, kwargs = 'private-status-message-templates-parent', {'slug': obj.slug}
-        return self.reverse(viewname, kwargs=kwargs, request=request)
+        return reverse(viewname, kwargs=kwargs, request=request)
 
     def to_representation(self, value):
         request = self.context.get('request')
 
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(
-                href=self.get_url(value, 'private-category-detail', request, None),
-                public=self._get_public_url(obj=value, request=request),
-             )),
-            ('archives', dict(href=self.get_url(value, 'private-category-history', request, None))),
-            ('sia:status-message-templates', dict(
-                href=self._get_status_message_templates_url(obj=value, request=request)
-            ))
+            ('curies', {'name': 'sia', 'href': reverse('signal-namespace', request=request)}),
+            ('self', {
+                'href': self.get_url(value, 'private-category-detail', request, None),
+                'public': self._get_public_url(obj=value, request=request),
+            }),
+            ('archives', {'href': self.get_url(value, 'private-category-history', request, None)}),
+            ('sia:status-message-templates', {
+                'href': self._get_status_message_templates_url(obj=value, request=request)
+            }),
         ])
 
         if value.is_child():
-            result.update({'sia:parent': dict(
-                href=self.get_url(value.parent, 'private-category-detail', request, None),
-                public=self._get_public_url(obj=value.parent, request=request))
-            })
+            result.update({'sia:parent': {
+                'href': self.get_url(value.parent, 'private-category-detail', request, None),
+                'public': self._get_public_url(obj=value.parent, request=request)
+            }})
 
         if value.questionnaire:
             result.update({
-                'sia:questionnaire': dict(
-                    href=self.reverse('questionnaires:public-questionnaire-detail',
-                                      kwargs={'uuid': value.questionnaire.uuid}, request=request)),
+                'sia:questionnaire': {
+                    'href': reverse(
+                        'questionnaires:public-questionnaire-detail',
+                        kwargs={'uuid': value.questionnaire.uuid},
+                        request=request,
+                    ),
+                }
             })
 
         if value.has_icon():
