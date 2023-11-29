@@ -142,7 +142,7 @@ deprecated==1.2.14
     #   jwcrypto
 distlib==0.3.7
     # via virtualenv
-django==3.2.22
+django==3.2.23
     # via
     #   -r requirements.txt
     #   django-appconf

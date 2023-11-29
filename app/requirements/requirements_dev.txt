@@ -149,7 +149,7 @@ distlib==0.3.7
     # via
     #   -r requirements_test.txt
     #   virtualenv
-django==3.2.22
+django==3.2.23
     # via
     #   -r requirements_test.txt
     #   django-appconf

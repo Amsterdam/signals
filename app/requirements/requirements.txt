@@ -91,7 +91,7 @@ defusedxml==0.7.1
     #   djangorestframework-xml
 deprecated==1.2.14
     # via jwcrypto
-django==3.2.22
+django==3.2.23
     # via
     #   -r requirements.in
     #   django-appconf
