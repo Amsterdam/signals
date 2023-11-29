@@ -272,7 +272,7 @@ pyjwt[crypto]==2.8.0
 pyopenssl==23.3.0
     # via josepy
 pypdf==3.17.1
-    # via -r requirements/requirements.in
+    # via -r re
 pyphen==0.14.0
     # via weasyprint
 python-crontab==3.0.0
