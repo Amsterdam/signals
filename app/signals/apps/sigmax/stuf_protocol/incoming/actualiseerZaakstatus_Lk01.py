@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 """
 Support for actualiseerZaakstatus_Lk01 messages from CityControl.
 """
@@ -30,7 +30,7 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
     # strip the relevant information from the return message
     assert type(xml) == type(b'a')  # noqa: E721
 
-    parser = etree.XMLParser(resolve_entities=False, no_network=True)
+    parser = etree.XMLParser(resolve_entities=False)
     tree = etree.fromstring(xml, parser=parser)
 
     def xpath(expression):

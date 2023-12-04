@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 """
 Test support for actualiseerZaakstatus_Lk01 StUF messages from CityControl/Sigmax.
 
@@ -39,6 +39,34 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
         self.assertEqual(msg_content['datum_afgehandeld'], test_context['resultaat_datum'])
         self.assertEqual(msg_content['resultaat'], 'Er is gehandhaafd')
         self.assertEqual(msg_content['reden'], test_context['resultaat_toelichting'])
+
+    def test_xxe_attack(self):
+        xml_with_entity = b"""
+        <!DOCTYPE foo [
+        <!ELEMENT foo ANY >
+        <!ENTITY bar SYSTEM "file:////app/signals/apps/sigmax/tests/xxe_test_file.txt" >
+        ]>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:zaak="http://www.egem.nl/StUF/sector/zkn/0310"
+        xmlns:stuf="http://www.egem.nl/StUF/StUF0301">
+            <soap:Body>
+                <zaak:object>
+                    <zaak:identificatie>1234</zaak:identificatie>
+                    <zaak:heeft>
+                        <zaak:datumStatusGezet>2022-06-01</zaak:datumStatusGezet>
+                    </zaak:heeft>
+                    <zaak:einddatum>2022-06-01</zaak:einddatum>
+                    <zaak:resultaat>
+                        <zaak:omschrijving>&bar;</zaak:omschrijving>
+                        <zaak:toelichting>Test Reden</zaak:toelichting>
+                    </zaak:resultaat>
+                </zaak:object>
+            </soap:Body>
+        </soap:Envelope>""".strip()
+
+        parsed_xml = _parse_actualiseerZaakstatus_Lk01(xml_with_entity)
+        self.assertNotIn(member='XXE Test File',
+                         container=parsed_xml['resultaat'])
 
 
 class TestParseZaakIdentificatie(TestCase):
