@@ -29,7 +29,9 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
 
     # strip the relevant information from the return message
     assert type(xml) == type(b'a')  # noqa: E721
-    tree = etree.fromstring(xml)
+
+    parser = etree.XMLParser(resolve_entities=False, no_network=True)
+    tree = etree.fromstring(xml, parser=parser)
 
     def xpath(expression):
         found = tree.xpath(expression, namespaces=namespaces)
