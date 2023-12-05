@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
-from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes.attachment import Attachment
 from signals.apps.questionnaires.models import Question, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
@@ -50,8 +50,10 @@ class PublicSessionViewSet(HALViewSetRetrieve):
             session_service.is_publicly_accessible()
         except (SessionFrozen, SessionExpired) as e:
             raise Gone(str(e))
-        except Exception as e:
-            raise APIException(str(e))  # For now just re-raise the exception as a DRF APIException
+        except SessionInvalidated as e:
+            raise APIException(str(e))
+        except Exception:
+            raise APIException('An error occurred while processing the request.')
         else:
             return session_service.session
 
