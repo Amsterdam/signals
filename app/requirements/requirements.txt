@@ -124,7 +124,7 @@ django-cors-headers==4.3.1
     # via -r requirements/requirements.in
 django-extensions==3.2.3
     # via -r requirements/requirements.in
-django-filter==23.4
+django-filter==23.5
     # via -r requirements/requirements.in
 django-fsm==2.8.1
     # via -r requirements/requirements.in
@@ -152,7 +152,7 @@ djangorestframework-gis==1.0
     # via -r requirements/requirements.in
 djangorestframework-xml==2.0.0
     # via drf-amsterdam
-drf-amsterdam==0.4.1
+drf-amsterdam==1.0.1
     # via -r requirements/requirements.in
 drf-extensions==0.7.1
     # via
@@ -160,7 +160,7 @@ drf-extensions==0.7.1
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.26.5
     # via -r requirements/requirements.in
-drf-spectacular-sidecar==2023.10.1
+drf-spectacular-sidecar==2023.12.1
     # via drf-spectacular
 elasticsearch==7.17.9
     # via elasticsearch-dsl
@@ -170,7 +170,7 @@ flower==2.0.1
     # via -r requirements/requirements.in
 google-api-core==2.14.0
     # via opencensus
-google-auth==2.23.4
+google-auth==2.25.1
     # via google-api-core
 googleapis-common-protos==1.61.0
     # via google-api-core
@@ -192,7 +192,7 @@ jsonschema==4.20.0
     # via
     #   -r requirements/requirements.in
     #   drf-spectacular
-jsonschema-specifications==2023.11.1
+jsonschema-specifications==2023.11.2
     # via jsonschema
 jwcrypto==1.5.0
     # via -r requirements/requirements.in
@@ -204,7 +204,7 @@ markdown==3.5.1
     # via django-markdownx
 mozilla-django-oidc==3.0.0
     # via -r requirements/requirements.in
-msal==1.25.0
+msal==1.26.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -272,7 +272,7 @@ pyjwt[crypto]==2.8.0
 pyopenssl==23.3.0
     # via josepy
 pypdf==3.17.1
-    # via -r re
+    # via -r requirements/requirements.in
 pyphen==0.14.0
     # via weasyprint
 python-crontab==3.0.0
@@ -295,7 +295,7 @@ pytz-deprecation-shim==0.1.0.post0
     # via tzlocal
 pyyaml==6.0.1
     # via drf-spectacular
-referencing==0.31.0
+referencing==0.31.1
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -312,7 +312,7 @@ requests==2.31.0
     #   requests-oauthlib
 requests-oauthlib==1.3.1
     # via o365
-rpds-py==0.13.1
+rpds-py==0.13.2
     # via
     #   jsonschema
     #   referencing
