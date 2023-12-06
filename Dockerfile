@@ -37,7 +37,6 @@ RUN set -eux;  \
         libpango1.0-0 \
         libpq-dev \
         gcc \
-        git \
         graphviz \
     ; \
     rm -rf /var/lib/apt/lists/*
