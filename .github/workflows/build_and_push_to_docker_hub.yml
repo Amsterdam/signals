@@ -6,26 +6,38 @@ on:
 
 jobs:
   build_and_push:
-    name: Build a new Docker image for the release (and a latest) and push it to Docker
+    name: Build a new Docker image for the release (and a latest) and push it to Docker Hub
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v4
 
-      - name: Login to Docker
-        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      # https://github.com/docker/login-action
+      - name: Log into Docker Hub
+        if: github.event_name == 'release'
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Release tag
-        run: echo "${{ github.event.release.tag_name }}"
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: signalen/backend
+          flavor: |
+            latest=${{ github.event_name == 'release' }} # generate 'latest' tag for releases
 
-      - name: Build the release Docker image
-        run: docker build --target prod -t signalen/backend:${{ github.event.release.tag_name }} .
-
-      - name: Build the latest Docker image
-        run: docker build --target prod -t signalen/backend:latest .
-
-      - name: Push the tagged image to Docker
-        run: docker push signalen/backend:${{ github.event.release.tag_name }}
-
-      - name: Push the latest image to Docker
-        run: docker push signalen/backend:latest
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: prod
+          push: ${{ github.event_name == 'release' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
