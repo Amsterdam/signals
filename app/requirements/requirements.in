@@ -14,7 +14,7 @@ djangorestframework
 djangorestframework-gis
 django-silk
 django-storages
-git+https://github.com/4c0n/drf_amsterdam@chore/add-basic-typing
+drf-amsterdam
 drf-extensions
 django-fsm
 drf-spectacular[sidecar]
