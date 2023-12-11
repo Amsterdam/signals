@@ -75,7 +75,7 @@ class TestRetrieveReactionRequest(ValidateJsonSchemaMixin, APITestCase):
 
         self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))
 
-    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicLinksField.get_url',
            autospec=True)
     def test_retrieve_session(self, patched_get_url):
         """

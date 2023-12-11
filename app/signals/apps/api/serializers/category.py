@@ -4,18 +4,15 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
 
-from signals.apps.api.fields import (
-    CategoryHyperlinkedIdentityField,
-    PrivateCategoryHyperlinkedIdentityField
-)
+from signals.apps.api.fields import CategoryLinksField, PrivateCategoryLinksField
 from signals.apps.api.serializers.nested import _NestedPublicDepartmentSerializer
 from signals.apps.history.models import Log
 from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective
 
 
 class CategoryHALSerializer(HALSerializer):
-    serializer_url_field = CategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    serializer_url_field = CategoryLinksField
+    _display: DisplayField = DisplayField()
     departments = serializers.SerializerMethodField()
     questionnaire = serializers.UUIDField(source='questionnaire.uuid', required=False, read_only=True)
 
@@ -44,8 +41,8 @@ class CategoryHALSerializer(HALSerializer):
 
 
 class ParentCategoryHALSerializer(HALSerializer):
-    serializer_url_field = CategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    serializer_url_field = CategoryLinksField
+    _display: DisplayField = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='children')
     is_public_accessible = serializers.SerializerMethodField(method_name='get_is_public_accessible')
     configuration = serializers.JSONField(required=False)
@@ -103,8 +100,8 @@ class _NestedPrivateCategoryDepartmentSerializer(serializers.ModelSerializer):
 
 
 class PrivateCategorySerializer(HALSerializer):
-    serializer_url_field = PrivateCategoryHyperlinkedIdentityField
-    _display = DisplayField()
+    serializer_url_field = PrivateCategoryLinksField
+    _display: DisplayField = DisplayField()
     sla = serializers.SerializerMethodField()
     new_sla = PrivateCategorySLASerializer(write_only=True)
 

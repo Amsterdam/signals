@@ -21,7 +21,7 @@ PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
 
 
 class BaseSignalAttachmentSerializer(HALSerializer):
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
     location = serializers.FileField(source='file', required=False, read_only=True)
 
     def create(self, validated_data: dict) -> Attachment:

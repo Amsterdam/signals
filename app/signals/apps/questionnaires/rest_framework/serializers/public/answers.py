@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -14,7 +14,7 @@ from signals.apps.questionnaires.services.utils import get_session_service
 class PublicAnswerSerializer(HALSerializer):
     serializer_url_field = EmptyHyperlinkedIdentityField
 
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     session = UUIDRelatedField(uuid_field='uuid', queryset=Session.objects.retrieve_valid_sessions(), required=False)
     questionnaire = UUIDRelatedField(uuid_field='uuid', queryset=Questionnaire.objects.active(), required=False)

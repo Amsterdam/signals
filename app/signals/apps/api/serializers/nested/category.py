@@ -13,8 +13,17 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
     main = serializers.CharField(source='category.parent.name', read_only=True)
     main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
-    sub_category = CategoryHyperlinkedRelatedField(source='category', write_only=True, required=False)
-    category_url = CategoryHyperlinkedRelatedField(source='category', required=False)
+    sub_category = CategoryHyperlinkedRelatedField(
+        view_name='public-subcategory-detail',
+        source='category',
+        write_only=True,
+        required=False
+    )
+    category_url = CategoryHyperlinkedRelatedField(
+        view_name='public-subcategory-detail',
+        source='category',
+        required=False
+    )
 
     text = serializers.CharField(required=False)
     departments = serializers.SerializerMethodField()

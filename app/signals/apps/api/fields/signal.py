@@ -2,9 +2,10 @@
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from collections import OrderedDict
 
+from datapunt_api.serializers import LinksField
 from drf_spectacular.utils import extend_schema_field
-from rest_framework import serializers
 from rest_framework.request import Request
+from rest_framework.reverse import reverse
 
 from signals.apps.signals.models import Signal
 
@@ -98,32 +99,36 @@ from signals.apps.signals.models import Signal
         },
     }
 })
-class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
+class PrivateSignalLinksFieldWithArchives(LinksField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse("signal-namespace", request=request))),
-            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
-            ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
-            ('sia:attachments', dict(href=self.reverse("private-signals-attachments-list",
-                                                       kwargs={'parent_lookup__signal__pk': value.pk},
-                                                       request=request))),
-            ('sia:pdf', dict(href=self.get_url(value, "private-signals-pdf-download", request, None))),
-            ('sia:context', dict(href=self.get_url(value, 'private-signal-context', request, None))),
+            ('curies', {'name': 'sia', 'href': reverse('signal-namespace', request=request)}),
+            ('self', {'href': self.get_url(value, 'private-signals-detail', request, None)}),
+            ('archives', {'href': self.get_url(value, "private-signals-history", request, None)}),
+            ('sia:attachments', {
+                'href': reverse(
+                    'private-signals-attachments-list',
+                    kwargs={'parent_lookup__signal__pk': value.pk},
+                    request=request,
+                )
+            }),
+            ('sia:pdf', {'href': self.get_url(value, "private-signals-pdf-download", request, None)}),
+            ('sia:context', {'href': self.get_url(value, 'private-signal-context', request, None)}),
         ])
 
         if value.is_child:
             assert value.parent is not None
             result.update({
                 'sia:parent':
-                dict(href=self.get_url(value.parent, "private-signals-detail", request, None))
+                    {'href': self.get_url(value.parent, "private-signals-detail", request, None)}
             })
 
         if value.is_parent:
             result.update({'sia:children': [
-                dict(href=self.get_url(child, "private-signals-detail", request, None))
+                {'href': self.get_url(child, "private-signals-detail", request, None)}
                 for child in value.children.all()
             ]})
 
@@ -145,14 +150,13 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         }
     }
 })
-class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
-
+class PrivateSignalLinksField(LinksField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
+            ('self', {'href': self.get_url(value, "private-signals-detail", request, None)}),
         ])
 
         return result
@@ -203,25 +207,26 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         },
     }
 })
-class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
-
+class PrivateSignalWithContextLinksField(LinksField):
     def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(href=self.get_url(value, 'private-signal-context', request, None))),
-            ('sia:context-reporter-detail', dict(href=self.get_url(
-                value, 'private-signal-context-reporter', request, None))),
-            ('sia:context-geography-detail', dict(href=self.get_url(
-                value, 'private-signal-context-near-geography', request, None))),
+            ('curies', {'name': 'sia', 'href': reverse('signal-namespace', request=request)}),
+            ('self', {'href': self.get_url(value, 'private-signal-context', request, None)}),
+            ('sia:context-reporter-detail', {
+                'href': self.get_url(value, 'private-signal-context-reporter', request, None)
+            }),
+            ('sia:context-geography-detail', {
+                'href': self.get_url(value, 'private-signal-context-near-geography', request, None)
+            }),
         ])
 
         return result
 
 
-class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
+class PublicSignalLinksField(LinksField):
     lookup_field = 'signal_id'
 
     def to_representation(self, value: Signal) -> OrderedDict:
@@ -229,7 +234,7 @@ class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
         assert isinstance(request, Request)
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "public-signals-detail", request, None))),
+            ('self', {'href': self.get_url(value, "public-signals-detail", request, None)}),
         ])
 
         return result

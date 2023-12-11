@@ -10,7 +10,7 @@ from signals.apps.signals.models import Signal, StoredSignalFilter
 
 class StoredSignalFilterSerializer(HALSerializer):
     serializer_url_field = StoredSignalFilterLinksField
-    _display = DisplayField()
+    _display: DisplayField = DisplayField()
 
     class Meta:
         model = StoredSignalFilter
