@@ -25,7 +25,7 @@ class TestActionAssigned(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Melding {self.signal.get_id_display()} is toegewezen aan jou')
-        self.assertEqual(mail.outbox[0].to, [f'{self.user.get_full_name()} <{self.user.email}>'])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
     def test_mail_assigned_to_department(self):
@@ -42,5 +42,5 @@ class TestActionAssigned(TestCase):
         self.assertEqual(mail.outbox[0].subject,
                          f'Melding {self.signal.get_id_display()} is toegewezen aan {self.department}'
                          )
-        self.assertEqual(mail.outbox[0].to, [f'{self.user.get_full_name()} <{self.user.email}>'])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
