@@ -1,6 +1,5 @@
 signals/admin/oidc/backends.py:0: error: Skipping analyzing "mozilla_django_oidc.auth": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/admin/oidc/backends.py:0: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-signals/apps/dsl/evaluators/meta_model.py:0: error: Skipping analyzing "textx": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/settings.py:0: error: Dict entry 1 has incompatible type "str": "str | None"; expected "str": "str"  [dict-item]
 signals/apps/services/domain/pdf.py:0: error: Skipping analyzing "weasyprint": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/reporter.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
@@ -17,6 +16,7 @@ signals/apps/search/documents/status_message.py:0: error: Skipping analyzing "el
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl.query": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/reporting/csv/utils.py:0: error: Skipping analyzing "storages.backends.azure_storage": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/dsl/evaluators/meta_model.py:0: error: Skipping analyzing "textx": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/auth/jwks.py:0: error: Skipping analyzing "jwcrypto.common": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/auth/jwks.py:0: error: Skipping analyzing "jwcrypto.jwk": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/management/commands/delete_status_messages_index.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
@@ -35,6 +35,7 @@ signals/apps/sigmax/tests/stuf_protocol/outgoing/test_creeerZaak_Lk01.py:0: erro
 signals/apps/search/apps.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/schema.py:0: error: Incompatible types in assignment (expression has type "DictField", base class "Serializer" defined the type as "ReturnDict[Any, Any]")  [assignment]
 signals/schema.py:0: error: Need type annotation for "non_field_errors"  [var-annotated]
+signals/schema.py:0: error: Argument "direction" to "_get_response_bodies" of "AutoSchema" has incompatible type "str"; expected "Literal['request', 'response']"  [arg-type]
 signals/auth/tests/test_backend.py:0: error: Skipping analyzing "jwcrypto": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/users/migrations/0005_auto_20191113_1000.py:0: error: Unexpected keyword argument "null" for "ManyToManyField"  [call-arg]
 /usr/local/lib/python3.11/site-packages/django-stubs/db/models/fields/related.pyi:0: note: "ManyToManyField" defined here
