@@ -1,23 +1,33 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
+import logging
+
+from rest_framework.request import Request
 from rest_framework.throttling import SimpleRateThrottle
+from rest_framework.views import APIView
+
+logger = logging.getLogger('django')
 
 
 class PostOnlyNoUserRateThrottle(SimpleRateThrottle):
-    """
-    Limits the rate of API calls that does not look at the user.
+    """Limits the rate of API calls that does not look at the user.
+    The IP address of the request will be used as the unique cache key."""
+    scope: str = 'nouser'
 
-    The IP address of the request will be used as the unique cache key.
-    """
+    def allow_request(self, request: Request, view: APIView) -> bool:
+        allow = True
 
-    scope = 'nouser'
-
-    def allow_request(self, request, view):
         if request.method == 'POST':
-            return super().allow_request(request, view)
-        return True
+            allow =  super().allow_request(request, view)
 
-    def get_cache_key(self, request, view):
+        if allow:
+            logger.debug(f'PostOnlyNoUserRateThrottle: allowing request for: {self.get_cache_key(request, view)}')
+        else:
+            logger.debug(f'PostOnlyNoUserRateThrottle: not allowing request for: {self.get_cache_key(request, view)}')
+
+        return allow
+
+    def get_cache_key(self, request, view) -> str:
         return self.cache_format % {
             'scope': self.scope,
             'ident': self.get_ident(request)
