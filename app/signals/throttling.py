@@ -27,6 +27,11 @@ class PostOnlyNoUserRateThrottle(SimpleRateThrottle):
 
         return allow
 
+    def get_ident(self, request: Request) -> str:
+        ident = super().get_ident(request=request)
+        last_colon_index = ident.rfind(":")
+        return ident[:last_colon_index] if last_colon_index != -1 else ident
+
     def get_cache_key(self, request, view) -> str:
         return self.cache_format % {
             'scope': self.scope,
