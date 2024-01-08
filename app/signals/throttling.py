@@ -18,7 +18,7 @@ class PostOnlyNoUserRateThrottle(SimpleRateThrottle):
         allow = True
 
         if request.method == 'POST':
-            allow =  super().allow_request(request, view)
+            allow = super().allow_request(request, view)
 
         if allow:
             logger.debug(f'PostOnlyNoUserRateThrottle: allowing request for: {self.get_cache_key(request, view)}')
