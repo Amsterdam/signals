@@ -216,7 +216,9 @@ DATABASES: dict[str, dict[str, str | int | None]] = {
 # Django cache settings
 CACHES: dict[str, dict[str, str | int]] = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'signals_cache',
+        'TIMEOUT': os.getenv('CACHE_TIMEOUT', 3900),
     }
 }
 
