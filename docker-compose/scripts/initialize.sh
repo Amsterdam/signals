@@ -12,6 +12,9 @@ python manage.py shell -c "from django.contrib.auth import get_user_model; User 
 # Collect static
 python manage.py collectstatic --no-input
 
+# Create cache table
+python manage.py createcachetable
+
 if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
   if python manage.py shell -c "import sys; from django.db import connection; cursor = connection.cursor(); cursor.execute('select count(*) from signals_signal'); sys.exit(cursor.fetchone()[0])"; then
     echo "Load dummy data"
