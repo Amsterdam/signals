@@ -14,4 +14,4 @@ class SearchConfig(AppConfig):
         from .settings import app_settings
 
         host = app_settings.CONNECTION['HOST'] or 'localhost'
-        connections.create_connection(hosts=[host, ])
+        connections.create_connection(hosts=[host, ], timeout=app_settings.TIMEOUT)
