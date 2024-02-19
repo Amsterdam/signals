@@ -26,3 +26,15 @@ class TestMaintenanceMode(APITestCase):
         for endpoint in self.endpoints:
             response = self.client.get(endpoint)
             self.assertNotEqual(response.status_code, HTTP_503_SERVICE_UNAVAILABLE)
+
+    @mock.patch.dict('os.environ', {'MAINTENANCE_MODE': 'True'}, clear=True)
+    def test_maintenance_mode_enabled_health_check_should_work(self):
+        endpoint = '/status/health'
+        response = self.client.get(endpoint)
+        self.assertNotEqual(response.status_code, HTTP_503_SERVICE_UNAVAILABLE)
+
+    @mock.patch.dict('os.environ', {'MAINTENANCE_MODE': 'False'}, clear=True)
+    def test_maintenance_mode_disabled_health_check_should_work(self):
+        endpoint = '/status/health'
+        response = self.client.get(endpoint)
+        self.assertNotEqual(response.status_code, HTTP_503_SERVICE_UNAVAILABLE)
