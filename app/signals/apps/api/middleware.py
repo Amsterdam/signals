@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2023 Gemeente Amsterdam
+# Copyright (C) 2018 - 2024 Gemeente Amsterdam
+import os
 from typing import Callable
 
 from django.conf import settings
@@ -40,5 +41,19 @@ class SessionLoginMiddleware:
         if request.user and not isinstance(request.user, AnonymousUser):
             if request.path.startswith('/signals/v1/private'):
                 login(request, request.user, settings.AUTHENTICATION_BACKENDS[0])
+
+        return response
+
+
+class MaintenanceModeMiddleware:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]):
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        maintenance_mode: bool = os.getenv('MAINTENANCE_MODE', False) in settings.TRUE_VALUES
+        if maintenance_mode:
+            response = HttpResponse('API in maintenance mode', status=503)
+        else:
+            response = self.get_response(request)
 
         return response

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2023 Gemeente Amsterdam
+# Copyright (C) 2018 - 2024 Gemeente Amsterdam
 import os
 from typing import Any, Callable
 
@@ -100,6 +100,7 @@ INSTALLED_APPS: list[str] = [
 
 MIDDLEWARE: list[str] = [
     'corsheaders.middleware.CorsMiddleware',
+    'signals.apps.api.middleware.MaintenanceModeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
