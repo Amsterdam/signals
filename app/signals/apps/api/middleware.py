@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
+from django.urls import resolve
 
 from signals import __version__
 
@@ -51,7 +52,7 @@ class MaintenanceModeMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         maintenance_mode: bool = os.getenv('MAINTENANCE_MODE', False) in settings.TRUE_VALUES
-        if maintenance_mode:
+        if maintenance_mode and not resolve(request.path_info).url_name == 'health_check':
             response = HttpResponse('API in maintenance mode', status=503)
         else:
             response = self.get_response(request)
