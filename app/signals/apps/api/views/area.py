@@ -25,7 +25,7 @@ class PublicAreasViewSet(ListModelMixin, GenericViewSet):
     filterset_class = AreaFilterSet
 
     queryset = Area.objects.all()
-    ordering = ("_type", "name", ) # Order by _type and name by default
+    ordering = ("_type", "name", )  # Order by _type and name by default
 
     @extend_schema(
         parameters=[
