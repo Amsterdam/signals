@@ -5,6 +5,7 @@ import os
 from rest_framework import status
 
 from signals.apps.signals.factories import AreaFactory, AreaTypeFactory
+from signals.apps.signals.models import Area
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -91,3 +92,45 @@ class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_404(self):
         response = self.client.delete(f'{self.list_endpoint}1')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_list_ordered_asc(self):
+        area_type_code = self.area_types[0].code
+
+        expected_area_order = list(Area.objects.filter(
+            _type__code=area_type_code
+        ).order_by(
+            'name',
+        ).values_list(
+            'code',
+            flat=True
+        ))
+
+        response = self.client.get(f'{self.list_endpoint}?type_code={area_type_code}&ordering=name')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        response_order = [item['code'] for item in data['results']]
+
+        # Compare the order of response data with the expected order of queryset
+        self.assertEqual(response_order, expected_area_order)
+
+    def test_get_list_ordered_desc(self):
+        area_type_code = self.area_types[0].code
+
+        expected_area_order = list(Area.objects.filter(
+            _type__code=area_type_code
+        ).order_by(
+            '-name',
+        ).values_list(
+            'code',
+            flat=True
+        ))
+
+        response = self.client.get(f'{self.list_endpoint}?type_code={area_type_code}&ordering=-name')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        response_order = [item['code'] for item in data['results']]
+
+        # Compare the order of response data with the expected order of queryset
+        self.assertEqual(response_order, expected_area_order)
