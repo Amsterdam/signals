@@ -67,14 +67,3 @@ Contributors may wish to familiarize themselves with the open standards used wit
 * [JSONSchema](https://json-schema.org/)
 * [GeoJSON](https://geojson.org/)
 * [SMTP](https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol#Related_requests_for_comments)
-
-## Under Foundation for Public Code incubating codebase stewardship
-
-Signalen is in incubation [codebase stewardship](https://publiccode.net/codebase-stewardship/) with the [Foundation for Public Code](https://publiccode.net).
-
-The [codebase stewardship activities](https://about.publiccode.net/activities/codebase-stewardship/activities.html) by the Foundation for Public Code on this codebase include:
-
-* facilitating the community and its members
-* help all contributors contribute in line with the contributing guidelines and the [Standard for Public Code](https://standard.publiccode.net/)
-* work with the community to tell their stories, create their brand and market their products
-* support the technical and product steering teams
