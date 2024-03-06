@@ -26,8 +26,3 @@ section.
 We welcome contributions to Signalen! If you're interested in contributing,
 take a look at our [contribution guide](docs/CONTRIBUTING.md) and our
 [local development guide](./docs/development/local.md).
-
-## Under Foundation for Public Code incubating codebase stewardship
-
-Signalen is in incubation [codebase stewardship](https://publiccode.net/codebase-stewardship/)
-with the [Foundation for Public Code](https://publiccode.net).
