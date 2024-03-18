@@ -420,7 +420,6 @@ packaging==24.0
     #   msal-extensions
     #   pyproject-api
     #   pytest
-    #   pytest-bdd
     #   tox
 parse==1.20.1
     # via
@@ -512,7 +511,7 @@ pyproject-api==1.6.1
     # via
     #   -r requirements/requirements_test.txt
     #   tox
-pytest==8.1.1
+pytest==8.0.2
     # via
     #   -r requirements/requirements_test.txt
     #   pytest-bdd
@@ -521,7 +520,7 @@ pytest==8.1.1
     #   pytest-subtests
     #   pytest-timeout
     #   pytest-xdist
-pytest-bdd==7.1.2
+pytest-bdd==7.0.1
     # via -r requirements/requirements_test.txt
 pytest-cov==4.1.0
     # via -r requirements/requirements_test.txt
