@@ -10,7 +10,7 @@ django-extensions
 django-filter
 django-markdownx
 django-o365mail
-djangorestframework
+djangorestframework<3.15
 djangorestframework-gis
 django-silk
 django-storages
