@@ -30,7 +30,12 @@ class StandardAnswerTopic(models.Model):
 class StandardAnswer(models.Model):
     is_visible = models.BooleanField(default=True)
     is_satisfied = models.BooleanField(default=True)
-    reopens_when_unhappy = models.BooleanField(default=False)
+    reopens_when_unhappy = models.BooleanField(default=False,
+                                               help_text='Als deze optie is aangevinkt, zal een '
+                                                         'melding heropend worden. Bij het '
+                                                         'heropenen van een melding heeft de optie '
+                                                         '"open_answer" prioriteit boven '
+                                                         'deze optie.')
     text = models.TextField(max_length=1000, unique=True)
     order = models.IntegerField(default=0, null=True, blank=True,
                                 help_text='De volgorde van de antwoorden tijdens het KTO proces. '
@@ -41,10 +46,12 @@ class StandardAnswer(models.Model):
 
     open_answer = models.BooleanField(default=False,
                                       help_text='Als deze optie is aangevinkt, '
-                                                'dan wordt er een open antwoord'
-                                                ' verwacht van de melder en is '
+                                                'dan wordt er een open antwoord '
+                                                'verwacht van de melder en is '
                                                 'de opgegeven text een default '
-                                                'waarde.')
+                                                'waarde. Een open antwoord zorgt er voor dat een '
+                                                'melding wordt heropend, deze optie heeft prioriteit '
+                                                'boven de optie "reopens_when_unhappy".')
 
     def __str__(self) -> str:
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'
