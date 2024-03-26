@@ -1,6 +1,13 @@
 .env
+Dockerfile
+docker-compose.yml
+.github/
+app/.pytest_cache/
+app/.esri.gz
 app/static
 app/media
 app/signals/settings/local.py
 app/Makefile
+docker-compose/
 dumps/
+venv/

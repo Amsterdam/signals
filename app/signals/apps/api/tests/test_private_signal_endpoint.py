@@ -1597,14 +1597,14 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         # to sort NULLS LAST for ascending order en NULLS FIRST for descending.
         # This test also checks that area_name and stadsdeel ordering behave
         # the same.
-        signal_a = SignalFactoryValidLocation.create(location__area_name='a')
-        signal_a.location.stadsdeel = 'a'  # factory overwrites this property post generation
+        signal_a = SignalFactoryValidLocation.create(location__area_name='A')
+        signal_a.location.stadsdeel = 'A'  # factory overwrites this property post generation
         signal_a.location.save()
-        signal_A = SignalFactoryValidLocation.create(location__area_name='A')
-        signal_A.location.stadsdeel = 'A'
+        signal_A = SignalFactoryValidLocation.create(location__area_name='B')
+        signal_A.location.stadsdeel = 'B'
         signal_A.location.save()
-        signal_B = SignalFactoryValidLocation.create(location__area_name='B')
-        signal_B.location.stadsdeel = 'B'
+        signal_B = SignalFactoryValidLocation.create(location__area_name='a')
+        signal_B.location.stadsdeel = 'a'
         signal_B.location.save()
 
         signal_none1 = SignalFactoryValidLocation.create(location__area_name=None)

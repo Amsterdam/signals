@@ -8,7 +8,7 @@ amqp==5.2.0
     # via kombu
 arpeggio==2.0.2
     # via textx
-asgiref==3.7.2
+asgiref==3.8.1
     # via
     #   django
     #   django-cors-headers
@@ -65,7 +65,7 @@ click==8.1.7
     #   click-didyoumean
     #   click-plugins
     #   click-repl
-click-didyoumean==0.3.0
+click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1
     # via celery
@@ -91,7 +91,7 @@ defusedxml==0.7.1
     # via
     #   cairosvg
     #   djangorestframework-xml
-django==3.2.25
+django==4.2.11
     # via
     #   -r requirements/requirements.in
     #   django-appconf
@@ -122,7 +122,7 @@ django-cors-headers==4.3.1
     # via -r requirements/requirements.in
 django-extensions==3.2.3
     # via -r requirements/requirements.in
-django-filter==23.5
+django-filter==24.1
     # via -r requirements/requirements.in
 django-fsm==2.8.1
     # via -r requirements/requirements.in
@@ -166,9 +166,9 @@ elasticsearch-dsl==7.4.1
     # via -r requirements/requirements.in
 flower==2.0.1
     # via -r requirements/requirements.in
-google-api-core==2.17.1
+google-api-core==2.18.0
     # via opencensus
-google-auth==2.28.2
+google-auth==2.29.0
     # via google-api-core
 googleapis-common-protos==1.63.0
     # via google-api-core
@@ -202,7 +202,7 @@ markdown==3.6
     # via django-markdownx
 mozilla-django-oidc==4.0.1
     # via -r requirements/requirements.in
-msal==1.27.0
+msal==1.28.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -247,10 +247,13 @@ prometheus-client==0.20.0
     # via flower
 prompt-toolkit==3.0.43
     # via click-repl
+proto-plus==1.23.0
+    # via google-api-core
 protobuf==4.25.3
     # via
     #   google-api-core
     #   googleapis-common-protos
+    #   proto-plus
 psutil==5.9.8
     # via opencensus-ext-azure
 psycopg2-binary==2.9.9
@@ -288,7 +291,6 @@ python-magic==0.4.27
     # via -r requirements/requirements.in
 pytz==2024.1
     # via
-    #   django
     #   djangorestframework
     #   flower
 pyyaml==6.0.1
@@ -308,7 +310,7 @@ requests==2.31.0
     #   opencensus-ext-azure
     #   opencensus-ext-requests
     #   requests-oauthlib
-requests-oauthlib==1.4.0
+requests-oauthlib==2.0.0
     # via o365
 rpds-py==0.18.0
     # via

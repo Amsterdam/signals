@@ -72,11 +72,5 @@ class Migration(migrations.Migration):
                 ],
                 max_length=20
             ),
-        ),
-        migrations.AlterIndexTogether(
-            name='statusmessagetemplate',
-            index_together={
-                ('category', 'state', 'order')
-            },
-        ),
+        )
     ]

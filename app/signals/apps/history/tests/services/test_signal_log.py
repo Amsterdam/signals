@@ -231,4 +231,3 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         self.signal.delete()
 
         self.assertEqual(0, Log.objects.count())
-        self.assertEqual(0, self.signal.history_log.count())

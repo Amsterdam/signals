@@ -39,8 +39,16 @@ class Migration(migrations.Migration):
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING,
                                                related_name='+', to='signals.Category')),
             ],
-            options={
-                'ordering': ('category', 'state', 'order'),
-            },
+        ),
+        migrations.AddIndex(
+            model_name='StatusMessageTemplate',
+            index=models.Index(
+                fields=[
+                    'category',
+                    'state',
+                    'order'
+                ],
+                name='signals_sta_categor_e4965c_idx'
+            ),
         ),
     ]

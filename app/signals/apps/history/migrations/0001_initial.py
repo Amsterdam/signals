@@ -36,7 +36,16 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ('-created_at',),
-                'index_together': {('content_type', 'object_pk')},
             },
+        ),
+        migrations.AddIndex(
+            model_name='Log',
+            index=models.Index(
+                fields=[
+                    'content_type',
+                    'object_pk'
+                ],
+                name='history_log_content_2ce2f5_idx'
+            ),
         ),
     ]
