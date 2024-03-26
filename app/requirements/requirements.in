@@ -1,7 +1,7 @@
 azure-storage-blob
 beautifulsoup4
 Celery
-Django>=4.1,<4.3
+Django>4.1,<4.3
 django-celery-beat
 django-celery-email
 django-celery-results

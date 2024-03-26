@@ -12,7 +12,7 @@ arpeggio==2.0.2
     # via
     #   -r requirements/requirements_test.txt
     #   textx
-asgiref==3.7.2
+asgiref==3.8.1
     # via
     #   -r requirements/requirements_test.txt
     #   django
@@ -96,7 +96,7 @@ click==8.1.7
     #   click-didyoumean
     #   click-plugins
     #   click-repl
-click-didyoumean==0.3.0
+click-didyoumean==0.3.1
     # via
     #   -r requirements/requirements_test.txt
     #   celery
@@ -258,11 +258,11 @@ factory-boy==3.3.0
     # via
     #   -r requirements/requirements_test.txt
     #   types-factory-boy
-faker==24.3.0
+faker==24.4.0
     # via
     #   -r requirements/requirements_test.txt
     #   factory-boy
-filelock==3.13.1
+filelock==3.13.3
     # via
     #   -r requirements/requirements_test.txt
     #   tox
@@ -273,11 +273,11 @@ flower==2.0.1
     # via -r requirements/requirements_test.txt
 freezegun==1.4.0
     # via -r requirements/requirements_test.txt
-google-api-core==2.17.1
+google-api-core==2.18.0
     # via
     #   -r requirements/requirements_test.txt
     #   opencensus
-google-auth==2.28.2
+google-auth==2.29.0
     # via
     #   -r requirements/requirements_test.txt
     #   google-api-core
@@ -458,11 +458,16 @@ prompt-toolkit==3.0.43
     # via
     #   -r requirements/requirements_test.txt
     #   click-repl
+proto-plus==1.23.0
+    # via
+    #   -r requirements/requirements_test.txt
+    #   google-api-core
 protobuf==4.25.3
     # via
     #   -r requirements/requirements_test.txt
     #   google-api-core
     #   googleapis-common-protos
+    #   proto-plus
 psutil==5.9.8
     # via
     #   -r requirements/requirements_test.txt
@@ -522,7 +527,7 @@ pytest==8.0.2
     #   pytest-xdist
 pytest-bdd==7.0.1
     # via -r requirements/requirements_test.txt
-pytest-cov==4.1.0
+pytest-cov==5.0.0
     # via -r requirements/requirements_test.txt
 pytest-django==4.8.0
     # via -r requirements/requirements_test.txt
@@ -577,7 +582,7 @@ requests==2.31.0
     #   requests-oauthlib
 requests-mock==1.11.0
     # via -r requirements/requirements_test.txt
-requests-oauthlib==1.4.0
+requests-oauthlib==2.0.0
     # via
     #   -r requirements/requirements_test.txt
     #   o365
@@ -627,7 +632,7 @@ tornado==6.4
     # via
     #   -r requirements/requirements_test.txt
     #   flower
-tox==4.14.1
+tox==4.14.2
     # via -r requirements/requirements_test.txt
 types-beautifulsoup4==4.12.0.20240229
     # via -r requirements/requirements_test.txt
@@ -647,7 +652,7 @@ types-jsonschema==4.21.0.20240311
     # via -r requirements/requirements_test.txt
 types-markdown==3.6.0.20240316
     # via -r requirements/requirements_test.txt
-types-pillow==10.2.0.20240311
+types-pillow==10.2.0.20240324
     # via -r requirements/requirements_test.txt
 types-psycopg2==2.9.21.20240311
     # via -r requirements/requirements_test.txt
