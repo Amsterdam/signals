@@ -122,7 +122,7 @@ django-cors-headers==4.3.1
     # via -r requirements/requirements.in
 django-extensions==3.2.3
     # via -r requirements/requirements.in
-django-filter==24.1
+django-filter==24.2
     # via -r requirements/requirements.in
 django-fsm==2.8.1
     # via -r requirements/requirements.in
@@ -156,9 +156,9 @@ drf-extensions==0.7.1
     # via
     #   -r requirements/requirements.in
     #   drf-amsterdam
-drf-spectacular[sidecar]==0.27.1
+drf-spectacular[sidecar]==0.27.2
     # via -r requirements/requirements.in
-drf-spectacular-sidecar==2024.3.4
+drf-spectacular-sidecar==2024.4.1
     # via drf-spectacular
 elasticsearch==7.17.9
     # via elasticsearch-dsl
@@ -194,9 +194,9 @@ jsonschema-specifications==2023.12.1
     # via jsonschema
 jwcrypto==1.5.6
     # via -r requirements/requirements.in
-kombu==5.3.5
+kombu==5.3.6
     # via celery
-lxml==5.1.0
+lxml==5.2.1
     # via -r requirements/requirements.in
 markdown==3.6
     # via django-markdownx
@@ -235,7 +235,7 @@ opencensus-ext-requests==0.8.0
     # via -r requirements/requirements.in
 packaging==24.0
     # via msal-extensions
-pillow==10.2.0
+pillow==10.3.0
     # via
     #   -r requirements/requirements.in
     #   cairosvg
@@ -260,15 +260,15 @@ psycopg2-binary==2.9.9
     # via
     #   -r requirements/requirements.in
     #   opencensus-ext-postgresql
-pyasn1==0.5.1
+pyasn1==0.6.0
     # via
     #   pyasn1-modules
     #   rsa
-pyasn1-modules==0.3.0
+pyasn1-modules==0.4.0
     # via google-auth
 pycodestyle==2.11.1
     # via autopep8
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pyjwt[crypto]==2.8.0
     # via msal
