@@ -250,6 +250,10 @@ STATIC_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL: str = '/signals/media/'
 MEDIA_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
+PROTECTED_FILE_SYSTEM_STORAGE: bool = os.getenv('PROTECTED_FILE_SYSTEM_STORAGE', False) in TRUE_VALUES
+if PROTECTED_FILE_SYSTEM_STORAGE:
+    DEFAULT_FILE_STORAGE: str = 'signals.apps.media.storages.ProtectedFileSystemStorage'
+
 AZURE_STORAGE_ENABLED: bool = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
 if AZURE_STORAGE_ENABLED:
     # Azure Settings
