@@ -265,6 +265,10 @@ if S3_STORAGE_ENABLED:
     AWS_S3_ENDPOINT_URL: str | None = os.getenv('S3_ENDPOINT_URL')
     AWS_S3_REGION_NAME: str | None = os.getenv('S3_REGION_NAME')
 
+PROTECTED_FILE_SYSTEM_STORAGE: bool = os.getenv('PROTECTED_FILE_SYSTEM_STORAGE', False) in TRUE_VALUES
+if PROTECTED_FILE_SYSTEM_STORAGE:
+    DEFAULT_FILE_STORAGE: str = 'signals.apps.media.storages.ProtectedFileSystemStorage'
+
 AZURE_STORAGE_ENABLED: bool = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
 if AZURE_STORAGE_ENABLED:
     # Azure Settings
