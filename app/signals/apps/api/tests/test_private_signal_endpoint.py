@@ -210,7 +210,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(response['X-Total-Count'], '10')
 
         # Confirm pagination is done in DB and not in Python
-        self.assertIn('LIMIT 2 OFFSET 2', connection.queries[10]['sql'])
+        self.assertIn('LIMIT 2 OFFSET 2', connection.queries[3]['sql'])
 
         # Check the full set of Signals is not retrieved
         with connection.cursor() as cursor:
