@@ -172,7 +172,7 @@ django-cors-headers==4.3.1
     # via -r requirements/requirements.txt
 django-extensions==3.2.3
     # via -r requirements/requirements.txt
-django-filter==24.1
+django-filter==24.2
     # via -r requirements/requirements.txt
 django-filter-stubs==0.1.3
     # via -r requirements/requirements_test.in
@@ -225,9 +225,9 @@ drf-extensions==0.7.1
     # via
     #   -r requirements/requirements.txt
     #   drf-amsterdam
-drf-spectacular[sidecar]==0.27.1
+drf-spectacular[sidecar]==0.27.2
     # via -r requirements/requirements.txt
-drf-spectacular-sidecar==2024.3.4
+drf-spectacular-sidecar==2024.4.1
     # via
     #   -r requirements/requirements.txt
     #   drf-spectacular
@@ -309,11 +309,11 @@ jsonschema-specifications==2023.12.1
     #   jsonschema
 jwcrypto==1.5.6
     # via -r requirements/requirements.txt
-kombu==5.3.5
+kombu==5.3.6
     # via
     #   -r requirements/requirements.txt
     #   celery
-lxml==5.1.0
+lxml==5.2.1
     # via
     #   -r requirements/requirements.txt
     #   xmlunittest
@@ -399,7 +399,7 @@ parse==1.20.1
     #   pytest-bdd
 parse-type==0.6.2
     # via pytest-bdd
-pillow==10.2.0
+pillow==10.3.0
     # via
     #   -r requirements/requirements.txt
     #   cairosvg
@@ -443,12 +443,12 @@ psycopg2-binary==2.9.9
     # via
     #   -r requirements/requirements.txt
     #   opencensus-ext-postgresql
-pyasn1==0.5.1
+pyasn1==0.6.0
     # via
     #   -r requirements/requirements.txt
     #   pyasn1-modules
     #   rsa
-pyasn1-modules==0.3.0
+pyasn1-modules==0.4.0
     # via
     #   -r requirements/requirements.txt
     #   google-auth
@@ -457,7 +457,7 @@ pycodestyle==2.11.1
     #   -r requirements/requirements.txt
     #   autopep8
     #   flake8
-pycparser==2.21
+pycparser==2.22
     # via
     #   -r requirements/requirements.txt
     #   cffi
@@ -543,7 +543,7 @@ requests==2.31.0
     #   opencensus-ext-requests
     #   requests-mock
     #   requests-oauthlib
-requests-mock==1.11.0
+requests-mock==1.12.1
     # via -r requirements/requirements_test.in
 requests-oauthlib==2.0.0
     # via
@@ -568,7 +568,6 @@ six==1.16.0
     #   opencensus
     #   parse-type
     #   python-dateutil
-    #   requests-mock
 soupsieve==2.5
     # via
     #   -r requirements/requirements.txt
@@ -600,17 +599,17 @@ types-beautifulsoup4==4.12.0.20240229
     # via -r requirements/requirements_test.in
 types-cryptography==3.3.23.2
     # via -r requirements/requirements_test.in
-types-docutils==0.20.0.20240317
+types-docutils==0.20.0.20240331
     # via types-pygments
 types-factory-boy==0.4.1
     # via -r requirements/requirements_test.in
 types-html5lib==1.1.11.20240228
     # via types-beautifulsoup4
-types-jsonschema==4.21.0.20240311
+types-jsonschema==4.21.0.20240331
     # via -r requirements/requirements_test.in
 types-markdown==3.6.0.20240316
     # via -r requirements/requirements_test.in
-types-pillow==10.2.0.20240324
+types-pillow==10.2.0.20240331
     # via -r requirements/requirements_test.in
 types-psycopg2==2.9.21.20240311
     # via -r requirements/requirements_test.in
