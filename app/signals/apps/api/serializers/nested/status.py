@@ -68,7 +68,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
 
     def _validate_state_REACTIE_GEVRAAGD(self, attrs):
         """
-        Validate all info for REACTIE_GEVRAAGS flow is present.
+        Validate all info for REACTIE_GEVRAAGD flow is present.
         """
         if attrs['state'] == workflow.REACTIE_GEVRAAGD:  # SIG-3887
             signal = self.context['view'].get_object()
