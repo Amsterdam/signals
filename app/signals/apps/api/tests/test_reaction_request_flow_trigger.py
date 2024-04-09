@@ -33,16 +33,22 @@ class TestReactionRequestFlowTrigger(SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_SIG_4511_update_status_more_than_400_characters(self):
+    def test_update_status_more_than_1000_characters(self):
+        text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
+laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem
+ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur
+sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
         data = {
             'status': {
-                'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut '
-                        'labore et dolore magna aliqua. Morbi tristique senectus et netus et malesuada fames. '
-                        'Vestibulum rhoncus est pellentesque elit ullamcorper dignissim cras tincidunt lobortis. Vitae '
-                        'auctor eu augue ut lectus arcu bibendum at varius. Luctus venenatis lectus magna fringilla '
-                        'urna. Adipiscing commodo elit at imperdiet dui accumsan sit. Venenatis urna cursus eget nunc '
-                        'scelerisque viverra mauris in. Aliquam sem et tortor consequat id porta. Massa enim nec dui '
-                        'nunc. Pellentesque adipiscing commodo elit at imperdiet dui accumsan sit.',
+                'text': text,
                 'state': 'reaction requested'
             }
         }
@@ -51,5 +57,4 @@ class TestReactionRequestFlowTrigger(SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['status']['text'][0],
-                         'Zorg dat deze waarde niet meer dan 400 tekens bevat (het zijn er nu '
-                         f'{len(data["status"]["text"])}).')
+                         f'Zorg dat deze waarde niet meer dan 1000 tekens bevat (het zijn er nu {len(text)}).')
