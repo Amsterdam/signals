@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2024 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import MaxLengthValidator
 from rest_framework import serializers
@@ -68,7 +68,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
 
     def _validate_state_REACTIE_GEVRAAGD(self, attrs):
         """
-        Validate all info for REACTIE_GEVRAAGS flow is present.
+        Validate all info for REACTIE_GEVRAAGD flow is present.
         """
         if attrs['state'] == workflow.REACTIE_GEVRAAGD:  # SIG-3887
             signal = self.context['view'].get_object()
@@ -76,11 +76,8 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                 msg = 'No email address known for signal with ID={{ signal.id }}.'
                 raise ValidationError({'state': msg})
 
-            # SIG-4511
-            # Check if the given text has a maximum length of 400 characters.
-            # If not, raise a validation error.
             try:
-                MaxLengthValidator(limit_value=400)(attrs['text'])
+                MaxLengthValidator(limit_value=1000)(attrs['text'])
             except DjangoValidationError as e:
                 raise ValidationError({'text': e.messages})
 
