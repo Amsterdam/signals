@@ -609,7 +609,7 @@ soupsieve==2.5
     # via
     #   -r requirements_test.txt
     #   beautifulsoup4
-sqlparse==0.4.4
+sqlparse==0.5.0
     # via
     #   -r requirements_test.txt
     #   django
