@@ -40,18 +40,18 @@ class StandardAnswer(models.Model):
         default=0,
         null=True,
         blank=True,
-        help_text='Als deze optie is aangevinkt, dan wordt een open antwoord verwacht van de melder en is de '
-                  'opgegeven tekst een default waarde. De melding krijgt bij deze optie automatisch de status '
-                  'verzoek tot heropenen.'
+        help_text='De volgorde van de antwoorden tijdens het KTO proces. Bij een selectie van een onderwerp is '
+                  'de volgorde van het antwoord binnen het geselecteerde onderwerp.'
     )
 
     topic = models.ForeignKey(StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
 
-    open_answer = models.BooleanField(default=False,
-                                      help_text='Als deze optie is aangevinkt, dan wordt een open '
-                                                'antwoord verwacht van de melder en is de opgegeven '
-                                                'tekst een default waarde. De melding wordt bij deze '
-                                                'optie automatisch heropend. ')
+    open_answer = models.BooleanField(
+        default=False,
+        help_text='Als deze optie is aangevinkt, dan wordt een open antwoord verwacht van de melder en is de '
+                  'opgegeven tekst een default waarde. De melding krijgt bij deze optie automatisch de status '
+                  'verzoek tot heropenen.'
+    )
 
     def __str__(self) -> str:
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'
