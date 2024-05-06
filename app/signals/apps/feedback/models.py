@@ -17,7 +17,7 @@ class StandardAnswerTopic(models.Model):
     description = models.TextField(max_length=1000)
     order = models.IntegerField(default=0, null=True, blank=True,
                                 help_text='De volgorde van de antwoorden '
-                                          'onderwerpen voor het KTP proces.')
+                                          'onderwerpen voor het KTO proces.')
 
     def __str__(self) -> str:
         return self.name
