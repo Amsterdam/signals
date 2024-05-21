@@ -567,7 +567,7 @@ referencing==0.34.0
     #   jsonschema
     #   jsonschema-specifications
     #   types-jsonschema
-requests==2.31.0
+requests==2.32.0
     # via
     #   -r requirements_test.txt
     #   azure-core
