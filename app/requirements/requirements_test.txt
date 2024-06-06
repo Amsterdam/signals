@@ -589,7 +589,7 @@ tinycss2==1.2.1
     #   cairosvg
     #   cssselect2
     #   weasyprint
-tornado==6.4
+tornado==6.4.1
     # via
     #   -r requirements.txt
     #   flower
