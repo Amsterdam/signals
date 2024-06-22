@@ -4,7 +4,7 @@ ARG PYTHON_VERSION=3.11
 ##################################################
 #                   Python                       #
 ##################################################
-FROM python:${PYTHON_VERSION}-slim-buster AS prod
+FROM python:${PYTHON_VERSION}-slim-bookworm AS prod
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
@@ -16,13 +16,13 @@ RUN useradd --no-create-home signals
 
 RUN set -eux;  \
     apt-get update && apt-get install -y \
-        libgeos-3.7 \
+        libgeos3.11.1 \
         gdal-bin \
-        libgdal20 \
+        libgdal32 \
         libspatialite7 \
         libfreexl1 \
-        libgeotiff2 \
-        libwebp6 \
+        libgeotiff5 \
+        libwebp7 \
         proj-bin \
         mime-support \
         gettext \
@@ -30,7 +30,7 @@ RUN set -eux;  \
         libwebpdemux2 \
         libxml2 \
         libfreetype6 \
-        libtiff5 \
+        libtiff6 \
         libgdk-pixbuf2.0-0 \
         libmagic1 \
         libcairo2 \
