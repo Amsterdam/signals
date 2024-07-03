@@ -30,4 +30,5 @@ types-psycopg2
 types-Pygments
 types-Markdown
 types-python-dateutil
+types-pytz
 xmlunittest
