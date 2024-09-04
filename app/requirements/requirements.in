@@ -25,11 +25,6 @@ jwcrypto
 lxml
 mozilla-django-oidc
 networkx
-opencensus-ext-azure
-opencensus-ext-django
-opencensus-ext-logging
-opencensus-ext-postgresql
-opencensus-ext-requests
 Pillow
 psycopg2-binary
 pypdf
