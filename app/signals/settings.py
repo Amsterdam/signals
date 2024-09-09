@@ -121,21 +121,6 @@ if SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION:
     SESSION_COOKIE_SAMESITE: str = 'None'
     CORS_ALLOW_CREDENTIALS: bool = True
 
-AZURE_APPLICATION_INSIGHTS_ENABLED: bool = os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES
-if AZURE_APPLICATION_INSIGHTS_ENABLED:
-    MIDDLEWARE.append('opencensus.ext.django.middleware.OpencensusMiddleware')
-
-    OPENCENSUS: dict[str, dict[str, str | list[str]]] = {
-        'TRACE': {
-            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
-            'EXPORTER': f'''opencensus.ext.azure.trace_exporter.AzureExporter(
-                connection_string="{os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING')}"
-            )''',
-            'EXCLUDELIST_PATHS': [],
-        }
-    }
-
-
 # Setup django-silk
 def is_super_user(user) -> bool:
     return user.is_superuser
@@ -349,6 +334,8 @@ celery_email_task_config_default_retry_delay = os.getenv('CELERY_EMAIL_TASK_CONF
 if celery_email_task_config_default_retry_delay is not None:
     CELERY_EMAIL_TASK_CONFIG['default_retry_delay'] = int(celery_email_task_config_default_retry_delay)
 
+AZURE_APPLICATION_INSIGHTS_ENABLED: bool = os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES
+
 # Azure Application insights logging
 if AZURE_APPLICATION_INSIGHTS_ENABLED:
     AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING: str | None = os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING',
@@ -526,13 +513,59 @@ LOGGING_HANDLERS = {
 }
 LOGGER_HANDLERS = ['console', ]
 if AZURE_APPLICATION_INSIGHTS_ENABLED:
-    LOGGING_HANDLERS.update({
-        'azure': {
-            'class': 'opencensus.ext.azure.log_exporter.AzureLogHandler',
-            'connection_string': os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING'),
-        }
-    })
-    LOGGER_HANDLERS.append('azure')
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor, ConsoleSpanExporter
+    from opentelemetry.sdk._logs.export import SimpleLogRecordProcessor, BatchLogRecordProcessor
+    from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter, AzureMonitorLogExporter
+    from opentelemetry.instrumentation.django import DjangoInstrumentor
+    from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+    from opentelemetry.sdk.resources import Resource
+
+    resource = Resource.create({"service.name": "meldingen-api"})
+
+    # azure_log_exporter = AzureMonitorLogExporter(
+    #     connection_string=os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING')
+    # )
+
+    # logger_provider = LoggerProvider(resource)
+    # logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter=azure_log_exporter))
+
+    tracer_exporter = AzureMonitorTraceExporter(
+        connection_string=AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    )
+
+    tracer_provider = TracerProvider()
+    tracer_provider.add_span_processor(BatchSpanProcessor(span_exporter=tracer_exporter))
+
+    # console_exporter = ConsoleSpanExporter()
+    # tracer_provider.add_span_processor(SimpleSpanProcessor(span_exporter=console_exporter))
+
+    trace.set_tracer_provider(tracer_provider)
+
+    DjangoInstrumentor().instrument(tracer_provider=tracer_provider)
+    Psycopg2Instrumentor().instrument(tracer_provider=tracer_provider, skip_dep_check=True)
+
+    # class AzureLoggingHandler(LoggingHandler):
+    #     def __init__(self):
+
+    #         print('enabled Application Insights')
+
+    #         super().__init__(logger_provider=logger_provider)
+
+    # LOGGING_HANDLERS.update({
+    #     'azure': {
+    #         # "class": "opentelemetry.sdk._logs.LoggingHandler",
+    #         # "()": '.logging_handlers.AzureLoggingHandler'
+    #         '()': AzureLoggingHandler
+    #     }
+    # })
+
+    # LOGGER_HANDLERS.append('azure')
+
+
+    print(f'HANDLERS ${LOGGER_HANDLERS}  ${LOGGING_HANDLERS}')
 
 LOGGING = {
     'version': 1,
@@ -550,19 +583,28 @@ LOGGING = {
     },
     'handlers': LOGGING_HANDLERS,
     'loggers': {
-        'django': {
-            'level': LOGGING_LEVEL,
-            'handlers': LOGGER_HANDLERS,
-        },
-        'django.db.backends': {
-            'level': LOGGING_LEVEL,
-            'handlers': LOGGER_HANDLERS,
-            'filters': ['require_debug_true', ],
-            'propagate': False,
-        },
+        # 'django': {
+        #     'level': 'WARNING',
+        #     'handlers': ['console'],
+        #     'propagate': False,
+        # },
+        # 'django.db.backends': {
+        #     'level': LOGGING_LEVEL,
+        #     'handlers': ['azure'],
+        #     'filters': ['require_debug_true', ],
+        #     'propagate': False,
+        # },
         'django.utils.autoreload': {
             'level': 'ERROR',
             'propagate': False,
-        }
+        },
+        "azure.monitor.opentelemetry.exporter.export._base": {
+            "handlers": ["console"],
+            "level": "INFO",  # Set to INFO to log what is being logged by OpenTelemetry
+        },
+        # "azure.core.pipeline.policies.http_logging_policy": {
+        #     "handlers": ["console"],
+        #     "level": "ERROR",  # Set to INFO to log what is being logged by OpenTelemetry
+        # },
     },
 }
