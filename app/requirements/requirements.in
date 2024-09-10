@@ -26,7 +26,6 @@ jwcrypto
 lxml
 mozilla-django-oidc
 networkx
-opentelemetry-api
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-psycopg2
 opentelemetry-sdk

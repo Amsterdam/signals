@@ -211,7 +211,6 @@ oauthlib==3.2.2
     # via requests-oauthlib
 opentelemetry-api==1.27.0
     # via
-    #   -r requirements.in
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-dbapi
