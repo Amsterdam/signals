@@ -506,41 +506,43 @@ FEATURE_FLAGS: dict[str, bool] = {
 }
 
 # Logging
-LOGGING_HANDLERS = {
+LOGGING_HANDLERS: dict[str, dict[str, Any]] = {
     'console': {
         'class': 'logging.StreamHandler',
     },
 }
 LOGGER_HANDLERS = ['console', ]
 
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.instrumentation.django import DjangoInstrumentor
+from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk.resources import Resource
+
+MONITOR_SERVICE_NAME = 'meldingen-api'
+
+resource: Resource = Resource.create({"service.name": MONITOR_SERVICE_NAME})
+tracer_provider: TracerProvider = TracerProvider(resource=resource)
+trace.set_tracer_provider(tracer_provider)
+
+def response_hook(span, request, response):
+    if span and span.is_recording() and request.user.is_authenticated:
+        span.set_attribute('user_id', request.user.id)
+        span.set_attribute('username', request.user.username)
+
 if AZURE_APPLICATION_INSIGHTS_ENABLED:
-    from opentelemetry import trace
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
     from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter, AzureMonitorLogExporter
-    from opentelemetry.instrumentation.django import DjangoInstrumentor
-    from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
-    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-    from opentelemetry.sdk.resources import Resource
 
-    resource = Resource.create({"service.name": "meldingen-api"})
-    tracer_exporter = AzureMonitorTraceExporter(connection_string=AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING)
+    span_exporter: AzureMonitorTraceExporter = AzureMonitorTraceExporter(connection_string=AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING)
+    tracer_provider.add_span_processor(BatchSpanProcessor(span_exporter=span_exporter))
+    log_exporter: AzureMonitorLogExporter = AzureMonitorLogExporter(connection_string=AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING)
 
-    tracer_provider = TracerProvider(resource=resource)
-    tracer_provider.add_span_processor(BatchSpanProcessor(span_exporter=tracer_exporter))
+    logger_provider: LoggerProvider = LoggerProvider(resource=resource)
 
-    trace.set_tracer_provider(tracer_provider)
-
-    exporter = AzureMonitorLogExporter(
-        connection_string=AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-    )
-
-    logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter, schedule_delay_millis=3000))
-
-    Psycopg2Instrumentor().instrument(tracer_provider=tracer_provider, skip_dep_check=True)
-    DjangoInstrumentor().instrument(tracer_provider=tracer_provider)
+    logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter, schedule_delay_millis=3000))
 
     class AzureLoggingHandler(LoggingHandler):
         def __init__(self):
@@ -556,11 +558,16 @@ if AZURE_APPLICATION_INSIGHTS_ENABLED:
 
     LOGGER_HANDLERS.append('azure')
 
+Psycopg2Instrumentor().instrument(tracer_provider=tracer_provider, skip_dep_check=True)
+DjangoInstrumentor().instrument(tracer_provider=tracer_provider, response_hook=response_hook)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'elaborate': {
+
+            # TODO willen we deze formatting toepassen? Nu alleen bij print statements
             'format': '{levelname} {module}.{filename} {message}',
             'style': '{'
         }
@@ -574,20 +581,35 @@ LOGGING = {
     'loggers': {
         '': {
             'level': LOGGING_LEVEL,
-            'handlers': LOGGING_HANDLERS,
+            'handlers': LOGGER_HANDLERS,
             'propagate': False,
         },
         'django.utils.autoreload': {
             'level': 'ERROR',
             'propagate': False,
         },
-        "azure.monitor.opentelemetry.exporter.export._base": {
-            "handlers": LOGGING_HANDLERS,
-            "level": "ERROR",  # Set to INFO to log what is being logged by OpenTelemetry
-        },
-        "azure.core.pipeline.policies.http_logging_policy": {
-            "handlers": LOGGING_HANDLERS,
-            "level": "ERROR",  # Set to INFO to log what is being logged by OpenTelemetry
-        },
     },
 }
+
+# TODO
+if AZURE_APPLICATION_INSIGHTS_ENABLED:
+    LOGGING.get('loggers').update({
+        "azure.monitor.opentelemetry.exporter.export._base": {
+            "handlers": LOGGER_HANDLERS,
+            "level": "ERROR",  # Set to INFO to log what is being logged to Azure
+        },
+        "azure.core.pipeline.policies.http_logging_policy": {
+            "handlers": LOGGER_HANDLERS,
+            "level": "ERROR",  # Set to INFO to log what is being logged to Azure
+        },
+    })
+# else:
+#     # When in debug mode, queries will be logged to console
+#     LOGGING.get('loggers').update({
+#         'django.db.backends': {
+#             'handlers': LOGGER_HANDLERS,
+#             'level': LOGGING_LEVEL,
+#             'propagate': False,
+#             'filters': ['require_debug_true', ],
+#         }
+#     })
