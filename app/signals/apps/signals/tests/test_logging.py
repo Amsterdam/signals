@@ -1,19 +1,17 @@
 import logging
-from unittest.mock import patch, MagicMock
-from django.contrib.auth.models import User
-from django.test import Client
-from rest_framework.test import APITestCase
 
-from django.test import TestCase, override_settings
 from django.urls import path
+from rest_framework.test import APITestCase
 
 
 def view_that_raises_exception(request):
-    raise ValueError("Test exception")
+    raise ValueError('Test exception')
+
 
 urlpatterns = [
     path('test-exception/', view_that_raises_exception),
 ]
+
 
 class MockHandler(logging.Handler):
     def __init__(self):
@@ -22,6 +20,7 @@ class MockHandler(logging.Handler):
 
     def emit(self, record):
         self.records.append(record)
+
 
 class LoggingTestCase(APITestCase):
 
