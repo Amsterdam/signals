@@ -3,12 +3,6 @@
 import os
 from typing import Any, Callable
 
-# Export modules to Azure Application Insights
-from azure.monitor.opentelemetry.exporter import (
-    AzureMonitorLogExporter,
-    AzureMonitorTraceExporter,
-)
-
 # Opentelemetry modules needed for logging and tracing
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -18,6 +12,9 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+# Export modules to Azure Application Insights
+from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
 
 from signals import __version__
 
