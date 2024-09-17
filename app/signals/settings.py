@@ -137,6 +137,7 @@ if SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION:
     SESSION_COOKIE_SAMESITE: str = 'None'
     CORS_ALLOW_CREDENTIALS: bool = True
 
+
 # Setup django-silk
 def is_super_user(user) -> bool:
     return user.is_superuser
@@ -563,7 +564,6 @@ if AZURE_APPLICATION_INSIGHTS_ENABLED and AZURE_APPLICATION_INSIGHTS_CONNECTION_
     class AzureLoggingHandler(LoggingHandler):
         def __init__(self):
             super().__init__(logger_provider=logger_provider)
-
 
     LOGGING_HANDLERS.update({
         'azure': {
