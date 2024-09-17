@@ -68,7 +68,8 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-    'signals.apps.my_signals'
+    'signals.apps.my_signals',
+    'signals.apps.classification'
 ]
 
 INSTALLED_APPS: list[str] = [
