@@ -576,7 +576,7 @@ if AZURE_APPLICATION_INSIGHTS_ENABLED and AZURE_APPLICATION_INSIGHTS_CONNECTION_
 Psycopg2Instrumentor().instrument(tracer_provider=tracer_provider, skip_dep_check=True)
 DjangoInstrumentor().instrument(tracer_provider=tracer_provider, response_hook=response_hook)
 
-LOGGING = {
+LOGGING: dict[str, Any] = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -607,7 +607,7 @@ LOGGING = {
 }
 
 if AZURE_APPLICATION_INSIGHTS_ENABLED:
-    LOGGING.get('loggers').update({
+    LOGGING['loggers'].update({
         "azure.monitor.opentelemetry.exporter.export._base": {
             "handlers": LOGGER_HANDLERS,
             "level": "ERROR",  # Set to INFO to log what is being logged to Azure
@@ -619,7 +619,7 @@ if AZURE_APPLICATION_INSIGHTS_ENABLED:
     })
 else:
     # When in debug mode without Azure Insights, queries will be logged to console
-    LOGGING.get('loggers').update({
+    LOGGING['loggers'].update({
         'django.db.backends': {
             'handlers': LOGGER_HANDLERS,
             'level': LOGGING_LEVEL,
