@@ -1,18 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2024 Gemeente Amsterdam
+# Copyright (C) 2019 - 2024 Gemeente Amsterdam
 import logging
 
-from django.urls import path
 from rest_framework.test import APITestCase
-
-
-def view_that_raises_exception(request):
-    raise ValueError('Test exception')
-
-
-urlpatterns = [
-    path('test-exception/', view_that_raises_exception),
-]
 
 
 class MockHandler(logging.Handler):
