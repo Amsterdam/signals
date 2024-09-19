@@ -581,8 +581,6 @@ LOGGING: dict[str, Any] = {
     'disable_existing_loggers': False,
     'formatters': {
         'elaborate': {
-
-            # TODO willen we deze formatting toepassen? Nu alleen bij print statements
             'format': '{levelname} {module}.{filename} {message}',
             'style': '{'
         }
