@@ -5,7 +5,6 @@ from typing import Any, Callable
 
 # Export modules to Azure Application Insights
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
-
 # Opentelemetry modules needed for logging and tracing
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor
