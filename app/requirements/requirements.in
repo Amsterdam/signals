@@ -1,3 +1,4 @@
+azure-monitor-opentelemetry-exporter
 azure-storage-blob
 beautifulsoup4
 Celery
@@ -25,11 +26,9 @@ jwcrypto
 lxml
 mozilla-django-oidc
 networkx
-opencensus-ext-azure
-opencensus-ext-django
-opencensus-ext-logging
-opencensus-ext-postgresql
-opencensus-ext-requests
+opentelemetry-instrumentation-django
+opentelemetry-instrumentation-psycopg2
+opentelemetry-sdk
 Pillow
 psycopg2-binary
 pypdf

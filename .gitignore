@@ -181,6 +181,7 @@ Global/NetBeans.gitignore
 .env/
 .mypy_cache/
 notes/
+.devcontainer
 
 # bind mount should be ignored
 dwh_media/
