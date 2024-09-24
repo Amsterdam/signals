@@ -535,9 +535,11 @@ trace.set_tracer_provider(tracer_provider)
 
 # As required, the user id and name is attached to each request that is recorded as a span
 def response_hook(span, request, response):
-    if span and span.is_recording() and request.user.is_authenticated:
-        span.set_attribute('user_id', request.user.id)
-        span.set_attribute('username', request.user.username)
+    if all([span, span.is_recording(), request.user, request.user.is_authenticated]):
+        span.set_attributes({
+            'user_id': request.user.id,
+            'username': request.user.username
+        })
 
 
 # Logs and traces will be exported to Azure Application Insights
