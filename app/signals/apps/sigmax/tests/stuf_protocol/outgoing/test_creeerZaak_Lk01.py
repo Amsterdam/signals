@@ -6,7 +6,6 @@ Test suite for Sigmax message generation.
 import copy
 import logging
 from datetime import timedelta
-from typing import Any
 
 from django.contrib.gis.geos import Point
 from django.test import TestCase
@@ -259,8 +258,6 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
         assert self.signal.incident_date_end is not None
         assert self.signal.location.address is not None
 
-        address: dict[str, Any] = self.signal.location.address
-
         # Check whether our properties made it over
         # (crudely, maybe use XPATH here)
         need_to_find = dict([
@@ -274,15 +271,15 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',
-                address['openbare_ruimte']
+                self.signal.location.address['openbare_ruimte']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}huisnummer',
-                address['huisnummer']
+                self.signal.location.address['huisnummer']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}postcode',
-                address['postcode']
+                self.signal.location.address['postcode']
             ),
             (
                 '{http://www.egem.nl/StUF/StUF0301}tijdstipBericht',

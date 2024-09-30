@@ -169,7 +169,6 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
         }
 
         actions = []
-
         for key, value in log.data.items():
             if key == 'groups':
                 value = ', '.join(_get_groups_queryset().filter(id__in=value).values_list('name', flat=True))
