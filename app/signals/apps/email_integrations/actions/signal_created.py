@@ -43,7 +43,7 @@ class SignalCreatedAction(AbstractSignalStatusAction):
 
         return context
 
-    def _extra_properties_context(self, extra_properties: list) -> dict:
+    def _extra_properties_context(self, extra_properties: list | None) -> dict:
         """
         Renders the extra properties of the signals as a dict of key-value pairs so that they can be rendered in the
         email template.

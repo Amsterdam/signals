@@ -110,7 +110,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
 class TestGenerateOmschrijving(TestCase):
     def setUp(self) -> None:
-        self.signal: Signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        self.signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
 
     def test_generate_omschrijving_urgent(self) -> None:
         stadsdeel = self.signal.location.stadsdeel

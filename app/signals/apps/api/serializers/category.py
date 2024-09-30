@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
+from typing import Any
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
@@ -182,6 +183,8 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
 
     def get_action(self, log: Log) -> str:  # noqa C901
         actions = []
+        assert log.data is not None
+
         for key, value in log.data.items():
             if key == 'name':
                 action = f'Naam gewijzigd naar:\n {value}'

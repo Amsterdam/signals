@@ -159,6 +159,8 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
         return f'{log.get_action_display().upper()}_USER'
 
     def get_action(self, log: Log) -> str:
+        assert log.data
+
         key_2_title = {
             'first_name': 'Voornaam gewijzigd',
             'last_name': 'Achternaam gewijzigd',
@@ -167,6 +169,7 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
         }
 
         actions = []
+
         for key, value in log.data.items():
             if key == 'groups':
                 value = ', '.join(_get_groups_queryset().filter(id__in=value).values_list('name', flat=True))
