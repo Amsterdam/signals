@@ -6,6 +6,7 @@ Test suite for Sigmax message generation.
 import copy
 import logging
 from datetime import timedelta
+from typing import Any
 
 from django.contrib.gis.geos import Point
 from django.test import TestCase
@@ -109,7 +110,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
 class TestGenerateOmschrijving(TestCase):
     def setUp(self) -> None:
-        self.signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        self.signal: Signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
 
     def test_generate_omschrijving_urgent(self) -> None:
         stadsdeel = self.signal.location.stadsdeel
@@ -256,6 +257,9 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
         assert self.signal.location is not None
         assert self.signal.incident_date_end is not None
+        assert self.signal.location.address is not None
+
+        address: dict[str, Any] = self.signal.location.address
 
         # Check whether our properties made it over
         # (crudely, maybe use XPATH here)
@@ -270,15 +274,15 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',
-                self.signal.location.address['openbare_ruimte']
+                address['openbare_ruimte']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}huisnummer',
-                self.signal.location.address['huisnummer']
+                address['huisnummer']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}postcode',
-                self.signal.location.address['postcode']
+                address['postcode']
             ),
             (
                 '{http://www.egem.nl/StUF/StUF0301}tijdstipBericht',
