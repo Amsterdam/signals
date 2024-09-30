@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Gemeente Amsterdam
-from typing import Any
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
