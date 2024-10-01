@@ -159,6 +159,8 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
         return f'{log.get_action_display().upper()}_USER'
 
     def get_action(self, log: Log) -> str:
+        assert log.data
+
         key_2_title = {
             'first_name': 'Voornaam gewijzigd',
             'last_name': 'Achternaam gewijzigd',

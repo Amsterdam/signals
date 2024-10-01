@@ -182,6 +182,8 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
 
     def get_action(self, log: Log) -> str:  # noqa C901
         actions = []
+        assert log.data is not None
+
         for key, value in log.data.items():
             if key == 'name':
                 action = f'Naam gewijzigd naar:\n {value}'

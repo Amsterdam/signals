@@ -256,6 +256,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
         assert self.signal.location is not None
         assert self.signal.incident_date_end is not None
+        assert self.signal.location.address is not None
 
         # Check whether our properties made it over
         # (crudely, maybe use XPATH here)
