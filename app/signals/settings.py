@@ -535,7 +535,12 @@ trace.set_tracer_provider(tracer_provider)
 
 # As required, the user id and name is attached to each request that is recorded as a span
 def response_hook(span, request, response):
-    if all([span, span.is_recording(), request.user, request.user.is_authenticated]):
+    if all([
+        span,
+        span.is_recording(),
+        getattr(request, 'user', None) is not None,
+        getattr(request.user, 'is_authenticated', False)
+    ]):
         span.set_attributes({
             'user_id': request.user.id,
             'username': request.user.username
