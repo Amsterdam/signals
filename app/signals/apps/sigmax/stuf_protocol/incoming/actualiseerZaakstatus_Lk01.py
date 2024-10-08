@@ -7,6 +7,7 @@ Support for actualiseerZaakstatus_Lk01 messages from CityControl.
 import logging
 import re
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from lxml import etree
@@ -107,7 +108,7 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
     """
     status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
     status_data = {
-        'state': workflow.AFGEHANDELD_EXTERN,
+        'state': workflow.AFGEHANDELD_EXTERN if not settings.SIGMAX_END_STATE_IS_AFGEHANDELD else workflow.AFGEHANDELD,
         'text': status_text,
         'extra_properties': {
             'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
