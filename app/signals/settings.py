@@ -538,8 +538,10 @@ def response_hook(span, request, response):
     if all([
         span,
         span.is_recording(),
-        getattr(request, 'user', None) is not None,
-        getattr(request.user, 'is_authenticated', False)
+        hasattr(request, 'user'),
+        request.user is not None,
+        hasattr(request.user, 'is_authenticated'),
+        request.user.is_authenticated == False,
     ]):
         span.set_attributes({
             'user_id': request.user.id,
