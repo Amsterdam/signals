@@ -9,7 +9,7 @@ services:
   api:
     build:
       context: .
-      target: dev
+      target: prod
     ports:
       - "8000:8000"
     depends_on:
@@ -51,6 +51,7 @@ services:
       - docker-compose/environments/.celery
     volumes:
       - ./app:/app
+      - ./dwh_media:/dwh_media
     command: celery -A signals worker -l debug
 
   flower:
@@ -90,7 +91,7 @@ services:
       celery:
         condition: service_started
     env_file:
-      - docker-compose/environments/.celery_beat
+      - docker-compose/environments/.celery
     volumes:
       - ./app:/app
     command: celery -A signals beat -l debug --pidfile /tmp/celerybeat.pid

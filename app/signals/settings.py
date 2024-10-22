@@ -81,7 +81,8 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-    'signals.apps.my_signals'
+    'signals.apps.my_signals',
+    'signals.apps.classification'
 ]
 
 INSTALLED_APPS: list[str] = [
@@ -170,6 +171,8 @@ OIDC_OP_ISSUER: str | None = os.getenv("OIDC_OP_ISSUER")
 OIDC_TRUSTED_AUDIENCES: list[str] = json.loads(os.getenv("OIDC_TRUSTED_AUDIENCES", '[]'))
 OIDC_VERIFY_AUDIENCE: bool = os.getenv('OIDC_VERIFY_AUDIENCE', True) in TRUE_VALUES
 OIDC_USE_NONCE: bool = os.getenv('OIDC_USE_NONCE', True) in TRUE_VALUES
+
+NLTK_DOWNLOAD_DIR: str | None = os.getenv('NLTK_DOWNLOAD_DIR')
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
@@ -400,6 +403,7 @@ SIGNAL_MAX_NUMBER_OF_CHILDREN: int = 10
 
 # The URL of the Frontend
 FRONTEND_URL: str | None = os.getenv('FRONTEND_URL', None)
+BACKEND_URL: str | None = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 ML_TOOL_ENDPOINT: str = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
 
