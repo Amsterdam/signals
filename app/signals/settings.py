@@ -80,7 +80,9 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-    'signals.apps.my_signals'
+    'signals.apps.my_signals',
+    'signals.apps.zgw',
+    'signals.apps.classification'
 ]
 
 INSTALLED_APPS: list[str] = [
@@ -165,6 +167,8 @@ OIDC_OP_JWKS_ENDPOINT: str | None = os.getenv('OIDC_OP_JWKS_ENDPOINT')
 if OIDC_OP_JWKS_ENDPOINT is not None:
     OIDC_RP_SIGN_ALGO: str = 'RS256'
 OIDC_CREATE_USER = False
+
+NLTK_DOWNLOAD_DIR: str | None = os.getenv('NLTK_DOWNLOAD_DIR')
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
@@ -392,6 +396,7 @@ SIGNAL_MAX_NUMBER_OF_CHILDREN: int = 10
 
 # The URL of the Frontend
 FRONTEND_URL: str | None = os.getenv('FRONTEND_URL', None)
+BACKEND_URL: str | None = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 ML_TOOL_ENDPOINT: str = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
 
