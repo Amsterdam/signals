@@ -93,8 +93,9 @@ urlpatterns = [
     # Status message search
     re_path(r'v1/private/status-messages/search/?$', StatusMessageSearchView.as_view(), name='status-message-search'),
 
-    # Legacy prediction proxy endpoint, still needed
-    path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
+    # # Legacy prediction proxy endpoint, still needed
+    # path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
+    path('', include('signals.apps.classification.urls')),
 
     # The base routes of the API
     path('v1/', include(base_router.urls)),
