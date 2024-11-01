@@ -21,7 +21,7 @@ from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     _generate_creeerZaak_Lk01,
     _generate_omschrijving
 )
-from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation, BuurtFactory
+from signals.apps.signals.factories import BuurtFactory, SignalFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import STADSDELEN, Priority, Signal
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
@@ -179,7 +179,10 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.location.stadsdeel = short_code
             self.signal.location.save()
             self.signal.refresh_from_db()
-            self.assertRegex(_generate_omschrijving(self.signal, seq_no), SIGMAX_STADSDEEL_MAPPING.get(short_code, None))
+            self.assertRegex(
+                _generate_omschrijving(self.signal, seq_no),
+                SIGMAX_STADSDEEL_MAPPING.get(short_code, None)
+            )
 
     def test_generate_omschrijving_with_buurt(self) -> None:
         # test that we get buurt as part of the omschrijving when stadsdeel is missing
@@ -190,7 +193,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.location.save()
 
         correct = '{} SIA-{}.01 {} {}'.format(
-      signal.category_assignment.category.name,
+            signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
             buurt.naam

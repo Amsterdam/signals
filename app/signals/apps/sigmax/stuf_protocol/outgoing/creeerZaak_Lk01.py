@@ -21,8 +21,8 @@ from signals.apps.signals.models import (
     STADSDEEL_WESTPOORT,
     STADSDEEL_ZUID,
     STADSDEEL_ZUIDOOST,
-    Priority,
-    Buurt
+    Buurt,
+    Priority
 )
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ def _generate_omschrijving(signal, seq_no):
         f" {area}" if area else ''
     )
 
+
 def _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax):
     if stadsdeel_code_sigmax is not None:
         return stadsdeel_code_sigmax
@@ -89,6 +90,7 @@ def _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax):
     if signal.location.area_name is not None:
         return signal.location.area_name
     return None
+
 
 def _address_matches_sigmax_expectation(address_dict):
     """Return whether an address has all information Sigmax/CityControl needs.

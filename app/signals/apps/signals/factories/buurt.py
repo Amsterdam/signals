@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2023 Gemeente Amsterdam
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyText, FuzzyInteger
+from factory.fuzzy import FuzzyInteger, FuzzyText
 
 from signals.apps.signals.models import Buurt
 
