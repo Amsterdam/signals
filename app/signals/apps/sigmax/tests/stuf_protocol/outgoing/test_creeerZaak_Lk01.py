@@ -276,7 +276,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.location.buurt_code = buurt.vollcode
         signal.location.save()
 
-        correct = '{} SIA-{}.01 {} {}'.format(
+        correct = '{} SIA-{}.01 URGENT {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
