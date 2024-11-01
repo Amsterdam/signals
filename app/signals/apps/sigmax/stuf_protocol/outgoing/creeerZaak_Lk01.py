@@ -21,6 +21,7 @@ from signals.apps.signals.models import (
     STADSDEEL_WESTPOORT,
     STADSDEEL_ZUID,
     STADSDEEL_ZUIDOOST,
+    Buurt,
     Priority
 )
 
@@ -50,26 +51,45 @@ SIGMAX_STADSDEEL_MAPPING = {
 
 def _generate_omschrijving(signal, seq_no):
     """Generate brief descriptive text for list view in CityControl"""
-    # Note: we do not mention main or category here (too many characters)
     if signal.priority.priority == Priority.PRIORITY_HIGH:
-        is_urgent = 'URGENT'
-    elif signal.priority.priority == Priority.PRIORITY_NORMAL:
-        is_urgent = 'Terugkerend'
+        urgent = 'URGENT'
     else:
-        is_urgent = 'Signalering'
+        urgent = None
+
+    category = signal.category_assignment.category.name if signal.category_assignment else 'Categorie Onbekend'
 
     # Borough (stadsdeel) codes for Sigmax/CityControl are custom and do not
     # match the official ones as used by the municipality of Amsterdam; hence:
-    stadsdeel = signal.location.stadsdeel
-    stadsdeel_code_sigmax = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--')
+    stadsdeel = signal.location.stadsdeel if signal.location else None
+    stadsdeel_code_sigmax = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, None)
 
-    return 'SIA-{}.{} {} {} {}'.format(
+    buurt = None
+    if signal.location.buurt_code is not None:
+        try:
+            buurt = Buurt.objects.get(vollcode=signal.location.buurt_code).naam
+        except Buurt.DoesNotExist:
+            ...
+
+    area = _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax)
+
+    return '{} SIA-{}.{}{} {}{}'.format(
+        category,
         signal.id,
         seq_no,
-        is_urgent,
-        stadsdeel_code_sigmax,
+        f" {urgent}" if urgent else '',
         signal.location.short_address_text,
+        f" {area}" if area else ''
     )
+
+
+def _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax):
+    if stadsdeel_code_sigmax is not None:
+        return stadsdeel_code_sigmax
+    if buurt is not None:
+        return buurt
+    if signal.location.area_name is not None:
+        return signal.location.area_name
+    return None
 
 
 def _address_matches_sigmax_expectation(address_dict):

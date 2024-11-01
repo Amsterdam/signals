@@ -21,7 +21,7 @@ from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     _generate_creeerZaak_Lk01,
     _generate_omschrijving
 )
-from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from signals.apps.signals.factories import BuurtFactory, SignalFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import STADSDELEN, Priority, Signal
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
@@ -111,29 +111,64 @@ class TestGenerateOmschrijving(TestCase):
     def setUp(self) -> None:
         self.signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
 
-    def test_generate_omschrijving_urgent(self) -> None:
-        stadsdeel = self.signal.location.stadsdeel
+    def test_generate_omschrijving_with_no_area(self) -> None:
+        signal = SignalFactory.create(priority__priority=Priority.PRIORITY_LOW)
+        signal.location.stadsdeel = None
+        signal.location.area_name = None
+        signal.location.save()
 
-        correct = 'SIA-{}.02 URGENT {} {}'.format(
-            self.signal.pk,
-            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
-            self.signal.location.short_address_text
+        correct = '{} SIA-{}.01 {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text
         )
 
-        seq_no = '02'
-        self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
 
-    def test_generate_omschrijving_no_stadsdeel_urgent(self) -> None:
-        # test that we get SD-- as part of the omschrijving when stadsdeel is missing
+    def test_generate_omschrijving_no_area_urgent(self) -> None:
+        # test that we don't get an empty string if we have no area information
         self.signal.location.stadsdeel = None
         self.signal.location.save()
 
-        correct = 'SIA-{}.04 URGENT SD-- {}'.format(
+        correct = '{} SIA-{}.04 URGENT {}'.format(
+            self.signal.category_assignment.category.name,
             self.signal.pk,
             self.signal.location.short_address_text
         )
 
         seq_no = '04'
+        self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_stadsdeel(self) -> None:
+        "Test that we get the stadsdeel as part of the omschrijving"
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_NORMAL)
+        buurt = BuurtFactory.create()
+        signal.location.buurt_code = buurt.vollcode
+        stadsdeel = signal.location.stadsdeel
+        signal.location.area_name = 'Vondelpark'
+
+        correct = '{} SIA-{}.01 {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel),
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_stadsdeel_urgent(self) -> None:
+        stadsdeel = self.signal.location.stadsdeel
+
+        correct = '{} SIA-{}.02 URGENT {} {}'.format(
+            self.signal.category_assignment.category.name,
+            self.signal.pk,
+            self.signal.location.short_address_text,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel),
+        )
+
+        seq_no = '02'
         self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
 
     def test_stadsdeel_mapping(self) -> None:
@@ -144,29 +179,111 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.location.stadsdeel = short_code
             self.signal.location.save()
             self.signal.refresh_from_db()
-            self.assertNotRegex(_generate_omschrijving(self.signal, seq_no), 'SD--')
+            self.assertRegex(
+                _generate_omschrijving(self.signal, seq_no),
+                SIGMAX_STADSDEEL_MAPPING.get(short_code, None)
+            )
 
-    def test_generate_omschrijving_terugkerend(self) -> None:
-        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_NORMAL)
-        stadsdeel = signal.location.stadsdeel
+    def test_generate_omschrijving_with_buurt(self) -> None:
+        # test that we get buurt as part of the omschrijving when stadsdeel is missing
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
+        buurt = BuurtFactory.create()
+        signal.location.stadsdeel = None
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
 
-        correct = 'SIA-{}.01 Terugkerend {} {}'.format(
+        correct = '{} SIA-{}.01 {} {}'.format(
+            signal.category_assignment.category.name,
             signal.pk,
-            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
-            signal.location.short_address_text
+            signal.location.short_address_text,
+            buurt.naam
         )
 
         seq_no = '01'
         self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
 
-    def test_generate_omschrijving_signalering(self) -> None:
-        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
-        stadsdeel = signal.location.stadsdeel
+    def test_generate_omschrijving_with_buurt_urgent(self) -> None:
+        # test that we get buurt as part of the omschrijving when stadsdeel is missing
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        buurt = BuurtFactory.create()
+        signal.location.stadsdeel = None
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
 
-        correct = 'SIA-{}.01 Signalering {} {}'.format(
+        correct = '{} SIA-{}.01 URGENT {} {}'.format(
+            signal.category_assignment.category.name,
             signal.pk,
-            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
-            signal.location.short_address_text
+            signal.location.short_address_text,
+            buurt.naam
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_area_name(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            signal.location.area_name
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_area_name_urgent(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 URGENT {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            signal.location.area_name
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_area_name_and_buurt(self) -> None:
+        # It should only show the buurt and not the area.
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+        buurt = BuurtFactory.create()
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            buurt.naam
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_with_area_name_and_buurt_urgent(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+        buurt = BuurtFactory.create()
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 URGENT {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            buurt.naam
         )
 
         seq_no = '01'
