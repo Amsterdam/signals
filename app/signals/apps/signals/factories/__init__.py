@@ -2,6 +2,7 @@
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from .area import AreaFactory, AreaTypeFactory
 from .attachment import AttachmentFactory, ImageAttachmentFactory
+from .buurt import BuurtFactory
 from .category import CategoryFactory, ParentCategoryFactory
 from .category_assignment import CategoryAssignmentFactory
 from .department import DepartmentFactory
@@ -26,6 +27,7 @@ __all__ = [
     'AreaFactory',
     'AreaTypeFactory',
     'AttachmentFactory',
+    'BuurtFactory',
     'CategoryAssignmentFactory',
     'CategoryFactory',
     'ImageAttachmentFactory',
