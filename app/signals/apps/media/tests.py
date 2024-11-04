@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2024 Delta10 B.V.
+from unittest.mock import patch
+
 from django.test import TestCase, override_settings
 from django.http import HttpResponse
-from unittest.mock import patch
 
 from signals.apps.media.storages import ProtectedFileSystemStorage
 
