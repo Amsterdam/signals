@@ -11,6 +11,7 @@ from django.views.static import serve
 
 signer = signing.TimestampSigner()
 
+
 def download_file(request, path):
     t = request.GET.get('t')
     s = request.GET.get('s')
