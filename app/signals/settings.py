@@ -250,14 +250,16 @@ STATIC_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL: str = '/signals/media/'
 MEDIA_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
+DEFAULT_FILE_STORAGE: str = 'django.core.files.storage.FileSystemStorage'
+
 PROTECTED_FILE_SYSTEM_STORAGE: bool = os.getenv('PROTECTED_FILE_SYSTEM_STORAGE', False) in TRUE_VALUES
 if PROTECTED_FILE_SYSTEM_STORAGE:
-    DEFAULT_FILE_STORAGE: str = 'signals.apps.media.storages.ProtectedFileSystemStorage'
+    DEFAULT_FILE_STORAGE = 'signals.apps.media.storages.ProtectedFileSystemStorage'
 
 AZURE_STORAGE_ENABLED: bool = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
 if AZURE_STORAGE_ENABLED:
     # Azure Settings
-    DEFAULT_FILE_STORAGE: str = 'storages.backends.azure_storage.AzureStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
     AZURE_ACCOUNT_NAME: str | None = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
     AZURE_ACCOUNT_KEY: str | None = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
