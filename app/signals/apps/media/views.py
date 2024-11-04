@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2024 Delta10 B.V.
-from datetime import timedelta
 import mimetypes
 import os
+from datetime import timedelta
 
 from django.conf import settings
 from django.core import signing
