@@ -6,7 +6,6 @@ import os
 
 from django.conf import settings
 from django.core import signing
-from django.contrib.staticfiles.views import serve
 from django.http import HttpResponse
 from django.views.static import serve
 
