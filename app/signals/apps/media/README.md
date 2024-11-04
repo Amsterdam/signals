@@ -1,8 +1,12 @@
 # Protected media
 
-This app provides the possibility to protect the media folder. To use this functionality in production, specific uWSGI settings are required to use the X-Sendfile header.
+This app provides the possibility to protect the media folder. To use this functionality in production, make sure to configure the PROTECTED_FILE_SYSTEM_STORAGE flag as follows:
 
-You can run uWSGI as follows:
+```bash
+export PROTECTED_FILE_SYSTEM_STORAGE=True
+```
+
+Then specific the following uWSGI settings to protect the media folder:
 
 ```bash
 uwsgi \

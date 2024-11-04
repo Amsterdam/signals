@@ -34,12 +34,12 @@ def download_file(request, path):
         response = HttpResponse()
 
         if mimetype:
-            response["Content-Type"] = mimetype
+            response['Content-Type'] = mimetype
         if encoding:
-            response["Content-Encoding"] = encoding
+            response['Content-Encoding'] = encoding
 
-        response["X-Sendfile"] = os.path.join(
+        response['X-Sendfile'] = os.path.join(
             settings.MEDIA_ROOT, path
-        ).encode("utf8")
+        ).encode('utf8')
 
     return response
