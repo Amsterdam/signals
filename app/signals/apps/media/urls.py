@@ -4,5 +4,5 @@ from django.urls import re_path
 from . import views
 
 urlpatterns = [
-    re_path(r"^(?P<path>.*)$", views.download_file, name='download_file'),
+    re_path(r'^(?P<path>.*)$', views.download_file, name='download_file'),
 ]
