@@ -1,10 +1,6 @@
 # Protected media
 
-This app provides the possibility to protect the media folder. To use this functionality in production, make sure to configure the PROTECTED_FILE_SYSTEM_STORAGE flag as follows:
-
-```bash
-export PROTECTED_FILE_SYSTEM_STORAGE=True
-```
+This app provides the possibility to protect the media folder. To use this functionality in production, make sure to configure the PROTECTED_FILE_SYSTEM_STORAGE setting.
 
 Then specific the following uWSGI settings to protect the media folder:
 
