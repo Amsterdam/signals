@@ -4,7 +4,7 @@ from django.test import TestCase, override_settings
 from django.http import HttpResponse
 from unittest.mock import patch
 
-from app.signals.apps.media.storages import ProtectedFileSystemStorage
+from signals.apps.media.storages import ProtectedFileSystemStorage
 
 
 @override_settings(PROTECTED_FILE_SYSTEM_STORAGE=True)
