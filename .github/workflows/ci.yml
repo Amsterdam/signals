@@ -28,7 +28,7 @@ jobs:
         run: docker compose -f docker-compose.test.yml run api bash -c "mypy signals | mypy-baseline filter"
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: /tmp/test/htmlcov/
