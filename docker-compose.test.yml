@@ -8,8 +8,6 @@ services:
         condition: service_healthy
     env_file:
       - docker-compose/environments/.test
-    volumes:
-      - ./app:/app
 
   database:
     # postgis 3.2 is the extension version provided by Azure Database for PostgreSQL Flexible Server at the time of writing
