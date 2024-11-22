@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2023 Gemeente Amsterdam
+# Copyright (C) 2023 -2024 Gemeente Amsterdam
 import logging
 
 from django.db.models.signals import post_delete, post_save
@@ -18,14 +18,20 @@ from signals.apps.signals.managers import (
 )
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models import StatusMessage as StatusMessageModel
+from signals.apps.signals.models.reporter import Reporter, reporter_anonymized
 
 
-@receiver([create_initial,
-           create_child,
-           update_location,
-           update_category_assignment,
-           update_priority,
-           update_type], dispatch_uid='search_add_to_elastic')
+@receiver(
+    [
+        create_initial,
+        create_child,
+        update_location,
+        update_category_assignment,
+        update_priority,
+        update_type,
+    ],
+    dispatch_uid='search_add_to_elastic'
+)
 def add_to_elastic_handler(sender, signal_obj, **kwargs):
     # Add to elastic
     save_to_elastic.delay(signal_id=signal_obj.id)
@@ -82,3 +88,9 @@ def signal_post_deleted_receiver(sender: str, instance: Signal, **kwargs):
         delete_from_elastic(signal=instance)
     except Exception as e:
         logging.error(f'Exception when deleting signal #{instance.id} from elastic: {e}')
+
+
+@receiver(reporter_anonymized, sender=Reporter, dispatch_uid='reporter_anonymized_receiver')
+def reporter_anonymized_receiver(sender: str, instance: Reporter, **kwargs) -> None:
+    """Django signal receiver used to re-index a signal in elastic search when the reporter is anonymized."""
+    save_to_elastic.delay(signal_id=instance.signal.id)

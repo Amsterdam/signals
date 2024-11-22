@@ -1,16 +1,19 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Gemeente Amsterdam
+# Copyright (C) 2019 - 2024 Gemeente Amsterdam
 from typing import Final
 
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import MultipleObjectsReturned
+from django.dispatch import Signal as DjangoSignal
 from django_fsm import ConcurrentTransitionMixin, FSMField, transition
 
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.renderers.email_template_renderer import EmailTemplateRenderer
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.tokens.token_generator import TokenGenerator
+
+reporter_anonymized = DjangoSignal()
 
 
 class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
@@ -198,6 +201,7 @@ class Reporter(ConcurrentTransitionMixin, CreatedUpdatedModel):
 
         if call_save or always_call_save:
             self.save()
+            reporter_anonymized.send(sender=self.__class__, instance=self)
 
     def save(self, *args, **kwargs) -> None:
         """
