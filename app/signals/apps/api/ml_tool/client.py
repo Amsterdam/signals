@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import json
-
+# Copyright (C) 2019 - 2024 Gemeente Amsterdam
 import requests
 from django.conf import settings
 from django.core import validators
@@ -22,8 +20,7 @@ class MLToolClient:
             validator(text)
 
         try:
-            data = json.dumps({'text': text})
-            response = requests.post(self.endpoint, data=data, timeout=self.timeout)
+            response = requests.post(self.endpoint, json={'text': text}, timeout=self.timeout)
         except (ConnectTimeout, ):
             raise GatewayTimeoutException()
         else:
