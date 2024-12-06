@@ -12,8 +12,8 @@ lxml-stubs
 mypy
 mypy-baseline
 networkx-stubs
-pytest<8.1
-pytest-bdd<7.1
+pytest
+pytest-bdd
 pytest-cov
 pytest-django
 pytest-subtests

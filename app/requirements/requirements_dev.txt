@@ -279,6 +279,10 @@ flower==2.0.1
     # via -r requirements/requirements_test.txt
 freezegun==1.5.1
     # via -r requirements/requirements_test.txt
+gherkin-official==29.0.0
+    # via
+    #   -r requirements/requirements_test.txt
+    #   pytest-bdd
 gprof2dot==2024.6.6
     # via
     #   -r requirements/requirements_test.txt
@@ -439,6 +443,7 @@ packaging==24.2
     #   opentelemetry-instrumentation
     #   pyproject-api
     #   pytest
+    #   pytest-bdd
     #   tox
 parse==1.20.2
     # via
@@ -506,7 +511,7 @@ pyproject-api==1.8.0
     # via
     #   -r requirements/requirements_test.txt
     #   tox
-pytest==8.0.2
+pytest==8.3.4
     # via
     #   -r requirements/requirements_test.txt
     #   pytest-bdd
@@ -515,7 +520,7 @@ pytest==8.0.2
     #   pytest-subtests
     #   pytest-timeout
     #   pytest-xdist
-pytest-bdd==7.0.1
+pytest-bdd==8.1.0
     # via -r requirements/requirements_test.txt
 pytest-cov==6.0.0
     # via -r requirements/requirements_test.txt
