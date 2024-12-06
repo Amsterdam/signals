@@ -105,11 +105,7 @@ click-repl==0.3.0
     #   celery
 colorama==0.4.6
     # via tox
-coreapi==2.3.3
-    # via djangorestframework-stubs
-coreschema==0.0.4
-    # via coreapi
-coverage[toml]==7.6.8
+coverage[toml]==7.6.9
     # via pytest-cov
 cron-descriptor==1.4.5
     # via
@@ -190,7 +186,7 @@ django-silk==5.3.1
     # via -r requirements/requirements.txt
 django-storages==1.14.4
     # via -r requirements/requirements.txt
-django-stubs[compatible-mypy]==5.1.1
+django-stubs[compatible-mypy]==5.1.0
     # via
     #   -r requirements/requirements_test.in
     #   django-filter-stubs
@@ -215,7 +211,7 @@ djangorestframework-csv==3.0.2
     #   drf-amsterdam
 djangorestframework-gis==1.1
     # via -r requirements/requirements.txt
-djangorestframework-stubs[compatible-mypy]==1.4.0
+djangorestframework-stubs[compatible-mypy]==3.15.1
     # via
     #   -r requirements/requirements_test.in
     #   django-filter-stubs
@@ -296,10 +292,6 @@ isodate==0.7.2
     #   msrest
 isort==5.13.2
     # via -r requirements/requirements_test.in
-itypes==1.2.0
-    # via coreapi
-jinja2==3.1.4
-    # via coreschema
 josepy==1.14.0
     # via
     #   -r requirements/requirements.txt
@@ -331,9 +323,7 @@ markdown==3.7
     #   -r requirements/requirements.txt
     #   django-markdownx
 markupsafe==3.0.2
-    # via
-    #   jinja2
-    #   mako
+    # via mako
 mccabe==0.7.0
     # via flake8
 mozilla-django-oidc==4.0.1
@@ -342,7 +332,7 @@ msrest==0.7.1
     # via
     #   -r requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
-mypy==1.13.0
+mypy==1.11.2
     # via
     #   -r requirements/requirements_test.in
     #   django-filter-stubs
@@ -531,7 +521,6 @@ requests==2.32.3
     # via
     #   -r requirements/requirements.txt
     #   azure-core
-    #   coreapi
     #   djangorestframework-stubs
     #   mozilla-django-oidc
     #   msrest
@@ -606,9 +595,15 @@ types-python-dateutil==2.9.0.20241206
 types-pytz==2024.2.0.20241003
     # via -r requirements/requirements_test.in
 types-pyyaml==6.0.12.20240917
-    # via django-stubs
+    # via
+    #   django-stubs
+    #   djangorestframework-stubs
+types-requests==2.31.0.6
+    # via djangorestframework-stubs
 types-setuptools==75.6.0.20241126
     # via types-pygments
+types-urllib3==1.26.25.14
+    # via types-requests
 typing-extensions==4.12.2
     # via
     #   -r requirements/requirements.txt
@@ -639,7 +634,6 @@ tzlocal==5.2
 uritemplate==4.1.1
     # via
     #   -r requirements/requirements.txt
-    #   coreapi
     #   drf-spectacular
 urllib3==1.26.20
     # via
