@@ -378,6 +378,7 @@ SIGMAX_CA_BUNDLE: str | None = os.getenv('SIGMAX_CA_BUNDLE', None)
 SIGMAX_CLIENT_CERT: str | None = os.getenv('SIGMAX_CLIENT_CERT', None)
 SIGMAX_CLIENT_KEY: str | None = os.getenv('SIGMAX_CLIENT_KEY', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES: str | int = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
+SIGMAX_END_STATE_IS_AFGEHANDELD: bool = os.getenv('SIGMAX_END_STATE_IS_AFGEHANDELD', False) in TRUE_VALUES
 
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN: int = 10
