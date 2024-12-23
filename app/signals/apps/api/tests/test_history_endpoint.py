@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
+import urllib.parse
 from datetime import timedelta
 
 from django.contrib.auth.models import Permission
@@ -250,6 +251,92 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 403)
+
+
+class TestHistoryFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        self.slo = ServiceLevelObjectiveFactory.create()
+        self.signal = SignalFactory.create(user_assignment=None, category_assignment__category=self.slo.category)
+        SignalLogService.log_create_initial(self.signal)
+
+        self.list_history_schema = self.load_json_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_private_signals_{pk}_history.json'
+            )
+        )
+
+        update = {
+            'text': 'DIT IS EEN TEST',
+            'state': workflow.BEHANDELING,
+            'user': self.user,
+        }
+
+        self.status = Signal.actions.update_status(
+            update,
+            self.signal
+        )
+
+        SignalLogService.log_update_status(self.status)
+
+    def test_history_filter_with_created_after(self):
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        an_hour_ago = (timezone.now() - timedelta(hours=1)).isoformat()
+        encoded_an_hour_ago = urllib.parse.quote(an_hour_ago)
+
+        response = self.client.get(
+            f'/signals/v1/private/signals/{self.signal.id}/history?created_after={encoded_an_hour_ago}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertJsonSchema(self.list_history_schema, data)
+
+        new_entry = data[0]  # most recent status should be first
+        self.assertEqual(new_entry['who'], self.user.username)
+        self.assertEqual(new_entry['description'], self.status.text)
+        self.assertEqual(new_entry['what'], 'UPDATE_STATUS')
+
+    def test_history_filter_with_created_after_in_the_future(self):
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        tomorrow = (timezone.now() + timedelta(days=1)).isoformat()
+        encoded_tomorrow = urllib.parse.quote(tomorrow)
+
+        response = self.client.get(
+            f'/signals/v1/private/signals/{self.signal.id}/history?created_after={encoded_tomorrow}'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 0)
+
+    def test_history_filter_with_created_after_and_what(self):
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        an_hour_ago = (timezone.now() - timedelta(hours=1)).isoformat()
+        created_after = urllib.parse.quote(an_hour_ago)
+
+        what = 'UPDATE_SLA'
+        response = self.client.get(
+            f'/signals/v1/private/signals/{self.signal.id}/history?created_after={created_after}&what={what}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertJsonSchema(self.list_history_schema, data)
+        self.assertEqual(len(data), 1)
+
+        new_entry = data[0]  # most recent status should be first
+        self.assertEqual(new_entry['description'], self.slo.category.handling_message)
+        self.assertEqual(new_entry['what'], what)
 
 
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
