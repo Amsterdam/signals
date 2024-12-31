@@ -7,12 +7,13 @@ from datetime import timedelta
 from django.conf import settings
 from django.core import signing
 from django.http import HttpRequest, HttpResponse
+from django.http.response import HttpResponseBase
 from django.views.static import serve
 
 signer = signing.TimestampSigner(salt='protected_file_system_storage')
 
 
-def download_file(request: HttpRequest, path: str) -> HttpResponse:
+def download_file(request: HttpRequest, path: str) -> HttpResponseBase:
     t = request.GET.get('t')
     s = request.GET.get('s')
 
