@@ -27,19 +27,17 @@ def download_file(request: HttpRequest, path: str) -> HttpResponse:
         return HttpResponse('Bad signature', status=401)
 
     if settings.DEBUG:
-        response = serve(request, path, document_root=settings.MEDIA_ROOT, show_indexes=False)
-    else:
-        mimetype, encoding = mimetypes.guess_type(path)
+        return serve(request, path, document_root=settings.MEDIA_ROOT, show_indexes=False)
 
-        response = HttpResponse()
+    mimetype, encoding = mimetypes.guess_type(path)
 
-        if mimetype:
-            response['Content-Type'] = mimetype
-        if encoding:
-            response['Content-Encoding'] = encoding
+    response = HttpResponse()
 
-        response['X-Sendfile'] = os.path.join(
-            settings.MEDIA_ROOT, path
-        ).encode('utf8')
+    if mimetype:
+        response['Content-Type'] = mimetype
+    if encoding:
+        response['Content-Encoding'] = encoding
 
-    return response
+    response['X-Sendfile'] = os.path.join(
+        settings.MEDIA_ROOT, path
+    ).encode('utf8')
