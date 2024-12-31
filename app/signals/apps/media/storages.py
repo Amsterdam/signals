@@ -6,7 +6,7 @@ from django.core import signing
 from django.core.files.storage import FileSystemStorage
 from django.utils.encoding import filepath_to_uri
 
-signer = signing.TimestampSigner()
+signer = signing.TimestampSigner(salt='protected_file_system_storage')
 
 
 class ProtectedFileSystemStorage(FileSystemStorage):
