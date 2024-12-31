@@ -16,6 +16,9 @@ def download_file(request: HttpRequest, path: str) -> HttpResponse:
     t = request.GET.get('t')
     s = request.GET.get('s')
 
+    if settings.DEBUG:
+        return serve(request, path, document_root=settings.MEDIA_ROOT, show_indexes=False)
+
     if not t or not s:
         return HttpResponse('No signature provided', status=401)
 
@@ -25,9 +28,6 @@ def download_file(request: HttpRequest, path: str) -> HttpResponse:
         return HttpResponse('Signature expired', status=401)
     except signing.BadSignature:
         return HttpResponse('Bad signature', status=401)
-
-    if settings.DEBUG:
-        return serve(request, path, document_root=settings.MEDIA_ROOT, show_indexes=False)
 
     mimetype, encoding = mimetypes.guess_type(path)
 
@@ -41,3 +41,5 @@ def download_file(request: HttpRequest, path: str) -> HttpResponse:
     response['X-Sendfile'] = os.path.join(
         settings.MEDIA_ROOT, path
     ).encode('utf8')
+
+    return response
