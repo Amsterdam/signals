@@ -16,7 +16,7 @@ class ProtectedFileSystemStorage(FileSystemStorage):
             raise ValueError('This file is not accessible via a URL.')
 
         if not name:
-            raise ValueError('Name is not defined')
+            raise ValueError('Name is not defined.')
 
         url = filepath_to_uri(name)
         if url is not None:
