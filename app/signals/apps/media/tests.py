@@ -2,6 +2,7 @@
 # Copyright (C) 2024 Delta10 B.V.
 from unittest.mock import patch
 
+from django.core import signing
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
@@ -24,6 +25,14 @@ class DownloadFileTestCase(TestCase):
         response = self.client.get('/signals/media/test.txt?t=some_time&s=some_signature')
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.content, b'Bad signature')
+
+    def test_expired_signature(self):
+        # Test with an expired signature
+        with patch('django.core.signing.TimestampSigner.unsign') as mock_unsign:
+            mock_unsign.side_effect = signing.SignatureExpired
+            response = self.client.get('/signals/media/test.txt?t=some_time&s=some_signature')
+            self.assertEqual(response.status_code, 401)
+            self.assertEqual(response.content, b'Signature expired')
 
     @override_settings(DEBUG=True)
     def test_debug_mode_file_serving(self):
