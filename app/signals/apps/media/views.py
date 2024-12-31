@@ -9,7 +9,7 @@ from django.core import signing
 from django.http import HttpResponse
 from django.views.static import serve
 
-signer = signing.TimestampSigner()
+signer = signing.TimestampSigner(salt='protected_file_system_storage')
 
 
 def download_file(request, path):
