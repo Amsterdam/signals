@@ -10,7 +10,7 @@ signer = signing.TimestampSigner(salt='protected_file_system_storage')
 
 
 class ProtectedFileSystemStorage(FileSystemStorage):
-    def url(self, name):
+    def url(self, name: str) -> str:
         if self.base_url is None:
             raise ValueError('This file is not accessible via a URL.')
 
