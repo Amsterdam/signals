@@ -143,7 +143,11 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                 )
 
     @extend_schema(
-        parameters=[OpenApiParameter('what', OpenApiTypes.STR, description='Filters a specific "action"')],
+        parameters=[
+            OpenApiParameter('what', OpenApiTypes.STR, description='Filters a specific "action"'),
+            OpenApiParameter('created_after', OpenApiTypes.DATETIME,
+                             description='Filters actions created after a certain timestamp (ISO 8601)'),
+        ],
         responses={HTTP_200_OK: HistoryLogHalSerializer(many=True)}
     )
     @action(detail=True, url_path='history', filterset_class=None, filter_backends=(), pagination_class=None)
@@ -155,6 +159,8 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
         history_log_qs = signal.history_log.all()
 
         what = self.request.query_params.get('what', None)
+        created_after = self.request.query_params.get('created_after', None)
+
         if what:
             action = Log.translate_what_to_action(what)
             content_type = Log.translate_what_to_content_type(what)
@@ -164,6 +170,9 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                 action = 'CREATE'
 
             history_log_qs = history_log_qs.filter(action__iexact=action, content_type__model__iexact=content_type)
+
+        if created_after:
+            history_log_qs = history_log_qs.filter(created_at__gte=created_after)
 
         serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
