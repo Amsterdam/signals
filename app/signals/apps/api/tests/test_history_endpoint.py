@@ -188,7 +188,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         cat2 = CategoryFactory.create(name='cat2')
         ServiceLevelObjectiveFactory.create(category=cat2)
 
-        signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+        signal = SignalFactoryValidLocation.create(category_assignment__category=cat1)
         SignalLogService.log_create_initial(signal)
 
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
@@ -232,7 +232,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
         ServiceLevelObjectiveFactory.create(category=cat1)
 
-        signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+        signal = SignalFactoryValidLocation.create(category_assignment__category=cat1)
         SignalLogService.log_create_initial(signal)
 
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
@@ -346,7 +346,7 @@ class TestHistoryFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def setUp(self) -> None:
         slo = ServiceLevelObjectiveFactory.create()
-        self.signal = SignalFactoryValidLocation(user_assignment=None, category_assignment__category=slo.category)
+        self.signal = SignalFactoryValidLocation.create(user_assignment=None, category_assignment__category=slo.category)
         SignalLogService.log_create_initial(self.signal)
 
         self.feedback_endpoint = '/signals/v1/public/feedback/forms/{token}'
@@ -366,7 +366,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         response_data = response.json()
         self.assertEqual(len(response_data), 6)
 
-        feedback = FeedbackFactory(_signal=self.signal, is_satisfied=None)
+        feedback = FeedbackFactory.create(_signal=self.signal, is_satisfied=None)
 
         # Note the unhappy flow regarding feedback is tested in the feedback
         # app. Here we only check that it shows up in the history.
@@ -398,7 +398,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         text = 'TEXT'
         text_extra = 'TEXT_EXTRA'
 
-        feedback = FeedbackFactory(
+        feedback = FeedbackFactory.create(
             _signal=self.signal,
             is_satisfied=True,
             allows_contact=False,
