@@ -257,7 +257,7 @@ class TestHistoryFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self) -> None:
         self.slo = ServiceLevelObjectiveFactory.create()
 
-        # Create a signal that was timestamped yesterday
+        # Create a signal that is timestamped yesterday
         with freeze_time(timezone.now() - timedelta(days=1)):
             self.signal = SignalFactory.create(user_assignment=None, category_assignment__category=self.slo.category)
             SignalLogService.log_create_initial(self.signal)
