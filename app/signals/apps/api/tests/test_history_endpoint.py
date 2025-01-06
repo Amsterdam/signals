@@ -346,7 +346,10 @@ class TestHistoryFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def setUp(self) -> None:
         slo = ServiceLevelObjectiveFactory.create()
-        self.signal = SignalFactoryValidLocation.create(user_assignment=None, category_assignment__category=slo.category)
+        self.signal = SignalFactoryValidLocation.create(
+            user_assignment=None,
+            category_assignment__category=slo.category
+        )
         SignalLogService.log_create_initial(self.signal)
 
         self.feedback_endpoint = '/signals/v1/public/feedback/forms/{token}'
