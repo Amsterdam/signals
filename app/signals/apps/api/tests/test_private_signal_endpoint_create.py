@@ -333,7 +333,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_initial_signal_interne_melding(self, validate_address):
+    def test_create_initial_signal_should_not_convert_source_to_interne_melding(self, validate_address):
         signal_count = Signal.objects.count()
 
         initial_data = copy.deepcopy(self.initial_data_base)
@@ -345,7 +345,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
         data = response.json()
-        self.assertEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+        self.assertNotEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
 
     @override_settings(API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS=('uitzondering@amsterdam.nl',))
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',

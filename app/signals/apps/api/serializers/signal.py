@@ -32,7 +32,7 @@ from signals.apps.api.serializers.nested import (
     _NestedTypeModelSerializer
 )
 from signals.apps.api.validation.address.mixin import AddressValidationMixin
-from signals.apps.api.validation.mixin import SignalValidationMixin
+from signals.apps.api.validation.mixin import SignalParentValidationMixin, SignalReporterEmailValidationMixin
 from signals.apps.api.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.api.validators.source import (
     PrivateSignalSourceValidator,
@@ -259,7 +259,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         return signal
 
 
-class PrivateSignalSerializerList(AddressValidationMixin, HALSerializer):
+class PrivateSignalSerializerList(SignalParentValidationMixin, AddressValidationMixin, HALSerializer):
     """
     This serializer is used for the list endpoint and when creating a new instance
     """
@@ -554,7 +554,12 @@ class PublicSignalSerializerDetail(HALSerializer):
         return obj.get_id_display()
 
 
-class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):
+class PublicSignalCreateSerializer(
+    SignalReporterEmailValidationMixin,
+    AddressValidationMixin,
+    SignalParentValidationMixin,
+    serializers.ModelSerializer
+):
     """
     This serializer allows anonymous users to report `signals.Signals`.
 
