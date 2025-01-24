@@ -2,7 +2,12 @@
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from django.conf import settings
 
+
 class SignalReporterEmailValidationMixin:
+    """
+    Checks if reporter email is part of a certain domain and transforms the source based on that.
+    """
+
     @staticmethod
     def feature_enabled(feature_flag_name=None):
         return settings.FEATURE_FLAGS.get(feature_flag_name, True) if feature_flag_name else True
