@@ -262,7 +262,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         return signal
 
 
-class PrivateSignalSerializerList(SignalParentValidationMixin, AddressValidationMixin, HALSerializer):
+class PrivateSignalSerializerList(SignalReporterEmailValidationMixin, SignalParentValidationMixin, AddressValidationMixin, HALSerializer):
     """
     This serializer is used for the list endpoint and when creating a new instance
     """

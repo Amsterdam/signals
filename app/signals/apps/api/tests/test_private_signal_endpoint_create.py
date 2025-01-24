@@ -380,6 +380,24 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_missing_source_should_give_default_source(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        del initial_data['source']
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        self.assertEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_signal_valid_source(self, validate_address):
         signal_count = Signal.objects.count()
 
