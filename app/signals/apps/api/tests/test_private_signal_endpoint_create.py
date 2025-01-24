@@ -380,7 +380,10 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_of_certain_domain(self, validate_address):
+    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_of_certain_domain(
+        self,
+        validate_address
+    ):
         signal_count = Signal.objects.count()
 
         SourceFactory.create_batch(5)
@@ -401,8 +404,10 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_unknown_domain(self,
-                                                                                                      validate_address):
+    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_unknown_domain(
+        self,
+        validate_address
+    ):
         signal_count = Signal.objects.count()
 
         SourceFactory.create_batch(5)
@@ -417,7 +422,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         data = response.json()
         self.assertEqual(data['source'], Signal._meta.get_field('source').get_default())
-
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
