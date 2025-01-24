@@ -32,7 +32,10 @@ from signals.apps.api.serializers.nested import (
     _NestedTypeModelSerializer
 )
 from signals.apps.api.validation.address.mixin import AddressValidationMixin
-from signals.apps.api.validation.mixin import SignalParentValidationMixin, SignalReporterEmailValidationMixin
+from signals.apps.api.validation.mixin import (
+    SignalParentValidationMixin,
+    SignalReporterEmailValidationMixin
+)
 from signals.apps.api.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.api.validators.source import (
     PrivateSignalSourceValidator,
