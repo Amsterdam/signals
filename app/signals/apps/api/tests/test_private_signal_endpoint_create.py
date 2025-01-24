@@ -333,7 +333,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_initial_signal_should_not_convert_source_to_interne_melding(self, validate_address):
+    def test_create_initial_signal_should_not_transform_source(self, validate_address):
         signal_count = Signal.objects.count()
 
         initial_data = copy.deepcopy(self.initial_data_base)
