@@ -18,13 +18,14 @@ class SignalReporterEmailValidationMixin:
                 and attrs['reporter']['email']):
             reporter_email = attrs['reporter']['email']
 
-            if self.__class__.__name__ == 'PrivateSignalSerializerList' and 'source' not in attrs:
-                attrs['source'] = settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE
+            if (reporter_email not in settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS
+                and reporter_email.endswith(settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS)):
 
-            if (self.__class__.__name__ == 'PublicSignalCreateSerializer'
-                    and reporter_email not in settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS
-                    and reporter_email.endswith(settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS)):
-                attrs['source'] = settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE
+                if self.__class__.__name__ == 'PrivateSignalSerializerList' and 'source' not in attrs:
+                    attrs['source'] = settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE
+
+                if self.__class__.__name__ == 'PublicSignalCreateSerializer':
+                    attrs['source'] = settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE
 
         return super().validate(attrs)
 

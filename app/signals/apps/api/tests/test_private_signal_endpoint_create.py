@@ -380,7 +380,29 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    def test_create_initial_signal_missing_source_should_give_default_source(self, validate_address):
+    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_of_certain_domain(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+
+        initial_data['reporter']['email'] = 'test-email-1' \
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS}'
+        del initial_data['source']
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        self.assertEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_missing_source_should_give_internal_default_source_if_reporter_unknown_domain(self,
+                                                                                                      validate_address):
         signal_count = Signal.objects.count()
 
         SourceFactory.create_batch(5)
@@ -394,7 +416,8 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
         data = response.json()
-        self.assertEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+        self.assertEqual(data['source'], Signal._meta.get_field('source').get_default())
+
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
