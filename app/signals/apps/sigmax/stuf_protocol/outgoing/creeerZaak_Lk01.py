@@ -7,6 +7,7 @@ import logging
 import os
 from datetime import timedelta
 
+from django.conf import settings
 from django.template.loader import render_to_string
 
 from signals.apps.sigmax.stuf_protocol.outgoing.stuf import _send_stuf_message
@@ -55,6 +56,11 @@ def _generate_omschrijving(signal, seq_no):
         urgent = 'URGENT'
     else:
         urgent = None
+    if (settings.SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE is not None
+            and signal.source == settings.SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE):
+        extra_description = 'Signalering'
+    else:
+        extra_description = None
 
     category = signal.category_assignment.category.name if signal.category_assignment else 'Categorie Onbekend'
 
@@ -72,11 +78,12 @@ def _generate_omschrijving(signal, seq_no):
 
     area = _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax)
 
-    return '{} SIA-{}.{}{} {}{}'.format(
+    return '{} SIA-{}.{}{}{} {}{}'.format(
         category,
         signal.id,
         seq_no,
         f" {urgent}" if urgent else '',
+        f" {extra_description}" if extra_description else '',
         signal.location.short_address_text,
         f" {area}" if area else ''
     )

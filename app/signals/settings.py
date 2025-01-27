@@ -379,6 +379,11 @@ SIGMAX_CLIENT_CERT: str | None = os.getenv('SIGMAX_CLIENT_CERT', None)
 SIGMAX_CLIENT_KEY: str | None = os.getenv('SIGMAX_CLIENT_KEY', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES: str | int = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
+SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE: str | None = os.getenv(
+    'SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE', None
+)  # If specific source is given the text Signalering will be added to the description to SIGMAX
+
+
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN: int = 10
 

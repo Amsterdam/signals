@@ -8,7 +8,7 @@ import logging
 from datetime import timedelta
 
 from django.contrib.gis.geos import Point
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from lxml import etree
 from xmlunittest import XmlTestMixin
@@ -21,7 +21,12 @@ from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     _generate_creeerZaak_Lk01,
     _generate_omschrijving
 )
-from signals.apps.signals.factories import BuurtFactory, SignalFactory, SignalFactoryValidLocation
+from signals.apps.signals.factories import (
+    BuurtFactory,
+    SignalFactory,
+    SignalFactoryValidLocation,
+    SourceFactory
+)
 from signals.apps.signals.models import STADSDELEN, Priority, Signal
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
@@ -284,6 +289,113 @@ class TestGenerateOmschrijving(TestCase):
             signal.pk,
             signal.location.short_address_text,
             buurt.naam
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    @override_settings(SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE='Automatische Signalering')
+    def test_generate_omschrijving_with_extra_description(self) -> None:
+        signal = SignalFactoryValidLocation.create()
+        stadsdeel = signal.location.stadsdeel
+
+        source = SourceFactory.create(name='Automatische Signalering')
+        signal.source = source.name
+        signal.save()
+
+        correct = '{} SIA-{}.01 Signalering {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel),
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    @override_settings(SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE='Automatische Signalering')
+    def test_generate_omschrijving_with_area_name_and_buurt_and_extra_description(self) -> None:
+        # It should only show the buurt and not the area.
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_LOW)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+
+        source = SourceFactory.create(name='Automatische Signalering')
+        signal.source = source.name
+
+        buurt = BuurtFactory.create()
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 Signalering {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            buurt.naam
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    @override_settings(SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE='Automatische Signalering')
+    def test_generate_omschrijving_with_urgent_area_name_and_buurt_and_extra_description(self) -> None:
+        # It should only show the buurt and not the area.
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+
+        source = SourceFactory.create(name='Automatische Signalering')
+        signal.source = source.name
+
+        buurt = BuurtFactory.create()
+        signal.location.buurt_code = buurt.vollcode
+        signal.location.save()
+
+        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            buurt.naam
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    @override_settings(SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE='Automatische Signalering')
+    def test_generate_omschrijving_with_urgent_and_extra_description(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        stadsdeel = signal.location.stadsdeel
+
+        source = SourceFactory.create(name='Automatische Signalering')
+        source.save()
+        signal.source = source.name
+        signal.save()
+
+        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel),
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    @override_settings(SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE='Automatische Signalering')
+    def test_generate_omschrijving_with_urgent_and_extra_description_and_area_name(self) -> None:
+        signal = SignalFactoryValidLocation.create(priority__priority=Priority.PRIORITY_HIGH)
+        signal.location.stadsdeel = None
+        signal.location.area_name = 'Vondelpark'
+
+        source = SourceFactory.create(name='Automatische Signalering')
+        signal.source = source.name
+        signal.save()
+
+        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+            signal.category_assignment.category.name,
+            signal.pk,
+            signal.location.short_address_text,
+            signal.location.area_name
         )
 
         seq_no = '01'
