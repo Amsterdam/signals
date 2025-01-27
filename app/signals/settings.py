@@ -383,7 +383,6 @@ SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE: str | None = os.getenv(
     'SIGMAX_TRANSFORM_DESCRIPTION_BASED_ON_SOURCE', None
 )  # If specific source is given the text Signalering will be added to the description to SIGMAX
 
-
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN: int = 10
 
