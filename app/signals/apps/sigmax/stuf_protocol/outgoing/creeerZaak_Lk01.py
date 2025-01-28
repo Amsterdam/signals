@@ -78,12 +78,12 @@ def _generate_omschrijving(signal, seq_no):
 
     area = _determine_area_for_omschrijving(signal, buurt, stadsdeel_code_sigmax)
 
-    return '{} SIA-{}.{}{}{} {}{}'.format(
+    return '{}{} SIA-{}.{}{} {}{}'.format(
+        f"{extra_description} " if extra_description else '',
         category,
         signal.id,
         seq_no,
         f" {urgent}" if urgent else '',
-        f" {extra_description}" if extra_description else '',
         signal.location.short_address_text,
         f" {area}" if area else ''
     )

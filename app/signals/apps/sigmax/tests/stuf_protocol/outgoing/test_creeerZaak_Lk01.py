@@ -303,7 +303,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.source = source.name
         signal.save()
 
-        correct = '{} SIA-{}.01 Signalering {} {}'.format(
+        correct = 'Signalering {} SIA-{}.01 {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
@@ -327,7 +327,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.location.buurt_code = buurt.vollcode
         signal.location.save()
 
-        correct = '{} SIA-{}.01 Signalering {} {}'.format(
+        correct = 'Signalering {} SIA-{}.01 {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
@@ -351,7 +351,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.location.buurt_code = buurt.vollcode
         signal.location.save()
 
-        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+        correct = 'Signalering {} SIA-{}.01 URGENT {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
@@ -371,7 +371,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.source = source.name
         signal.save()
 
-        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+        correct = 'Signalering {} SIA-{}.01 URGENT {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
@@ -391,7 +391,7 @@ class TestGenerateOmschrijving(TestCase):
         signal.source = source.name
         signal.save()
 
-        correct = '{} SIA-{}.01 URGENT Signalering {} {}'.format(
+        correct = 'Signalering {} SIA-{}.01 URGENT {} {}'.format(
             signal.category_assignment.category.name,
             signal.pk,
             signal.location.short_address_text,
