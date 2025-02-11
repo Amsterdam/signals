@@ -24,12 +24,12 @@ azure-core==1.32.0
     #   azure-storage-blob
     #   msrest
 azure-monitor-opentelemetry-exporter==1.0.0b33
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 azure-storage-blob==12.24.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 beautifulsoup4==4.13.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   o365
 billiard==4.2.1
     # via celery
@@ -41,7 +41,7 @@ cairosvg==2.7.1
     # via weasyprint
 celery==5.4.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-celery-beat
     #   django-celery-email
     #   django-celery-results
@@ -72,7 +72,7 @@ click-repl==0.3.0
     # via celery
 cron-descriptor==1.4.5
     # via django-celery-beat
-cryptography==44.0.0
+cryptography==44.0.1
     # via
     #   azure-storage-blob
     #   josepy
@@ -93,7 +93,7 @@ deprecated==1.2.18
     #   opentelemetry-semantic-conventions
 django==4.2.18
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-appconf
     #   django-celery-beat
     #   django-celery-email
@@ -112,34 +112,34 @@ django==4.2.18
 django-appconf==1.0.6
     # via django-celery-email
 django-celery-beat==2.7.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-celery-email==3.0.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-celery-results==2.5.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-cors-headers==4.6.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-extensions==3.2.3
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-filter==24.3
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   djangorestframework-gis
 django-fsm==3.0.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-markdownx==4.0.7
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-o365mail==1.1.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-silk==5.3.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-storages==1.14.4
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-timezone-field==7.1
     # via django-celery-beat
 djangorestframework==3.15.2
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   djangorestframework-csv
     #   djangorestframework-gis
     #   drf-amsterdam
@@ -148,27 +148,27 @@ djangorestframework==3.15.2
 djangorestframework-csv==3.0.2
     # via drf-amsterdam
 djangorestframework-gis==1.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 djangorestframework-xml==2.0.0
     # via drf-amsterdam
 drf-amsterdam==1.0.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 drf-extensions==0.7.1
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.28.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 drf-spectacular-sidecar==2025.2.1
     # via drf-spectacular
 elasticsearch==7.17.12
     # via elasticsearch-dsl
 elasticsearch-dsl==7.4.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 fixedint==0.1.6
     # via azure-monitor-opentelemetry-exporter
 flower==2.0.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 gprof2dot==2024.6.6
     # via django-silk
 html5lib==1.1
@@ -189,24 +189,24 @@ josepy==1.15.0
     # via mozilla-django-oidc
 jsonschema==4.23.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   drf-spectacular
 jsonschema-specifications==2024.10.1
     # via jsonschema
 jwcrypto==1.5.6
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 kombu==5.4.2
     # via celery
 lxml==5.3.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 markdown==3.7
     # via django-markdownx
 mozilla-django-oidc==4.0.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 msrest==0.7.1
     # via azure-monitor-opentelemetry-exporter
 networkx==3.4.2
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 o365==2.0.38
     # via django-o365mail
 oauthlib==3.2.2
@@ -230,14 +230,14 @@ opentelemetry-instrumentation==0.50b0
 opentelemetry-instrumentation-dbapi==0.50b0
     # via opentelemetry-instrumentation-psycopg2
 opentelemetry-instrumentation-django==0.50b0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opentelemetry-instrumentation-psycopg2==0.50b0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 opentelemetry-instrumentation-wsgi==0.50b0
     # via opentelemetry-instrumentation-django
 opentelemetry-sdk==1.29.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   azure-monitor-opentelemetry-exporter
 opentelemetry-semantic-conventions==0.50b0
     # via
@@ -254,7 +254,7 @@ packaging==24.2
     # via opentelemetry-instrumentation
 pillow==11.1.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   cairosvg
     #   django-markdownx
     #   weasyprint
@@ -265,7 +265,7 @@ prompt-toolkit==3.0.50
 psutil==5.9.8
     # via azure-monitor-opentelemetry-exporter
 psycopg2-binary==2.9.10
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pycodestyle==2.12.1
     # via autopep8
 pycparser==2.22
@@ -273,20 +273,20 @@ pycparser==2.22
 pyopenssl==25.0.0
     # via josepy
 pypdf==5.2.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pyphen==0.17.2
     # via weasyprint
 python-crontab==3.2.0
     # via django-celery-beat
 python-dateutil==2.9.0.post0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   celery
     #   elasticsearch-dsl
     #   o365
     #   python-crontab
 python-magic==0.4.27
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pytz==2025.1
     # via flower
 pyyaml==6.0.2
@@ -297,7 +297,7 @@ referencing==0.36.2
     #   jsonschema-specifications
 requests==2.32.3
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   azure-core
     #   mozilla-django-oidc
     #   msrest
@@ -324,7 +324,7 @@ sqlparse==0.5.3
     #   django
     #   django-silk
 textx==4.1.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 tinycss2==1.4.0
     # via
     #   cairosvg
@@ -356,7 +356,7 @@ urllib3==1.26.20
     #   elasticsearch
     #   requests
 uwsgi==2.0.28
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 vine==5.1.0
     # via
     #   amqp
@@ -365,7 +365,7 @@ vine==5.1.0
 wcwidth==0.2.13
     # via prompt-toolkit
 weasyprint==52.5
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 webencodings==0.5.1
     # via
     #   cssselect2
