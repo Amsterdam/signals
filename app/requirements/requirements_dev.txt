@@ -8,6 +8,8 @@ amqp==5.3.1
     # via
     #   -r requirements/requirements_test.txt
     #   kombu
+amsterdam-django-oidc==0.1.0
+    # via -r requirements/requirements_test.txt
 arpeggio==2.0.2
     # via
     #   -r requirements/requirements_test.txt
@@ -292,7 +294,7 @@ html5lib==1.1
     # via
     #   -r requirements/requirements_test.txt
     #   weasyprint
-humanize==4.12.0
+humanize==4.12.1
     # via
     #   -r requirements/requirements_test.txt
     #   flower
@@ -360,7 +362,9 @@ mccabe==0.7.0
     #   -r requirements/requirements_test.txt
     #   flake8
 mozilla-django-oidc==4.0.1
-    # via -r requirements/requirements_test.txt
+    # via
+    #   -r requirements/requirements_test.txt
+    #   amsterdam-django-oidc
 msal==1.31.1
     # via
     #   -r requirements/requirements_test.txt
@@ -641,7 +645,7 @@ types-pillow==10.2.0.20240822
     # via -r requirements/requirements_test.txt
 types-psycopg2==2.9.21.20250121
     # via -r requirements/requirements_test.txt
-types-pygments==2.19.0.20250107
+types-pygments==2.19.0.20250219
     # via -r requirements/requirements_test.txt
 types-python-dateutil==2.9.0.20241206
     # via -r requirements/requirements_test.txt
