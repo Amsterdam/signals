@@ -26,6 +26,7 @@ signals/apps/questionnaires/admin/options.py:0: error: Incompatible types in ass
 signals/apps/api/serializers/area.py:0: error: Skipping analyzing "rest_framework_gis.fields": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/serializers/area.py:0: error: Skipping analyzing "rest_framework_gis.serializers": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/fields/category.py:0: error: Skipping analyzing "rest_framework_extensions.settings": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/api/fields/category.py:0: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 signals/apps/signals/tests/test_reporter_state_machine.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_voegZaakdocumentToe_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_creeerZaak_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import-untyped]
