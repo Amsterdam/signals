@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2024 Gemeente Amsterdam
+import json
 import os
 from typing import Any, Callable
 
@@ -164,7 +165,9 @@ OIDC_OP_USER_ENDPOINT: str | None = os.getenv('OIDC_OP_USER_ENDPOINT')
 OIDC_OP_JWKS_ENDPOINT: str | None = os.getenv('OIDC_OP_JWKS_ENDPOINT')
 if OIDC_OP_JWKS_ENDPOINT is not None:
     OIDC_RP_SIGN_ALGO: str = 'RS256'
-OIDC_CREATE_USER = False
+OIDC_CREATE_USER: bool = False
+OIDC_OP_ISSUER: str | None = os.getenv("OIDC_OP_ISSUER")
+OIDC_TRUSTED_AUDIENCES: list[str] = json.loads(os.getenv("OIDC_TRUSTED_AUDIENCES", '[]'))
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
