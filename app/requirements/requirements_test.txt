@@ -8,7 +8,7 @@ amqp==5.3.1
     # via
     #   -r requirements/requirements.txt
     #   kombu
-amsterdam-django-oidc==0.1.0
+amsterdam-django-oidc==0.2.0
     # via -r requirements/requirements.txt
 arpeggio==2.0.2
     # via
@@ -36,7 +36,7 @@ azure-core==1.32.0
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
-azure-monitor-opentelemetry-exporter==1.0.0b33
+azure-monitor-opentelemetry-exporter==1.0.0b34
     # via -r requirements/requirements.txt
 azure-storage-blob==12.24.1
     # via -r requirements/requirements.txt
@@ -48,7 +48,7 @@ billiard==4.2.1
     # via
     #   -r requirements/requirements.txt
     #   celery
-cachetools==5.5.1
+cachetools==5.5.2
     # via tox
 cairocffi==1.7.1
     # via
@@ -214,7 +214,7 @@ djangorestframework-csv==3.0.2
     #   drf-amsterdam
 djangorestframework-gis==1.1
     # via -r requirements/requirements.txt
-djangorestframework-stubs[compatible-mypy]==3.15.2
+djangorestframework-stubs[compatible-mypy]==3.15.3
     # via
     #   -r requirements/requirements_test.in
     #   django-filter-stubs
@@ -295,7 +295,7 @@ isodate==0.7.2
     #   -r requirements/requirements.txt
     #   azure-storage-blob
     #   msrest
-isort==6.0.0
+isort==6.0.1
     # via -r requirements/requirements_test.in
 josepy==2.0.0
     # via
@@ -343,7 +343,7 @@ msrest==0.7.1
     # via
     #   -r requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
-mypy==1.13.0
+mypy==1.15.0
     # via
     #   -r requirements/requirements_test.in
     #   django-filter-stubs
@@ -450,7 +450,7 @@ prompt-toolkit==3.0.50
     # via
     #   -r requirements/requirements.txt
     #   click-repl
-psutil==5.9.8
+psutil==6.1.1
     # via
     #   -r requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
@@ -545,7 +545,7 @@ requests-oauthlib==2.0.0
     # via
     #   -r requirements/requirements.txt
     #   msrest
-rpds-py==0.22.3
+rpds-py==0.23.1
     # via
     #   -r requirements/requirements.txt
     #   jsonschema
@@ -611,7 +611,7 @@ types-pyyaml==6.0.12.20241230
     #   djangorestframework-stubs
 types-requests==2.31.0.6
     # via djangorestframework-stubs
-types-setuptools==75.8.0.20250210
+types-setuptools==75.8.0.20250225
     # via types-pygments
 types-urllib3==1.26.25.14
     # via types-requests

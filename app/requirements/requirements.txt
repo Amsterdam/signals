@@ -6,7 +6,7 @@
 #
 amqp==5.3.1
     # via kombu
-amsterdam-django-oidc==0.1.0
+amsterdam-django-oidc==0.2.0
     # via -r requirements/requirements.in
 arpeggio==2.0.2
     # via textx
@@ -25,7 +25,7 @@ azure-core==1.32.0
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
-azure-monitor-opentelemetry-exporter==1.0.0b33
+azure-monitor-opentelemetry-exporter==1.0.0b34
     # via -r requirements/requirements.in
 azure-storage-blob==12.24.1
     # via -r requirements/requirements.in
@@ -267,7 +267,7 @@ prometheus-client==0.21.1
     # via flower
 prompt-toolkit==3.0.50
     # via click-repl
-psutil==5.9.8
+psutil==6.1.1
     # via azure-monitor-opentelemetry-exporter
 psycopg2-binary==2.9.10
     # via -r requirements/requirements.in
@@ -313,7 +313,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rpds-py==0.22.3
+rpds-py==0.23.1
     # via
     #   jsonschema
     #   referencing
