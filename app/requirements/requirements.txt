@@ -6,7 +6,7 @@
 #
 amqp==5.3.1
     # via kombu
-amsterdam-django-oidc==0.1.0
+amsterdam-django-oidc==0.2.0
     # via -r requirements/requirements.in
 arpeggio==2.0.2
     # via textx
