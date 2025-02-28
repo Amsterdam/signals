@@ -20,7 +20,7 @@ class TestLegacyMlPredictCategory(SignalsBaseApiTestCase):
                                                             parent__isnull=False)
         self.link_test_subcategory_overig = f'{self.test_host}/signals/v1/public/terms/categories/' \
                                             f'{self.test_subcategory_overig.parent.slug}/sub_categories/' \
-                                            f'{self.test_subcategory_overig.slug,}'
+                                            f'{self.test_subcategory_overig.slug}'
 
         self.test_subcategory = CategoryFactory.create()
         self.link_test_subcategory = f'{self.test_host}/signals/v1/public/terms/categories/' \

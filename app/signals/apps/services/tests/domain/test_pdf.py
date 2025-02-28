@@ -231,7 +231,7 @@ class TestPDFSummaryService(TestCase):
         self.assertTrue(img_data_uri.startswith('data:image/png;base64,'))
         self.assertGreater(len(img_data_uri), len('data:image/png;base64,'))
 
-        patched.called_once_with(
+        patched.assert_called_once_with(
             url_template='TESTSERVER',
             lat=self.signal.location.geometrie.coords[1],
             lon=self.signal.location.geometrie.coords[0],
