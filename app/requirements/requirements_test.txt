@@ -120,6 +120,7 @@ cryptography==44.0.1
     #   mozilla-django-oidc
     #   msal
     #   pyjwt
+    #   types-jwcrypto
 cssselect2==0.7.0
     # via
     #   -r requirements/requirements.txt
@@ -588,6 +589,8 @@ types-factory-boy==0.4.1
 types-html5lib==1.1.11.20241018
     # via types-beautifulsoup4
 types-jsonschema==4.23.0.20241208
+    # via -r requirements/requirements_test.in
+types-jwcrypto==1.5.0.20241221
     # via -r requirements/requirements_test.in
 types-markdown==3.7.0.20241204
     # via -r requirements/requirements_test.in
