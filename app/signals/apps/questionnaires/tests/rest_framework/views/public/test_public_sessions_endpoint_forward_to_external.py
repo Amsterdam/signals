@@ -103,7 +103,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         # Check that the status_update Django signal is sent with correct arguments
         new_status = self.signal.status
         old_status = self.signal.statuses.first()
-        patched_django_signal.send_robust.called_once_with(
+        patched_django_signal.send_robust.assert_called_once_with(
             sender=SignalManager,
             signal_obj=self.signal,
             status=new_status,
