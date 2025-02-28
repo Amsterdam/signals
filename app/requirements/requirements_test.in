@@ -25,6 +25,7 @@ types-beautifulsoup4
 types-cryptography
 types-factory-boy
 types-jsonschema
+types-jwcrypto
 types-Pillow
 types-psycopg2
 types-Pygments
