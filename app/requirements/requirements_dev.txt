@@ -8,6 +8,8 @@ amqp==5.3.1
     # via
     #   -r requirements/requirements_test.txt
     #   kombu
+amsterdam-django-oidc==0.2.0
+    # via -r requirements/requirements_test.txt
 arpeggio==2.0.2
     # via
     #   -r requirements/requirements_test.txt
@@ -361,7 +363,9 @@ mccabe==0.7.0
     #   -r requirements/requirements_test.txt
     #   flake8
 mozilla-django-oidc==4.0.1
-    # via -r requirements/requirements_test.txt
+    # via
+    #   -r requirements/requirements_test.txt
+    #   amsterdam-django-oidc
 msal==1.31.1
     # via
     #   -r requirements/requirements_test.txt

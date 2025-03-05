@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 - 2023 Delta10 B.V., Gemeente Amsterdam
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend
+# Copyright (C) 2022 - 2024 Delta10 B.V., Gemeente Amsterdam
+from amsterdam_django_oidc import OIDCAuthenticationBackend
 
 
 class AuthenticationBackend(OIDCAuthenticationBackend):

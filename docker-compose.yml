@@ -111,6 +111,18 @@ services:
       - ./docker-compose/dex/dex.dev.yml:/config.yml
       - dex-data:/data
 
+  keycloak:
+    build:
+      context: docker-compose/keycloak
+    command: ["/opt/keycloak/bin/kc.sh", "start-dev", "--http-port", "8002"]
+    ports:
+      - "8002:8002"
+    volumes:
+      - "./docker-compose/keycloak/import:/import"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
   elasticsearch:
     image: elasticsearch:7.17.9
     shm_size: '512m'

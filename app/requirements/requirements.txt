@@ -6,6 +6,8 @@
 #
 amqp==5.3.1
     # via kombu
+amsterdam-django-oidc==0.2.0
+    # via -r requirements/requirements.in
 arpeggio==2.0.2
     # via textx
 asgiref==3.8.1
@@ -203,7 +205,7 @@ lxml==5.3.1
 markdown==3.7
     # via django-markdownx
 mozilla-django-oidc==4.0.1
-    # via -r requirements/requirements.in
+    # via amsterdam-django-oidc
 msal==1.31.1
     # via o365
 msrest==0.7.1
