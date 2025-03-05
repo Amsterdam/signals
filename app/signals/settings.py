@@ -168,6 +168,8 @@ if OIDC_OP_JWKS_ENDPOINT is not None:
 OIDC_CREATE_USER: bool = False
 OIDC_OP_ISSUER: str | None = os.getenv("OIDC_OP_ISSUER")
 OIDC_TRUSTED_AUDIENCES: list[str] = json.loads(os.getenv("OIDC_TRUSTED_AUDIENCES", '[]'))
+OIDC_VERIFY_AUDIENCE: bool = os.getenv('OIDC_VERIFY_AUDIENCE', True) in TRUE_VALUES
+OIDC_USE_NONCE: bool = os.getenv('OIDC_USE_NONCE', True) in TRUE_VALUES
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
