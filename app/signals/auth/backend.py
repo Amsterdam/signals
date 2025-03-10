@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from mozilla_django_oidc.contrib.drf import OIDCAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 
 
@@ -11,7 +12,11 @@ class JWTAuthBackend(OIDCAuthentication):
 
     def authenticate(self, request: Request) -> tuple[User, str]:
         if settings.SIGNALS_AUTH.get("ALWAYS_OK", False):
-            user = User.objects.get(username__iexact=settings.TEST_LOGIN)
+            try:
+                user = User.objects.get(username__iexact=settings.TEST_LOGIN)
+            except User.DoesNotExist as e:
+                raise AuthenticationFailed("User not found") from e
+
             return user, ""
 
         return super().authenticate(request)
