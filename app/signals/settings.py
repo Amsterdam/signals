@@ -278,8 +278,6 @@ FILE_UPLOAD_PERMISSIONS: None = None
 DWH_MEDIA_ROOT: str | None = os.getenv('DWH_MEDIA_ROOT')
 
 SIGNALS_AUTH: dict[str, str | bool | list[str] | None] = {
-    'JWKS': os.getenv('PUB_JWKS'),
-    'JWKS_URL': os.getenv('JWKS_URL'),
     'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(','),
     'ALWAYS_OK': os.getenv('SIGNALS_AUTH_ALWAYS_OK', False) in TRUE_VALUES,
 }
