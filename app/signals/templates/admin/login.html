@@ -56,6 +56,7 @@
 </p>
 {% endif %}
 
+{% if ADMIN_ENABLE_LOCAL_LOGIN %}
 <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
 <div class="form-row">
     {{ form.username.errors }}
@@ -70,6 +71,7 @@
     <label>&nbsp;</label><input type="submit" value="{% trans 'Log in' %}">
 </div>
 </form>
+{% endif %}
 {% url 'admin_password_reset' as password_reset_url %}
 {% if password_reset_url %}
 <div class="password-reset-link">
