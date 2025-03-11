@@ -42,7 +42,7 @@ class SpanCreationTestCase(APITestCase):
 
     def test_span_creation(self):
         """
-        Test if the app succesfully creates spans by creating a
+        Test if the app successfully creates spans by creating a
         custom trace and performing a query inside it.
         """
 

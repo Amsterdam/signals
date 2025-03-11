@@ -173,8 +173,11 @@ OIDC_USE_NONCE: bool = os.getenv('OIDC_USE_NONCE', True) in TRUE_VALUES
 
 AUTHENTICATION_BACKENDS: list[str] = [
     'signals.admin.oidc.backends.AuthenticationBackend',
-    'django.contrib.auth.backends.ModelBackend',
 ]
+
+ADMIN_ENABLE_LOCAL_LOGIN: bool = os.getenv('ADMIN_ENABLE_LOCAL_LOGIN', False) in TRUE_VALUES
+if ADMIN_ENABLE_LOCAL_LOGIN:
+    AUTHENTICATION_BACKENDS.append("django.contrib.auth.backends.ModelBackend")
 
 LOGIN_REDIRECT_URL: str = '/signals/admin/'
 LOGIN_REDIRECT_URL_FAILURE: str = '/signals/oidc/login_failure/'
