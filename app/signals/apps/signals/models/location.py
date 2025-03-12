@@ -80,9 +80,12 @@ class Location(CreatedUpdatedModel):
         return AddressFormatter(address=self.address).format('O hlT') if self.address else ''
 
     def save(self, *args, **kwargs) -> None:
-        address_formatter = AddressFormatter(address=self.address)
-        self.address_text = address_formatter.format('O hlT p W') if self.address else ''
-        self.postcode = address_formatter.format("p") if self.address else None
+        if self.address:
+            address_formatter = AddressFormatter(address=self.address)
+            self.address_text = address_formatter.format('O hlT p W')
+            self.postcode = address_formatter.format("p")
+        else:
+            self.address_text = ""
 
         super().save(*args, **kwargs)
 
