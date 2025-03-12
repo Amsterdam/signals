@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2025 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
@@ -146,11 +146,19 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.get(self.list_endpoint)
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(response.json()['count'], 2)
+        body = response.json()
+        self.assertEqual(body.get("count"), 2)
 
         # JSONSchema validation
         data = response.json()
         self.assertJsonSchema(self.list_signals_schema, data)
+
+        results = body.get("results")
+
+        self.assertEqual(len(results), 2)
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertIsNotNone(location.get("postcode"))
 
     def test_geo_list_endpoint(self):
         response = self.client.get(self.geo_list_endpoint)
@@ -230,7 +238,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_history_no_permissions(self):
         """
         The sia_read_user does not have a link with any department and also is not configured with the permission
-        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        "sia_can_view_all_categories". Therefor it should not be able to see a Signal and it's history.
         """
         self.client.logout()
         self.client.force_authenticate(user=self.sia_read_user)
@@ -1707,6 +1715,50 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         self.assertEqual(ordered_states, response_states)
         # REST API users do not get properly sorted state displays:
         self.assertNotEqual(ordered_state_displays, response_state_displays)
+
+    def test_order_by_location_postcode_ascending(self) -> None:
+        expected_postcode_ordered = ["1000AA", "1111AB", "2022XB", "8243JA"]
+
+        for postcode in ["8243JA", "1111AB", "1000AA", "2022XB"]:
+            SignalFactory.create(location__address={
+                "postcode": postcode,
+                "huisnummer": 5,
+                "woonplaats": "Amsterdam",
+                "openbare_ruimte": "Straatweglaan",
+            })
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=postcode')
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        results = body.get("results")
+        self.assertEqual(len(results), 4)
+
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertEqual(location.get("postcode"), expected_postcode_ordered[i])
+
+    def test_order_by_location_postcode_descending(self) -> None:
+        expected_postcode_ordered = ["8243JA", "2022XB", "1111AB", "1000AA"]
+
+        for postcode in ["8243JA", "1111AB", "1000AA", "2022XB"]:
+            SignalFactory.create(location__address={
+                "postcode": postcode,
+                "huisnummer": 5,
+                "woonplaats": "Amsterdam",
+                "openbare_ruimte": "Straatweglaan",
+            })
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-postcode')
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        results = body.get("results")
+        self.assertEqual(len(results), 4)
+
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertEqual(location.get("postcode"), expected_postcode_ordered[i])
 
 
 @override_settings(FEATURE_FLAGS={

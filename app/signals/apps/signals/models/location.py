@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2025 Gemeente Amsterdam
 import copy
 
 from django.contrib.contenttypes.fields import GenericRelation
@@ -66,6 +66,7 @@ class Location(CreatedUpdatedModel):
     buurt_code = models.CharField(null=True, max_length=4)
     address = models.JSONField(null=True)
     address_text = models.CharField(null=True, max_length=256, editable=False)
+    postcode = models.CharField(null=True, max_length=7, editable=False)
     created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = models.JSONField(null=True)
@@ -78,9 +79,14 @@ class Location(CreatedUpdatedModel):
         # openbare_ruimte huisnummerhuiletter-huisnummer_toevoeging
         return AddressFormatter(address=self.address).format('O hlT') if self.address else ''
 
-    def save(self, *args, **kwargs):
-        # Set address_text
-        self.address_text = AddressFormatter(address=self.address).format('O hlT p W') if self.address else ''
+    def save(self, *args, **kwargs) -> None:
+        if self.address:
+            address_formatter = AddressFormatter(address=self.address)
+            self.address_text = address_formatter.format('O hlT p W')
+            self.postcode = address_formatter.format("p")
+        else:
+            self.address_text = ""
+
         super().save(*args, **kwargs)
 
     def get_rd_coordinates(self):

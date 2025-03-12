@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2025 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
@@ -82,6 +82,29 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(self.subcategory, signal.category_assignment.category)
         self.assertEqual("melder@example.com", signal.reporter.email)
         self.assertEqual("Amstel 1 1011PN Amsterdam", signal.location.address_text)
+        self.assertEqual("1011PN", signal.location.postcode)
+        self.assertEqual("Luidruchtige vergadering", signal.text)
+        self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
+        self.assertEqual('SIG', signal.type_assignment.name)
+        self.assertEqual(Reporter.REPORTER_STATE_APPROVED, signal.reporter.state)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_without_address(self, validate_address):
+        location = self.create_initial_data.get("location")
+        location.pop("address")
+
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(1, Signal.objects.count())
+        signal = Signal.objects.last()
+        self.assertEqual(workflow.GEMELD, signal.status.state)
+        self.assertEqual(self.subcategory, signal.category_assignment.category)
+        self.assertEqual("melder@example.com", signal.reporter.email)
+        self.assertEqual("", signal.location.address_text)
+        self.assertIsNone(signal.location.postcode)
         self.assertEqual("Luidruchtige vergadering", signal.text)
         self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
         self.assertEqual('SIG', signal.type_assignment.name)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2025 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
 from django.conf import settings
@@ -110,6 +110,7 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
         'address',
         'assigned_user_email',
         'area_name',
+        'postcode',
     )
     ordering_field_mappings = {
         'id': 'id',
@@ -123,6 +124,7 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
         'address': 'location__address_text',
         'assigned_user_email': 'user_assignment__user__email',
         'area_name': 'location__area_name',
+        'postcode': 'location__postcode',
     }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']

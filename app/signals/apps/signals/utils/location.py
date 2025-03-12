@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Gemeente Amsterdam
 import re
 from typing import Optional
 
@@ -53,34 +53,34 @@ class AddressFormatter:
     re_formatchars = re.compile(r'(?<!\\)([OhltTpPW])')
     re_escaped = re.compile(r'\\(.)')
 
-    def __init__(self, address):
+    def __init__(self, address: dict[str, str]):
         self.address = address
 
-    def O(self):  # noqa E743
+    def O(self) -> str:  # noqa E743
         """
         Openbare ruimte
         """
         return self.address['openbare_ruimte'] if self.address and 'openbare_ruimte' in self.address else ''
 
-    def h(self):
+    def h(self) -> str:
         """
         Huisnummer
         """
         return self.address['huisnummer'] if self.address and 'huisnummer' in self.address else ''
 
-    def l(self):  # noqa E743
+    def l(self) -> str:  # noqa E743
         """
         Huisletter
         """
         return self.address['huisletter'] if self.address and 'huisletter' in self.address else ''
 
-    def t(self):
+    def t(self) -> str:
         """
         Huisnummer toevoeging  without a hyphen
         """
         return self.address['huisnummer_toevoeging'] if self.address and 'huisnummer_toevoeging' in self.address else ''
 
-    def T(self):  # noqa E743
+    def T(self) -> str:  # noqa E743
         """
         Huisnummer toevoeging with a hyphen
         """
@@ -90,14 +90,14 @@ class AddressFormatter:
         else:
             return ''
 
-    def p(self):
+    def p(self) -> str:
         """
         Postcode without a space between the digits and the characters
         """
         # Returns a postal code in the following format "1234AA"
         return self.address['postcode'] if self.address and 'postcode' in self.address else ''
 
-    def P(self):  # noqa E743
+    def P(self) -> str:  # noqa E743
         """
         Postcode with a space between the digits and the characters
         """
@@ -105,13 +105,13 @@ class AddressFormatter:
         return str(re.sub('(^[0-9]+)', r' \1 ', self.address['postcode'])).strip() \
             if self.address and 'postcode' in self.address else ''
 
-    def W(self):  # noqa E743
+    def W(self) -> str:  # noqa E743
         """
         Woonplaats
         """
         return self.address['woonplaats'] if self.address and 'woonplaats' in self.address else ''
 
-    def format(self, format_str):
+    def format(self, format_str: str) -> str:
         formatted_string = []
         for i, format_char in enumerate(self.re_formatchars.split(str(format_str))):
             if i % 2:
