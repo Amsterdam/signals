@@ -146,11 +146,19 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.get(self.list_endpoint)
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(response.json()['count'], 2)
+        body = response.json()
+        self.assertEqual(body.get("count"), 2)
 
         # JSONSchema validation
         data = response.json()
         self.assertJsonSchema(self.list_signals_schema, data)
+
+        results = body.get("results")
+
+        self.assertEqual(len(results), 2)
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertIsNotNone(location.get("postcode"))
 
     def test_geo_list_endpoint(self):
         response = self.client.get(self.geo_list_endpoint)
@@ -230,7 +238,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_history_no_permissions(self):
         """
         The sia_read_user does not have a link with any department and also is not configured with the permission
-        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        "sia_can_view_all_categories". Therefor it should not be able to see a Signal and it's history.
         """
         self.client.logout()
         self.client.force_authenticate(user=self.sia_read_user)
