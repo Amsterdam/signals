@@ -1716,6 +1716,50 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         # REST API users do not get properly sorted state displays:
         self.assertNotEqual(ordered_state_displays, response_state_displays)
 
+    def test_order_by_location_postcode_ascending(self) -> None:
+        expected_postcode_ordered = ["1000AA", "1111AB", "2022XB", "8243JA"]
+
+        for postcode in ["8243JA", "1111AB", "1000AA", "2022XB"]:
+            SignalFactory.create(location__address={
+                "postcode": postcode,
+                "huisnummer": 5,
+                "woonplaats": "Amsterdam",
+                "openbare_ruimte": "Straatweglaan",
+            })
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=postcode')
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        results = body.get("results")
+        self.assertEqual(len(results), 4)
+
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertEqual(location.get("postcode"), expected_postcode_ordered[i])
+
+    def test_order_by_location_postcode_descending(self) -> None:
+        expected_postcode_ordered = ["8243JA", "2022XB", "1111AB", "1000AA"]
+
+        for postcode in ["8243JA", "1111AB", "1000AA", "2022XB"]:
+            SignalFactory.create(location__address={
+                "postcode": postcode,
+                "huisnummer": 5,
+                "woonplaats": "Amsterdam",
+                "openbare_ruimte": "Straatweglaan",
+            })
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-postcode')
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        results = body.get("results")
+        self.assertEqual(len(results), 4)
+
+        for i in range(len(results)):
+            location = results[i].get("location")
+            self.assertEqual(location.get("postcode"), expected_postcode_ordered[i])
+
 
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
