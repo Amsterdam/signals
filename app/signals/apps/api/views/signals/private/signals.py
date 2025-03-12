@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2025 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
 from django.conf import settings
