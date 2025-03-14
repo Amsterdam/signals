@@ -47,6 +47,7 @@ from signals.apps.users.rest_framework.views import (
     RoleViewSet,
     UserViewSet
 )
+from signals.apps.relations.rest_framework.views import SignalRelatedViewSet
 
 # Public API
 public_router = SignalsRouter()
@@ -149,6 +150,11 @@ urlpatterns = [
                 name='private-signal-context-reporter'),
         re_path(r'signals/(?P<pk>\d+)/context/near/geography/?$', SignalContextViewSet.as_view({'get': 'near'}),
                 name='private-signal-context-near-geography'),
+
+        # Signal relations
+        re_path(r'signals/(?P<pk>\d+)/related/?$', SignalRelatedViewSet.as_view({'get': 'list', 'post': 'link', 'delete': 'unlink'}),
+                name='private-signal-related'),
+
 
         re_path(r'categories/(?P<category_id>\d+)/icon',
                 PrivateCategoryIconViewSet.as_view({'get': 'retrieve',
