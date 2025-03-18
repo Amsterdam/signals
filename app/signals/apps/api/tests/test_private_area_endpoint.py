@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Gemeente Amsterdam
 import os
+from typing import Final
 
+from django.contrib.auth.models import Permission
 from rest_framework import status
 
 from signals.apps.signals.factories import AreaFactory, AreaTypeFactory
@@ -134,3 +136,40 @@ class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # Compare the order of response data with the expected order of queryset
         self.assertEqual(response_order, expected_area_order)
+
+
+class TestPrivateAreaTypeViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    URI: Final[str] = '/signals/v1/private/area-types/'
+
+    def test_cannot_list_when_not_authenticated(self) -> None:
+        response = self.client.get(self.URI)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_can_list(self) -> None:
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.URI)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cannot_create_when_not_authenticated(self) -> None:
+        response = self.client.post(self.URI, data={"name": "test", "code": "test"}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_cannot_create_when_not_authorized(self) -> None:
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.post(self.URI, data={"name": "test", "code": "test"}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_can_create(self) -> None:
+        permission = Permission.objects.get(codename="sia_areatype_write")
+        self.sia_read_write_user.user_permissions.add(permission)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.post(self.URI, data={"name": "test", "code": "test"}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

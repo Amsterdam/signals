@@ -8,6 +8,7 @@ class AreaType(models.Model):
         verbose_name = 'Gebiedstype'
         verbose_name_plural = 'Gebiedstypen'
         ordering = ['code']
+        permissions = (("sia_areatype_write", "Kan gebiedstypen schrijven."),)
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
