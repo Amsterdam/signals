@@ -27,7 +27,7 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
-from signals.apps.api.views.area import PrivateAreaTypeViewSet
+from signals.apps.api.views.area import PrivateAreaCreateViewSet, PrivateAreaTypeViewSet
 from signals.apps.api.views.category import PrivateCategoryIconViewSet
 from signals.apps.api.views.email_verification import EmailVerificationView
 from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
@@ -75,6 +75,7 @@ private_router.register(r'private/permissions', PermissionViewSet, basename='per
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
+private_router.register(r'private/areas', PrivateAreaCreateViewSet, basename='private-area-create')
 private_router.register(r'private/area-types', PrivateAreaTypeViewSet, basename='private-area-type')
 private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-expression')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
