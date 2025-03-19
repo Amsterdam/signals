@@ -52,3 +52,9 @@ class AreaSerializer(HALSerializer):
             return obj.geometry.extent
 
         return None
+
+
+class AreaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area
+        fields = ("name", "code", "_type", "geometry", )
