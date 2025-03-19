@@ -25,6 +25,7 @@ class Area(models.Model):
         verbose_name_plural = 'Gebieden'
         unique_together = ('code', '_type')
         ordering = ['_type', 'code']
+        permissions = (("sia_area_write", "Kan gebieden schrijven."),)
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
