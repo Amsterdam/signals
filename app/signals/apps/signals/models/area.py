@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 
@@ -25,6 +25,7 @@ class Area(models.Model):
         verbose_name_plural = 'Gebieden'
         unique_together = ('code', '_type')
         ordering = ['_type', 'code']
+        permissions = (("sia_area_write", "Kan gebieden schrijven."),)
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)

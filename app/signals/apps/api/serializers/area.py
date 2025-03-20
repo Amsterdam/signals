@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2023 Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Gemeente Amsterdam
 from datapunt_api.serializers import HALSerializer
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -12,7 +12,8 @@ from signals.apps.signals.models import Area, AreaType
 class AreaTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AreaType
-        fields = ('name', 'code', )
+        fields = ('id', 'name', 'code', )
+        read_only_fields = ('id', )
 
 
 class AreaGeoSerializer(GeoFeatureModelSerializer):
@@ -51,3 +52,9 @@ class AreaSerializer(HALSerializer):
             return obj.geometry.extent
 
         return None
+
+
+class AreaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area
+        fields = ("name", "code", "_type", "geometry", )

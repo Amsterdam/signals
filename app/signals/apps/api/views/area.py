@@ -11,7 +11,12 @@ from rest_framework.viewsets import GenericViewSet
 from signals.apps.api.filters import AreaFilterSet
 from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
-from signals.apps.api.serializers.area import AreaGeoSerializer, AreaSerializer, AreaTypeSerializer
+from signals.apps.api.serializers.area import (
+    AreaCreateSerializer,
+    AreaGeoSerializer,
+    AreaSerializer,
+    AreaTypeSerializer
+)
 from signals.apps.signals.models import Area, AreaType
 from signals.auth.backend import JWTAuthBackend
 
@@ -64,6 +69,14 @@ class PrivateAreasViewSet(PublicAreasViewSet):
     """
 
     authentication_classes = (JWTAuthBackend, )
+
+
+class PrivateAreaCreateViewSet(GenericViewSet, CreateModelMixin):
+    """The area create API endpoint allows for creating new areas."""
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions & ModelWritePermissions,)
+    queryset = Area.objects.all()
+    serializer_class = AreaCreateSerializer
 
 
 class PrivateAreaTypeViewSet(GenericViewSet, CreateModelMixin, ListModelMixin):
