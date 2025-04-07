@@ -20,14 +20,14 @@ attrs==25.3.0
     #   referencing
 autopep8==2.3.2
     # via django-silk
-azure-core==1.32.0
+azure-core==1.33.0
     # via
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
 azure-monitor-opentelemetry-exporter==1.0.0b35
     # via -r requirements/requirements.in
-azure-storage-blob==12.25.0
+azure-storage-blob==12.25.1
     # via -r requirements/requirements.in
 beautifulsoup4==4.13.3
     # via
@@ -41,7 +41,7 @@ cairocffi==1.7.1
     #   weasyprint
 cairosvg==2.7.1
     # via weasyprint
-celery==5.4.0
+celery==5.5.0
     # via
     #   -r requirements/requirements.in
     #   django-celery-beat
@@ -136,7 +136,7 @@ django-o365mail==1.1.0
     # via -r requirements/requirements.in
 django-silk==5.3.2
     # via -r requirements/requirements.in
-django-storages==1.14.5
+django-storages==1.14.6
     # via -r requirements/requirements.in
 django-timezone-field==7.1
     # via django-celery-beat
@@ -162,7 +162,7 @@ drf-extensions==0.7.1
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.28.0
     # via -r requirements/requirements.in
-drf-spectacular-sidecar==2025.3.1
+drf-spectacular-sidecar==2025.4.1
     # via drf-spectacular
 elasticsearch==7.17.12
     # via elasticsearch-dsl
@@ -176,7 +176,7 @@ gprof2dot==2024.6.6
     # via django-silk
 html5lib==1.1
     # via weasyprint
-humanize==4.12.1
+humanize==4.12.2
     # via flower
 idna==3.10
     # via requests
@@ -198,9 +198,9 @@ jsonschema-specifications==2024.10.1
     # via jsonschema
 jwcrypto==1.5.6
     # via -r requirements/requirements.in
-kombu==5.5.0
+kombu==5.5.2
     # via celery
-lxml==5.3.1
+lxml==5.3.2
     # via -r requirements/requirements.in
 markdown==3.7
     # via django-markdownx
@@ -212,11 +212,11 @@ msrest==0.7.1
     # via azure-monitor-opentelemetry-exporter
 networkx==3.4.2
     # via -r requirements/requirements.in
-o365==2.1.0
+o365==2.1.1
     # via django-o365mail
 oauthlib==3.2.2
     # via requests-oauthlib
-opentelemetry-api==1.31.0
+opentelemetry-api==1.31.1
     # via
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-instrumentation
@@ -226,32 +226,32 @@ opentelemetry-api==1.31.0
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-instrumentation==0.52b0
+opentelemetry-instrumentation==0.52b1
     # via
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-psycopg2
     #   opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-dbapi==0.52b0
+opentelemetry-instrumentation-dbapi==0.52b1
     # via opentelemetry-instrumentation-psycopg2
-opentelemetry-instrumentation-django==0.52b0
+opentelemetry-instrumentation-django==0.52b1
     # via -r requirements/requirements.in
-opentelemetry-instrumentation-psycopg2==0.52b0
+opentelemetry-instrumentation-psycopg2==0.52b1
     # via -r requirements/requirements.in
-opentelemetry-instrumentation-wsgi==0.52b0
+opentelemetry-instrumentation-wsgi==0.52b1
     # via opentelemetry-instrumentation-django
-opentelemetry-sdk==1.31.0
+opentelemetry-sdk==1.31.1
     # via
     #   -r requirements/requirements.in
     #   azure-monitor-opentelemetry-exporter
-opentelemetry-semantic-conventions==0.52b0
+opentelemetry-semantic-conventions==0.52b1
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.52b0
+opentelemetry-util-http==0.52b1
     # via
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
@@ -271,7 +271,7 @@ psutil==6.1.1
     # via azure-monitor-opentelemetry-exporter
 psycopg2-binary==2.9.10
     # via -r requirements/requirements.in
-pycodestyle==2.12.1
+pycodestyle==2.13.0
     # via autopep8
 pycparser==2.22
     # via cffi
@@ -294,7 +294,7 @@ python-dateutil==2.9.0.post0
     #   python-crontab
 python-magic==0.4.27
     # via -r requirements/requirements.in
-pytz==2025.1
+pytz==2025.2
     # via flower
 pyyaml==6.0.2
     # via drf-spectacular
@@ -313,7 +313,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rpds-py==0.23.1
+rpds-py==0.24.0
     # via
     #   jsonschema
     #   referencing
@@ -338,7 +338,7 @@ tinycss2==1.4.0
     #   weasyprint
 tornado==6.4.2
     # via flower
-typing-extensions==4.12.2
+typing-extensions==4.13.1
     # via
     #   azure-core
     #   azure-storage-blob
@@ -346,9 +346,8 @@ typing-extensions==4.12.2
     #   jwcrypto
     #   opentelemetry-sdk
     #   referencing
-tzdata==2025.1
+tzdata==2025.2
     # via
-    #   celery
     #   django-celery-beat
     #   kombu
     #   o365

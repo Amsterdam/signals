@@ -30,7 +30,7 @@ autopep8==2.3.2
     # via
     #   -r /app/requirements/requirements.txt
     #   django-silk
-azure-core==1.32.0
+azure-core==1.33.0
     # via
     #   -r /app/requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
@@ -38,7 +38,7 @@ azure-core==1.32.0
     #   msrest
 azure-monitor-opentelemetry-exporter==1.0.0b35
     # via -r /app/requirements/requirements.txt
-azure-storage-blob==12.25.0
+azure-storage-blob==12.25.1
     # via -r /app/requirements/requirements.txt
 beautifulsoup4==4.13.3
     # via
@@ -59,7 +59,7 @@ cairosvg==2.7.1
     # via
     #   -r /app/requirements/requirements.txt
     #   weasyprint
-celery==5.4.0
+celery==5.5.0
     # via
     #   -r /app/requirements/requirements.txt
     #   django-celery-beat
@@ -107,7 +107,7 @@ click-repl==0.3.0
     #   celery
 colorama==0.4.6
     # via tox
-coverage[toml]==7.7.0
+coverage[toml]==7.8.0
     # via pytest-cov
 cron-descriptor==1.4.5
     # via
@@ -188,7 +188,7 @@ django-o365mail==1.1.0
     # via -r /app/requirements/requirements.txt
 django-silk==5.3.2
     # via -r /app/requirements/requirements.txt
-django-storages==1.14.5
+django-storages==1.14.6
     # via -r /app/requirements/requirements.txt
 django-stubs[compatible-mypy]==5.1.3
     # via
@@ -231,7 +231,7 @@ drf-extensions==0.7.1
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.28.0
     # via -r /app/requirements/requirements.txt
-drf-spectacular-sidecar==2025.3.1
+drf-spectacular-sidecar==2025.4.1
     # via
     #   -r /app/requirements/requirements.txt
     #   drf-spectacular
@@ -247,7 +247,7 @@ factory-boy==3.3.3
     # via
     #   -r requirements/requirements_test.in
     #   types-factory-boy
-faker==37.0.0
+faker==37.1.0
     # via factory-boy
 filelock==3.18.0
     # via
@@ -257,7 +257,7 @@ fixedint==0.1.6
     # via
     #   -r /app/requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
-flake8==7.1.2
+flake8==7.2.0
     # via -r requirements/requirements_test.in
 flower==2.0.1
     # via -r /app/requirements/requirements.txt
@@ -273,7 +273,7 @@ html5lib==1.1
     # via
     #   -r /app/requirements/requirements.txt
     #   weasyprint
-humanize==4.12.1
+humanize==4.12.2
     # via
     #   -r /app/requirements/requirements.txt
     #   flower
@@ -289,7 +289,7 @@ inflection==0.5.1
     # via
     #   -r /app/requirements/requirements.txt
     #   drf-spectacular
-iniconfig==2.0.0
+iniconfig==2.1.0
     # via pytest
 isodate==0.7.2
     # via
@@ -312,11 +312,11 @@ jsonschema-specifications==2024.10.1
     #   jsonschema
 jwcrypto==1.5.6
     # via -r /app/requirements/requirements.txt
-kombu==5.5.0
+kombu==5.5.2
     # via
     #   -r /app/requirements/requirements.txt
     #   celery
-lxml==5.3.1
+lxml==5.3.2
     # via
     #   -r /app/requirements/requirements.txt
     #   xmlunittest
@@ -360,7 +360,7 @@ networkx==3.4.2
     #   networkx-stubs
 networkx-stubs==0.0.1
     # via -r requirements/requirements_test.in
-o365==2.1.0
+o365==2.1.1
     # via
     #   -r /app/requirements/requirements.txt
     #   django-o365mail
@@ -368,7 +368,7 @@ oauthlib==3.2.2
     # via
     #   -r /app/requirements/requirements.txt
     #   requests-oauthlib
-opentelemetry-api==1.31.0
+opentelemetry-api==1.31.1
     # via
     #   -r /app/requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
@@ -379,30 +379,30 @@ opentelemetry-api==1.31.0
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-instrumentation==0.52b0
+opentelemetry-instrumentation==0.52b1
     # via
     #   -r /app/requirements/requirements.txt
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-psycopg2
     #   opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-dbapi==0.52b0
+opentelemetry-instrumentation-dbapi==0.52b1
     # via
     #   -r /app/requirements/requirements.txt
     #   opentelemetry-instrumentation-psycopg2
-opentelemetry-instrumentation-django==0.52b0
+opentelemetry-instrumentation-django==0.52b1
     # via -r /app/requirements/requirements.txt
-opentelemetry-instrumentation-psycopg2==0.52b0
+opentelemetry-instrumentation-psycopg2==0.52b1
     # via -r /app/requirements/requirements.txt
-opentelemetry-instrumentation-wsgi==0.52b0
+opentelemetry-instrumentation-wsgi==0.52b1
     # via
     #   -r /app/requirements/requirements.txt
     #   opentelemetry-instrumentation-django
-opentelemetry-sdk==1.31.0
+opentelemetry-sdk==1.31.1
     # via
     #   -r /app/requirements/requirements.txt
     #   azure-monitor-opentelemetry-exporter
-opentelemetry-semantic-conventions==0.52b0
+opentelemetry-semantic-conventions==0.52b1
     # via
     #   -r /app/requirements/requirements.txt
     #   opentelemetry-instrumentation
@@ -410,7 +410,7 @@ opentelemetry-semantic-conventions==0.52b0
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.52b0
+opentelemetry-util-http==0.52b1
     # via
     #   -r /app/requirements/requirements.txt
     #   opentelemetry-instrumentation-django
@@ -435,7 +435,7 @@ pillow==11.1.0
     #   cairosvg
     #   django-markdownx
     #   weasyprint
-platformdirs==4.3.6
+platformdirs==4.3.7
     # via
     #   tox
     #   virtualenv
@@ -457,7 +457,7 @@ psutil==6.1.1
     #   azure-monitor-opentelemetry-exporter
 psycopg2-binary==2.9.10
     # via -r /app/requirements/requirements.txt
-pycodestyle==2.12.1
+pycodestyle==2.13.0
     # via
     #   -r /app/requirements/requirements.txt
     #   autopep8
@@ -466,7 +466,7 @@ pycparser==2.22
     # via
     #   -r /app/requirements/requirements.txt
     #   cffi
-pyflakes==3.2.0
+pyflakes==3.3.2
     # via flake8
 pyjwt[crypto]==2.10.1
     # via
@@ -491,9 +491,9 @@ pytest==8.3.5
     #   pytest-xdist
 pytest-bdd==8.1.0
     # via -r requirements/requirements_test.in
-pytest-cov==6.0.0
+pytest-cov==6.1.1
     # via -r requirements/requirements_test.in
-pytest-django==4.10.0
+pytest-django==4.11.1
     # via -r requirements/requirements_test.in
 pytest-subtests==0.14.1
     # via -r requirements/requirements_test.in
@@ -515,7 +515,7 @@ python-dateutil==2.9.0.post0
     #   python-crontab
 python-magic==0.4.27
     # via -r /app/requirements/requirements.txt
-pytz==2025.1
+pytz==2025.2
     # via
     #   -r /app/requirements/requirements.txt
     #   flower
@@ -546,7 +546,7 @@ requests-oauthlib==2.0.0
     # via
     #   -r /app/requirements/requirements.txt
     #   msrest
-rpds-py==0.23.1
+rpds-py==0.24.0
     # via
     #   -r /app/requirements/requirements.txt
     #   jsonschema
@@ -580,7 +580,7 @@ tornado==6.4.2
     # via
     #   -r /app/requirements/requirements.txt
     #   flower
-tox==4.24.2
+tox==4.25.0
     # via -r requirements/requirements_test.in
 types-beautifulsoup4==4.12.0.20250204
     # via -r requirements/requirements_test.in
@@ -594,9 +594,9 @@ types-html5lib==1.1.11.20241018
     # via types-beautifulsoup4
 types-jsonschema==4.23.0.20241208
     # via -r requirements/requirements_test.in
-types-jwcrypto==1.5.0.20241221
+types-jwcrypto==1.5.0.20250326
     # via -r requirements/requirements_test.in
-types-markdown==3.7.0.20241204
+types-markdown==3.7.0.20250322
     # via -r requirements/requirements_test.in
 types-pillow==10.2.0.20240822
     # via -r requirements/requirements_test.in
@@ -606,9 +606,9 @@ types-pygments==2.19.0.20250305
     # via -r requirements/requirements_test.in
 types-python-dateutil==2.9.0.20241206
     # via -r requirements/requirements_test.in
-types-pytz==2025.1.0.20250318
+types-pytz==2025.2.0.20250326
     # via -r requirements/requirements_test.in
-types-pyyaml==6.0.12.20241230
+types-pyyaml==6.0.12.20250402
     # via
     #   django-stubs
     #   djangorestframework-stubs
@@ -616,7 +616,7 @@ types-requests==2.31.0.6
     # via djangorestframework-stubs
 types-urllib3==1.26.25.14
     # via types-requests
-typing-extensions==4.12.2
+typing-extensions==4.13.1
     # via
     #   -r /app/requirements/requirements.txt
     #   azure-core
@@ -633,10 +633,9 @@ typing-extensions==4.12.2
     #   pytest-bdd
     #   referencing
     #   types-factory-boy
-tzdata==2025.1
+tzdata==2025.2
     # via
     #   -r /app/requirements/requirements.txt
-    #   celery
     #   django-celery-beat
     #   faker
     #   kombu
@@ -662,7 +661,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.29.3
+virtualenv==20.30.0
     # via tox
 wcwidth==0.2.13
     # via
