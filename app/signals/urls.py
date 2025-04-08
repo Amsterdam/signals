@@ -19,6 +19,10 @@ urlpatterns = [
     path('signals/', BaseSignalsAPIRootView.as_view()),
     path('signals/', include('signals.apps.api.urls')),
 
+    # The media folder is routed with X-Sendfile when DEBUG=False and
+    # with the Django static helper when DEBUG=True
+    path('signals/media/', include('signals.apps.media.urls')),
+
     # The Django admin
     path('signals/admin/', admin.site.urls),
     re_path(r'^signals/markdownx/', include('markdownx.urls')),
@@ -26,12 +30,6 @@ urlpatterns = [
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
 ]
-
-if settings.DEBUG:
-    from django.conf.urls.static import static
-
-    media_root = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += media_root
 
 if settings.OIDC_RP_CLIENT_ID:
     urlpatterns += [
