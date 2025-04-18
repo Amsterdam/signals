@@ -33,14 +33,19 @@ autopep8==2.3.2
 azure-core==1.33.0
     # via
     #   -r /app/requirements/requirements_test.txt
+    #   azure-identity
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
-azure-monitor-opentelemetry-exporter==1.0.0b35
+azure-identity==1.21.0
+    # via
+    #   -r /app/requirements/requirements_test.txt
+    #   azure-monitor-opentelemetry-exporter
+azure-monitor-opentelemetry-exporter==1.0.0b36
     # via -r /app/requirements/requirements_test.txt
 azure-storage-blob==12.25.1
     # via -r /app/requirements/requirements_test.txt
-beautifulsoup4==4.13.3
+beautifulsoup4==4.13.4
     # via
     #   -r /app/requirements/requirements_test.txt
     #   o365
@@ -61,7 +66,7 @@ cairosvg==2.7.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   weasyprint
-celery==5.5.0
+celery==5.5.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-celery-beat
@@ -124,6 +129,7 @@ cron-descriptor==1.4.5
 cryptography==44.0.2
     # via
     #   -r /app/requirements/requirements_test.txt
+    #   azure-identity
     #   azure-storage-blob
     #   josepy
     #   jwcrypto
@@ -168,6 +174,7 @@ django==4.2.20
     #   django-stubs-ext
     #   django-timezone-field
     #   djangorestframework
+    #   drf-extensions
     #   drf-spectacular
     #   drf-spectacular-sidecar
     #   mozilla-django-oidc
@@ -175,17 +182,17 @@ django-appconf==1.1.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-celery-email
-django-celery-beat==2.7.0
+django-celery-beat==2.8.0
     # via -r /app/requirements/requirements_test.txt
 django-celery-email==3.0.0
     # via -r /app/requirements/requirements_test.txt
-django-celery-results==2.5.1
+django-celery-results==2.6.0
     # via -r /app/requirements/requirements_test.txt
 django-cors-headers==4.7.0
     # via -r /app/requirements/requirements_test.txt
 django-debug-toolbar==5.1.0
     # via -r requirements/requirements_dev.in
-django-extensions==3.2.3
+django-extensions==4.1
     # via -r /app/requirements/requirements_test.txt
 django-filter==24.3
     # via
@@ -240,7 +247,7 @@ djangorestframework-xml==2.0.0
     #   drf-amsterdam
 drf-amsterdam==1.0.1
     # via -r /app/requirements/requirements_test.txt
-drf-extensions==0.7.1
+drf-extensions==0.8.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   drf-amsterdam
@@ -287,7 +294,7 @@ gherkin-official==29.0.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   pytest-bdd
-gprof2dot==2024.6.6
+gprof2dot==2025.4.14
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-silk
@@ -336,7 +343,7 @@ jsonschema-specifications==2024.10.1
     #   jsonschema
 jwcrypto==1.5.6
     # via -r /app/requirements/requirements_test.txt
-kombu==5.5.2
+kombu==5.5.3
     # via
     #   -r /app/requirements/requirements_test.txt
     #   celery
@@ -346,11 +353,11 @@ lxml==5.3.2
     #   xmlunittest
 lxml-stubs==0.5.1
     # via -r /app/requirements/requirements_test.txt
-mako==1.3.9
+mako==1.3.10
     # via
     #   -r /app/requirements/requirements_test.txt
     #   pytest-bdd
-markdown==3.7
+markdown==3.8
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-markdownx
@@ -369,7 +376,13 @@ mozilla-django-oidc==4.0.1
 msal==1.32.0
     # via
     #   -r /app/requirements/requirements_test.txt
+    #   azure-identity
+    #   msal-extensions
     #   o365
+msal-extensions==1.3.1
+    # via
+    #   -r /app/requirements/requirements_test.txt
+    #   azure-identity
 msrest==0.7.1
     # via
     #   -r /app/requirements/requirements_test.txt
@@ -392,7 +405,7 @@ networkx==3.4.2
     #   networkx-stubs
 networkx-stubs==0.0.1
     # via -r /app/requirements/requirements_test.txt
-o365==2.1.1
+o365==2.1.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-o365mail
@@ -400,7 +413,7 @@ oauthlib==3.2.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   requests-oauthlib
-opentelemetry-api==1.31.1
+opentelemetry-api==1.32.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
@@ -411,30 +424,30 @@ opentelemetry-api==1.31.1
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-instrumentation==0.52b1
+opentelemetry-instrumentation==0.53b1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-psycopg2
     #   opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-dbapi==0.52b1
+opentelemetry-instrumentation-dbapi==0.53b1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation-psycopg2
-opentelemetry-instrumentation-django==0.52b1
+opentelemetry-instrumentation-django==0.53b1
     # via -r /app/requirements/requirements_test.txt
-opentelemetry-instrumentation-psycopg2==0.52b1
+opentelemetry-instrumentation-psycopg2==0.53b1
     # via -r /app/requirements/requirements_test.txt
-opentelemetry-instrumentation-wsgi==0.52b1
+opentelemetry-instrumentation-wsgi==0.53b1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation-django
-opentelemetry-sdk==1.31.1
+opentelemetry-sdk==1.32.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
-opentelemetry-semantic-conventions==0.52b1
+opentelemetry-semantic-conventions==0.53b1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation
@@ -442,7 +455,7 @@ opentelemetry-semantic-conventions==0.52b1
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.52b1
+opentelemetry-util-http==0.53b1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation-django
@@ -450,6 +463,7 @@ opentelemetry-util-http==0.52b1
 packaging==24.2
     # via
     #   -r /app/requirements/requirements_test.txt
+    #   drf-extensions
     #   opentelemetry-instrumentation
     #   pyproject-api
     #   pytest
@@ -464,7 +478,7 @@ parse-type==0.6.4
     # via
     #   -r /app/requirements/requirements_test.txt
     #   pytest-bdd
-pillow==11.1.0
+pillow==11.2.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   cairosvg
@@ -484,7 +498,7 @@ prometheus-client==0.21.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   flower
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.51
     # via
     #   -r /app/requirements/requirements_test.txt
     #   click-repl
@@ -640,9 +654,9 @@ types-html5lib==1.1.11.20241018
     #   types-beautifulsoup4
 types-jsonschema==4.23.0.20241208
     # via -r /app/requirements/requirements_test.txt
-types-jwcrypto==1.5.0.20250326
+types-jwcrypto==1.5.0.20250413
     # via -r /app/requirements/requirements_test.txt
-types-markdown==3.7.0.20250322
+types-markdown==3.8.0.20250415
     # via -r /app/requirements/requirements_test.txt
 types-pillow==10.2.0.20240822
     # via -r /app/requirements/requirements_test.txt
@@ -667,10 +681,11 @@ types-urllib3==1.26.25.14
     # via
     #   -r /app/requirements/requirements_test.txt
     #   types-requests
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-core
+    #   azure-identity
     #   azure-storage-blob
     #   beautifulsoup4
     #   celery-types
@@ -704,7 +719,7 @@ urllib3==1.26.20
     #   -r /app/requirements/requirements_test.txt
     #   elasticsearch
     #   requests
-uwsgi==2.0.28
+uwsgi==2.0.29
     # via -r /app/requirements/requirements_test.txt
 vine==5.1.0
     # via
