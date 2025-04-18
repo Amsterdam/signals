@@ -1,6 +1,5 @@
 signals/apps/email_integrations/markdown/plaintext.py:0: error: "PageElement" has no attribute "name"  [attr-defined]
 signals/apps/services/domain/pdf.py:0: error: Skipping analyzing "weasyprint": module is installed, but missing library stubs or py.typed marker  [import-untyped]
-signals/apps/signals/models/category.py:0: error: Skipping analyzing "django_extensions.db.fields": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Skipping analyzing "rest_framework_extensions.settings": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Definition of "refresh_from_db" in base class "TrackFields" is incompatible with definition in base class "Model"  [misc]
 signals/apps/signals/models/reporter.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
