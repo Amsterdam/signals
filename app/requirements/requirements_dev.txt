@@ -30,7 +30,7 @@ autopep8==2.3.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-silk
-azure-core==1.33.0
+azure-core==1.34.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-identity
@@ -66,7 +66,7 @@ cairosvg==2.7.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   weasyprint
-celery==5.5.1
+celery==5.5.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-celery-beat
@@ -75,7 +75,7 @@ celery==5.5.1
     #   flower
 celery-types==0.23.0
     # via -r /app/requirements/requirements_test.txt
-certifi==2025.1.31
+certifi==2025.4.26
     # via
     #   -r /app/requirements/requirements_test.txt
     #   elasticsearch
@@ -91,7 +91,7 @@ chardet==5.2.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   tox
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via
     #   -r /app/requirements/requirements_test.txt
     #   requests
@@ -126,7 +126,7 @@ cron-descriptor==1.4.5
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-celery-beat
-cryptography==44.0.2
+cryptography==44.0.3
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-identity
@@ -190,7 +190,7 @@ django-celery-results==2.6.0
     # via -r /app/requirements/requirements_test.txt
 django-cors-headers==4.7.0
     # via -r /app/requirements/requirements_test.txt
-django-debug-toolbar==5.1.0
+django-debug-toolbar==5.2.0
     # via -r requirements/requirements_dev.in
 django-extensions==4.1
     # via -r /app/requirements/requirements_test.txt
@@ -202,7 +202,7 @@ django-filter-stubs==0.1.3
     # via -r /app/requirements/requirements_test.txt
 django-fsm==3.0.0
     # via -r /app/requirements/requirements_test.txt
-django-markdownx==4.0.7
+django-markdownx==4.0.9
     # via -r /app/requirements/requirements_test.txt
 django-o365mail==1.1.0
     # via -r /app/requirements/requirements_test.txt
@@ -210,12 +210,12 @@ django-silk==5.3.2
     # via -r /app/requirements/requirements_test.txt
 django-storages==1.14.6
     # via -r /app/requirements/requirements_test.txt
-django-stubs[compatible-mypy]==5.1.3
+django-stubs[compatible-mypy]==5.2.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-filter-stubs
     #   djangorestframework-stubs
-django-stubs-ext==5.1.3
+django-stubs-ext==5.2.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-stubs
@@ -237,7 +237,7 @@ djangorestframework-csv==3.0.2
     #   drf-amsterdam
 djangorestframework-gis==1.1
     # via -r /app/requirements/requirements_test.txt
-djangorestframework-stubs[compatible-mypy]==3.15.3
+djangorestframework-stubs[compatible-mypy]==3.16.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   django-filter-stubs
@@ -245,7 +245,7 @@ djangorestframework-xml==2.0.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   drf-amsterdam
-drf-amsterdam==1.0.1
+drf-amsterdam==1.0.3
     # via -r /app/requirements/requirements_test.txt
 drf-extensions==0.8.0
     # via
@@ -253,7 +253,7 @@ drf-extensions==0.8.0
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.28.0
     # via -r /app/requirements/requirements_test.txt
-drf-spectacular-sidecar==2025.4.1
+drf-spectacular-sidecar==2025.5.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   drf-spectacular
@@ -302,7 +302,7 @@ html5lib==1.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   weasyprint
-humanize==4.12.2
+humanize==4.12.3
     # via
     #   -r /app/requirements/requirements_test.txt
     #   flower
@@ -337,7 +337,7 @@ jsonschema==4.23.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   drf-spectacular
-jsonschema-specifications==2024.10.1
+jsonschema-specifications==2025.4.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   jsonschema
@@ -347,7 +347,7 @@ kombu==5.5.3
     # via
     #   -r /app/requirements/requirements_test.txt
     #   celery
-lxml==5.3.2
+lxml==5.4.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   xmlunittest
@@ -373,7 +373,7 @@ mozilla-django-oidc==4.0.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   amsterdam-django-oidc
-msal==1.32.0
+msal==1.32.3
     # via
     #   -r /app/requirements/requirements_test.txt
     #   azure-identity
@@ -395,7 +395,7 @@ mypy==1.15.0
     #   djangorestframework-stubs
 mypy-baseline==0.7.2
     # via -r /app/requirements/requirements_test.txt
-mypy-extensions==1.0.0
+mypy-extensions==1.1.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   mypy
@@ -460,7 +460,7 @@ opentelemetry-util-http==0.53b1
     #   -r /app/requirements/requirements_test.txt
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
-packaging==24.2
+packaging==25.0
     # via
     #   -r /app/requirements/requirements_test.txt
     #   drf-extensions
@@ -552,7 +552,7 @@ pytest-django==4.11.1
     # via -r /app/requirements/requirements_test.txt
 pytest-subtests==0.14.1
     # via -r /app/requirements/requirements_test.txt
-pytest-timeout==2.3.1
+pytest-timeout==2.4.0
     # via -r /app/requirements/requirements_test.txt
 pytest-xdist==3.6.1
     # via -r /app/requirements/requirements_test.txt
@@ -614,7 +614,7 @@ six==1.17.0
     #   html5lib
     #   parse-type
     #   python-dateutil
-soupsieve==2.6
+soupsieve==2.7
     # via
     #   -r /app/requirements/requirements_test.txt
     #   beautifulsoup4
@@ -727,7 +727,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.30.0
+virtualenv==20.31.1
     # via
     #   -r /app/requirements/requirements_test.txt
     #   tox
