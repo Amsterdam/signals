@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import os
 from unittest.mock import patch
@@ -19,7 +19,7 @@ from signals.apps.signals.factories import (
     SignalFactoryWithImage,
     SourceFactory
 )
-from signals.apps.signals.models import Attachment, Note, Signal
+from signals.apps.signals.models import Attachment, Note, Signal, Type
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -77,6 +77,21 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         signal_count = Signal.objects.count()
 
         initial_data = copy.deepcopy(self.initial_data_base)
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_with_type(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['type'] = {
+            'code': Type.PROJECT_MAINTENANCE
+        }
+
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

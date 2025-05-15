@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2025 Gemeente Amsterdam
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
@@ -10,6 +10,7 @@ class Type(models.Model):
     QUESTION = 'QUE'  # Vraag
     COMPLAINT = 'COM'  # Klacht
     MAINTENANCE = 'MAI'  # Groot onderhoud
+    PROJECT_MAINTENANCE = 'PRJ'  # Projectmatig onderhoud
 
     CHOICES = (
         (SIGNAL, 'Signal'),  # Melding
@@ -17,6 +18,7 @@ class Type(models.Model):
         (QUESTION, 'Question'),  # Vraag
         (COMPLAINT, 'Complaint'),  # Klacht
         (MAINTENANCE, 'Maintenance'),  # Groot onderhoud
+        (PROJECT_MAINTENANCE, 'Project Maintenance'),  # Projectmatig onderhoud
     )
 
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, related_name='types')
@@ -43,5 +45,6 @@ def _history_translated_action(name):
         Type.QUESTION: 'Vraag',
         Type.COMPLAINT: 'Klacht',
         Type.MAINTENANCE: 'Groot onderhoud',
+        Type.PROJECT_MAINTENANCE: 'Projectmatig onderhoud',
     }
     return translated[name]
