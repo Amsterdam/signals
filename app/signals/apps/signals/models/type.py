@@ -10,7 +10,7 @@ class Type(models.Model):
     QUESTION = 'QUE'  # Vraag
     COMPLAINT = 'COM'  # Klacht
     MAINTENANCE = 'MAI'  # Groot onderhoud
-    PROJECT_MAINTENANCE = 'PRJ'  # Projectmatig onderhoud
+    PROJECT_MAINTENANCE = 'PRJ'  # Projectverzoek
 
     CHOICES = (
         (SIGNAL, 'Signal'),  # Melding
@@ -18,7 +18,7 @@ class Type(models.Model):
         (QUESTION, 'Question'),  # Vraag
         (COMPLAINT, 'Complaint'),  # Klacht
         (MAINTENANCE, 'Maintenance'),  # Groot onderhoud
-        (PROJECT_MAINTENANCE, 'Project Maintenance'),  # Projectmatig onderhoud
+        (PROJECT_MAINTENANCE, 'Project Maintenance'),  # Projectverzoek
     )
 
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, related_name='types')
@@ -45,6 +45,6 @@ def _history_translated_action(name):
         Type.QUESTION: 'Vraag',
         Type.COMPLAINT: 'Klacht',
         Type.MAINTENANCE: 'Groot onderhoud',
-        Type.PROJECT_MAINTENANCE: 'Projectmatig onderhoud',
+        Type.PROJECT_MAINTENANCE: 'Projectverzoek',
     }
     return translated[name]
