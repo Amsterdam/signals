@@ -24,7 +24,7 @@ def download_file(request: HttpRequest, path: str) -> HttpResponseBase:
         return HttpResponse('No signature provided', status=401)
 
     try:
-        signer.unsign(f'{path}:{t}:{s}', max_age=timedelta(hours=1))
+        signer.unsign(f'{path}:{t}:{s}', max_age=timedelta(seconds=settings.PROTECTED_FILE_SYSTEM_STORAGE_URL_EXPIRATION_SECS))
     except signing.SignatureExpired:
         return HttpResponse('Signature expired', status=401)
     except signing.BadSignature:
