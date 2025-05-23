@@ -309,8 +309,8 @@ EMAIL_BACKEND: str = os.getenv('EMAIL_BACKEND', 'djcelery_email.backends.CeleryE
 EMAIL_HOST: str | None = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER: str | None = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD: str | None = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_PORT: str | int = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
-EMAIL_TIMEOUT: str | int = os.getenv('EMAIL_TIMEOUT', 5)
+EMAIL_PORT: int = int(os.getenv('EMAIL_PORT', 465))  # 465 for SSL 587 for TLS
+EMAIL_TIMEOUT: int = int(os.getenv('EMAIL_TIMEOUT', 5))
 EMAIL_USE_TLS: bool = os.getenv('EMAIL_USE_TLS', False) in TRUE_VALUES
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL: bool = os.getenv('EMAIL_USE_SSL', True) in TRUE_VALUES
