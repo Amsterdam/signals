@@ -4,9 +4,12 @@ from typing import override
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from jwcrypto.jwt import JWTMissingKey
 from mozilla_django_oidc.contrib.drf import OIDCAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
+
+from .tokens import JWTAccessToken
 
 
 class JWTAuthBackend(OIDCAuthentication):
@@ -21,6 +24,21 @@ class JWTAuthBackend(OIDCAuthentication):
                 raise AuthenticationFailed("User not found") from e
 
             return user, ""
+
+        if settings.PUB_JWKS:
+            try:
+                auth_header = request.META.get('HTTP_AUTHORIZATION')
+
+                _, user_id = JWTAccessToken.token_data(auth_header)
+                try:
+                    user = User.objects.get(username__iexact=user_id, is_active=True)
+                except User.DoesNotExist as e:
+                    raise AuthenticationFailed("User not found") from e
+
+                return user, ""
+            except JWTMissingKey:
+                # Omit missing key, as it can also be another key that is used by amsterdam-django-oidc
+                pass
 
         user, access_token = super().authenticate(request)
 

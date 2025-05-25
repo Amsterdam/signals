@@ -173,6 +173,8 @@ OIDC_TRUSTED_AUDIENCES: list[str] = json.loads(os.getenv("OIDC_TRUSTED_AUDIENCES
 OIDC_VERIFY_AUDIENCE: bool = os.getenv('OIDC_VERIFY_AUDIENCE', True) in TRUE_VALUES
 OIDC_USE_NONCE: bool = os.getenv('OIDC_USE_NONCE', True) in TRUE_VALUES
 
+PUB_JWKS: str | None = os.getenv('PUB_JWKS')
+
 NLTK_DOWNLOAD_DIR: str | None = os.getenv('NLTK_DOWNLOAD_DIR')
 
 AUTHENTICATION_BACKENDS: list[str] = [
