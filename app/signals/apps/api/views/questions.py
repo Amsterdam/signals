@@ -9,7 +9,7 @@ from signals.apps.signals.models import Question
 
 
 class PublicQuestionViewSet(ReadOnlyModelViewSet):
-    queryset = Question.objects.all().distinct()
+    queryset = Question.objects.all()
 
     serializer_class = PublicQuestionSerializerDetail
     filter_backends = (DjangoFilterBackend,)

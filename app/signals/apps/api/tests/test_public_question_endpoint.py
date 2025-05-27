@@ -86,3 +86,25 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
             self.assertEqual(result['field_type'], question.field_type)
             self.assertEqual(result['meta'], question.meta)
             self.assertEqual(result['required'], question.required)
+
+    def test_category_question_non_duplicates_in_list(self):
+        question = QuestionFactory.create_batch(1)
+        question2 = QuestionFactory.create_batch(1)
+        self.parent_category = ParentCategoryFactory.create(questions=question2)
+        CategoryFactory.create_batch(2, parent=self.parent_category, questions=question)
+        self.parent_category.refresh_from_db()
+
+        endpoint_url = '/signals/v1/public/questions/'
+
+        # filter on main and sub
+        sub_category = self.parent_category.children.first()
+        url = '{endp}?main_slug={slug}&sub_slug={sub_slug}'.format(
+            endp=endpoint_url,
+            slug=sub_category.parent.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200, msg=url)
+        data = response.json()
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
+        self.assertEqual(data['count'], 2)
