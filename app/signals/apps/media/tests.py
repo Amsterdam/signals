@@ -10,6 +10,7 @@ from signals.apps.media.storages import ProtectedFileSystemStorage
 
 
 @override_settings(PROTECTED_FILE_SYSTEM_STORAGE=True)
+@override_settings(PROTECTED_FILE_SYSTEM_STORAGE_URL_EXPIRATION_SECS=30*60)
 class DownloadFileTestCase(TestCase):
     def setUp(self) -> None:
         self.storage = ProtectedFileSystemStorage(base_url='http://localhost:8000/signals/media/')
