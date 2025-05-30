@@ -1,0 +1,76 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_field_sets %}
+    <div>
+        <h1>Extra informatie</h1>
+        {% verbatim %}
+
+        <h2>Opmaak</h2>
+        <p>
+            Voor het opmaken van de teksten in automatisering regels voor het automatisch updaten van de status van een melding maken we gebruik van markdown.
+            <br/>
+            Een zin op de volgende regel starten doet u door de voorgaande regel te beëindigen met 2 spaties of een backslash "\".
+
+            <br/><br/>
+            Enkele voorbeelden:
+        </p>
+
+        <h3>Nadruk</h3>
+        <ul>
+            <li>**dik gedrukt**</li>
+            <li>*cursief gedrukt*</li>
+            <li>_cursief gedrukt_</li>
+            <li>2 spaties een regel einde</li>
+            <li>backslash "\" een regel einde</li>
+        </ul>
+
+        <h3>Headers</h3>
+        <ul>
+            <li># Dit is een H1</li>
+            <li>## Dit is een H2</li>
+            <li>### Dit is een H3</li>
+        </ul>
+
+        <h3>Links</h3>
+        <ul>
+            <li>[Doe een melding](https://meldingen.amsterdam.nl/)</li>
+        </ul>
+
+        <p>
+            <a target="_blank" href="https://www.markdownguide.org/cheat-sheet/">Bekijk de volledige markdown syntax lijst.</a>
+            Niet alle syntax zal ondersteund worden door de applicatie. U ziet naast de textarea boven in dit scherm een voorbeeld van de daadwerkelijke opmaak.
+        </p>
+
+        <h2>Gegevens van de melding</h2>
+
+        <p>
+            Bij het maken van de teksten zijn er gegevens beschikbaar van de melding. Deze kunt u
+            gebruiken door de variabelen in de tekst te plaatsen tussen '{{' en '}}'. Bijvoorbeeld:
+            {{ signal_id }} of {{ created_at|date:"j F y" }}.
+            <br/><br/>
+            Hieronder vind u in een overzicht welke gegevens dit zijn.
+        </p>
+        {% endverbatim %}
+
+        <h3>Variabelen</h3>
+        <ul>
+            <li>signal_id</li>
+            <li>formatted_signal_id</li>
+            <li>created_at</li>
+            <li>incident_date_start</li>
+            <li>text</li>
+            <li>text_extra</li>
+            <li>address</li>
+            <li>status_text</li>
+            <li>status_state</li>
+            <li>handling_message</li>
+            <li>ORGANIZATION_NAME</li>
+            <li>main_category_public_name</li>
+            <li>sub_category_public_name</li>
+            <li>source</li>
+        </ul>
+    </div>
+
+    {{ block.super }}
+{% endblock %}

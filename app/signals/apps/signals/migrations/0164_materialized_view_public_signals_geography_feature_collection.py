@@ -87,6 +87,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('signals', '0163_category_icon'),
+        ('django_celery_beat', '0018_improve_crontab_helptext')
     ]
 
     operations = [

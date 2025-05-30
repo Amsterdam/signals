@@ -86,6 +86,7 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.my_signals',
     'signals.apps.classification',
     'signals.apps.relations',
+    'signals.apps.automation',
 ]
 
 INSTALLED_APPS: list[str] = [
