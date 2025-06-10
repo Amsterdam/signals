@@ -98,7 +98,7 @@ deprecated==1.2.18
     # via
     #   opentelemetry-api
     #   opentelemetry-semantic-conventions
-django==4.2.21
+django==4.2.22
     # via
     #   -r requirements.in
     #   django-appconf
