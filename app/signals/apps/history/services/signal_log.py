@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2023 Gemeente Amsterdam
+# Copyright (C) 2021 - 2025 Gemeente Amsterdam
 import pytz
 from django.conf import settings
 from django.utils import timezone
@@ -226,14 +226,11 @@ class SignalLogService:
         if session.frozen or session.invalidated:
             return
 
-        external_user = 'onbekend'
-        if session._signal_status and session._signal_status.email_override:
-            external_user = session._signal_status.email_override
-
         when = 'onbekend'
         if session._signal_status:
             when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
-        description = f'Geen toelichting ontvangen van behandelaar {external_user} op vraag van {when}'
+
+        description = f'Geen toelichting ontvangen van externe behandelaar op vraag van {when}'
 
         session.history_log.create(
             action=Log.ACTION_NOT_RECEIVED,

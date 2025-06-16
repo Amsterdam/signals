@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2022 - 2025 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -283,7 +283,7 @@ class TestCleanUpForwardToExternal(TestCase):
 
         self.assertEqual(Log.objects.count(), n_log_entries + 5)
         log = Log.objects.first()
-        self.assertIn('Geen toelichting ontvangen van behandelaar', log.description)
+        self.assertIn('Geen toelichting ontvangen van externe behandelaar', log.description)
 
     def test_clean_up_forward_to_external_not_from_DOORGEZET_NAAR_EXTERN(self):
         n_log_entries = Log.objects.count()
@@ -317,7 +317,7 @@ class TestCleanUpForwardToExternal(TestCase):
 
         self.assertEqual(Log.objects.count(), n_log_entries + 1)
         log = Log.objects.first()
-        self.assertIn('Geen toelichting ontvangen van behandelaar', log.description)
+        self.assertIn('Geen toelichting ontvangen van externe behandelaar', log.description)
 
 
 class TestCopyAttachmentsToAttachedFiles(TestCase):
