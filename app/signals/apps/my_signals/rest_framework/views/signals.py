@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 - 2023 Gemeente Amsterdam
+# Copyright (C) 2022 - 2025 Gemeente Amsterdam
 from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Min, Q
@@ -137,7 +137,10 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
             flat=True
         ).order_by())
 
-        history_log_qs = signal.history_log.exclude(Q(excluded_q)).exclude(action=Log.ACTION_RECEIVE)
+        history_log_qs = (signal.history_log
+                          .exclude(Q(excluded_q))
+                          .exclude(action=Log.ACTION_RECEIVE)
+                          .exclude(action=Log.ACTION_NOT_RECEIVED))
 
         what = self.request.query_params.get('what', None)
         if what:
