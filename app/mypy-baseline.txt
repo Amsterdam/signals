@@ -33,10 +33,6 @@ signals/apps/search/apps.py:0: error: Skipping analyzing "elasticsearch_dsl": mo
 signals/schema.py:0: error: Incompatible types in assignment (expression has type "DictField", base class "Serializer" defined the type as "ReturnDict[Any, Any]")  [assignment]
 signals/schema.py:0: error: Need type annotation for "non_field_errors"  [var-annotated]
 signals/schema.py:0: error: Argument "direction" to "_get_response_bodies" of "AutoSchema" has incompatible type "str"; expected "Literal['request', 'response']"  [arg-type]
-signals/apps/users/migrations/0005_auto_20191113_1000.py:0: error: Unexpected keyword argument "null" for "ManyToManyField"  [call-arg]
-/usr/local/lib/python3.12/site-packages/django-stubs/db/models/fields/related.pyi:0: note: "ManyToManyField" defined here
-signals/apps/users/migrations/0005_auto_20191113_1000.py:0: error: Unexpected keyword argument "null" for "ManyToManyField"  [call-arg]
-/usr/local/lib/python3.12/site-packages/django-stubs/db/models/fields/related.pyi:0: note: "ManyToManyField" defined here
 signals/apps/signals/migrations/0192_auto_20230626_1312.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/questionnaires/rest_framework/viewsets.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/serializers/signal_context.py:0: error: Skipping analyzing "rest_framework_gis.fields": module is installed, but missing library stubs or py.typed marker  [import-untyped]
