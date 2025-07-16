@@ -1,0 +1,40 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_field_sets %}
+    <div>
+        <h1>Extra informatie</h1>
+        {% verbatim %}
+
+        <h2>Gegevens van de melding</h2>
+
+        <p>
+            Bij het maken van de teksten in automatisering regels voor het automatisch doorsturen naar een externe partij van een melding zijn er gegevens beschikbaar van de melding. Deze kunt u
+            gebruiken door de variabelen in de tekst te plaatsen tussen '{{' en '}}'. Bijvoorbeeld:
+            {{ signal_id }} of {{ created_at|date:"j F y" }}.
+            <br/><br/>
+            Hieronder vind u in een overzicht welke gegevens dit zijn.
+        </p>
+        {% endverbatim %}
+
+        <h3>Variabelen</h3>
+        <ul>
+            <li>signal_id</li>
+            <li>formatted_signal_id</li>
+            <li>created_at</li>
+            <li>incident_date_start</li>
+            <li>text</li>
+            <li>text_extra</li>
+            <li>address</li>
+            <li>status_text</li>
+            <li>status_state</li>
+            <li>handling_message</li>
+            <li>ORGANIZATION_NAME</li>
+            <li>main_category_public_name</li>
+            <li>sub_category_public_name</li>
+            <li>source</li>
+        </ul>
+    </div>
+
+    {{ block.super }}
+{% endblock %}
