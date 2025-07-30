@@ -87,6 +87,7 @@ SIGNAL_APPS: list[str] = [
     'signals.apps.classification',
     'signals.apps.relations',
     'signals.apps.automation',
+    'signals.apps.notifications',
 ]
 
 INSTALLED_APPS: list[str] = [
@@ -527,6 +528,12 @@ SIGNALS_API_GEO_PAGINATE_BY: int = int(os.getenv(
 ))
 
 TEST_LOGIN: str = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
+
+# Signalen App backend related environment variables
+MUNICIPALITY_CODE: str = os.getenv('MUNICIPALITY_CODE', None)
+SIGNALEN_APP_BACKEND_URL: str = os.getenv('SIGNALEN_APP_BACKEND_URL', None)
+SIGNALEN_APP_BACKEND_SECRET: str = os.getenv('SIGNALEN_APP_BACKEND_SECRET', None)
+
 
 # Feature Flags
 FEATURE_FLAGS: dict[str, bool] = {
