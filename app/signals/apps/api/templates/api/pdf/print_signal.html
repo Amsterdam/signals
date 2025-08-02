@@ -91,7 +91,7 @@
                 </td>
                 <td width="60%" style="vertical-align: top;">
                     <p>
-                        <span style="line-height:1.3em">Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}Signalen Systeem{% endif %}<br>
+                        <span style="line-height:1.3em">Geprint door {% if not user.is_anonymous %}{% if show_employee_details %}{{ user.username }}{% else %}medewerker{% endif %}{% else %}Signalen Systeem{% endif %}<br>
                         {% now "l, j F Y H:i" %}</span>
                     </p>
                 </td>
@@ -186,7 +186,7 @@
                 <p>
                     <img src="{{ data_uri|safe }}" style="object-fit: contain; width:680px; max-height:500px;" alt=""><br>
                     {{ att_filename}} op {{ created_at | date:"d-m-Y" }} {{ created_at | date:"H:i" }} door
-                    {% if user_email %}{{ user_email }}{% else %}melder{% endif %}
+                    {% if user_email %}{% if show_employee_details %}{{ user_email }}{% else %}medewerker{% endif %}{% else %}melder{% endif %}
                 </p>
             {% else %}
                 <p>Image not available</p>
@@ -203,7 +203,7 @@
     {% for history in signal.history_log.all %}
     <table class="history" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
         <tr>
-            <td class="changed" style="width: 200px; vertical-align:top; overflow-wrap: break-word;">Gewijzigd op {{ history.created_at|date:"d-m-Y" }} om {{ history.created_at|date:"H:i:s" }} door {{ history.who|default:"Signalen systeem" }}</td>
+            <td class="changed" style="width: 200px; vertical-align:top; overflow-wrap: break-word;">Gewijzigd op {{ history.created_at|date:"d-m-Y" }} om {{ history.created_at|date:"H:i:s" }} door {% if show_employee_details %}{{ history.who|default:"Signalen systeem" }}{% else %}{% if history.who %}medewerker{% else %}Signalen systeem {% endif %}{% endif %}</td>
             <td class="title" style="vertical-align:top">
                 {{ history.get_action }}<br>
                 {% if history.get_description %}
