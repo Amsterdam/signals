@@ -6,7 +6,6 @@ signals/apps/signals/models/reporter.py:0: error: Skipping analyzing "django_fsm
 signals/apps/signals/models/status_message.py:0: error: Need type annotation for "categories"  [var-annotated]
 signals/apps/email_integrations/admin.py:0: error: Skipping analyzing "markdownx.widgets": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/auth/backend.py:0: error: Skipping analyzing "mozilla_django_oidc.contrib.drf": module is installed, but missing library stubs or py.typed marker  [import-untyped]
-signals/auth/backend.py:0: error: Method "authenticate" is marked as an override, but no base method was found with this name  [misc]
 signals/apps/search/rest_framework/serializers.py:0: error: Skipping analyzing "elasticsearch_dsl.response": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/documents/base.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/reporting/utils.py:0: error: Skipping analyzing "storages.backends.azure_storage": module is installed, but missing library stubs or py.typed marker  [import-untyped]
