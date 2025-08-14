@@ -526,6 +526,9 @@ FEATURE_FLAGS: dict[str, bool] = {
 
     # Run routing expressions again when updating signal subcategory or location
     'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
+
+    # Enable/Disable showing employee details in the PDF export
+    'SHOW_EMPLOYEE_DETAILS_IN_PDF': os.getenv('SHOW_EMPLOYEE_DETAILS_IN_PDF', True) in TRUE_VALUES
 }
 
 # Per default log to console
