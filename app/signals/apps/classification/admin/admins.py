@@ -5,6 +5,7 @@ from django.db.models import F
 from django.http import FileResponse, HttpResponse
 from django.urls import reverse, path
 from django.utils.html import format_html
+from django.utils.text import slugify
 
 from signals.apps.classification.models import Classifier
 from signals.apps.classification.tasks import train_classifier
@@ -70,29 +71,53 @@ class TrainingSetAdmin(admin.ModelAdmin):
 
             # Check if there are no sub categories present in the training set that are not present in the database
             sub_col_index = headers.index("Sub")
-            subcategory_values = {row[sub_col_index] for row in data_rows if row[sub_col_index]}
-            existing_subcategories = set(Category.objects.filter(name__in=subcategory_values).values_list('name', flat=True))
-            missing_subcategories = subcategory_values - existing_subcategories
+            requested_sub_slugs = {
+                slugify(str(row[sub_col_index]).strip())
+                for row in data_rows
+                if row[sub_col_index]
+            }
 
-            if missing_subcategories:
+            existing_sub_slugs = set(
+                Category.objects.filter(slug__in=requested_sub_slugs).values_list("slug", flat=True)
+            )
+
+            missing_sub_slugs = requested_sub_slugs - existing_sub_slugs
+
+            if missing_sub_slugs:
                 self.message_user(
                     request,
-                    f"The training set {training_set.name} contains unknown sub categories: {', '.join(missing_subcategories)}. Add these to Signalen before continuing.",
-                    messages.ERROR
+                    (
+                        f"The training set {training_set.name} contains unknown sub categories "
+                        f"(by slug): {', '.join(sorted(missing_sub_slugs))}. "
+                        "Add these to Signalen before continuing."
+                    ),
+                    messages.ERROR,
                 )
                 return
 
             # Check if there are no main categories present in the training set that are not present in the database
             main_col_index = headers.index("Main")
-            maincategory_values = {row[main_col_index] for row in data_rows if row[main_col_index]}
-            existing_maincategories = set(
-                Category.objects.filter(name__in=maincategory_values).values_list('name', flat=True))
-            missing_maincategories = maincategory_values - existing_maincategories
 
-            if missing_maincategories:
+            requested_main_slugs = {
+                slugify(str(row[main_col_index]).strip())
+                for row in data_rows
+                if row[main_col_index]
+            }
+
+            existing_main_slugs = set(
+                Category.objects.filter(slug__in=requested_main_slugs).values_list('slug', flat=True)
+            )
+
+            missing_main_slugs = requested_main_slugs - existing_main_slugs
+
+            if missing_main_slugs:
                 self.message_user(
                     request,
-                    f"The training set {training_set.name} contains unknown main categories: {', '.join(missing_maincategories)}. Add these to Signalen before continuing.",
+                    (
+                        f"The training set {training_set.name} contains unknown main categories "
+                        f"(by slug): {', '.join(sorted(missing_main_slugs))}. "
+                        "Add these to Signalen before continuing."
+                    ),
                     messages.ERROR
                 )
                 return
