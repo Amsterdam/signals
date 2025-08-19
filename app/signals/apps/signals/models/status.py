@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2025 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
 from django.contrib.contenttypes.fields import GenericRelation
@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 class Status(CreatedUpdatedModel):
     TARGET_API_SIGMAX = 'sigmax'
     TARGET_API_GISIB = 'gisib'
+    TARGET_API_SAOA = 'straatnotes'
     TARGET_API_CHOICES = (
         (TARGET_API_SIGMAX, 'Sigmax (City Control)'),
         (TARGET_API_GISIB, 'GISIB'),
+        (TARGET_API_SAOA, 'Straatnotes'),
     )
 
     _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
