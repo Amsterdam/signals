@@ -96,6 +96,14 @@ class SIAReadWriteUserMixin(SIAGroupMixin, SIAReadPermissionMixin, SIAWritePermi
         return user
 
 
+class SIAInactiveUserMixin(SIAReadWriteUserMixin):
+    @property
+    def sia_inactive_read_write_user(self):
+        user = super().sia_read_write_user
+        user.is_active = False
+        return user
+
+
 class SignalsBaseApiTestCase(SuperUserMixin, SimpleUserMixin, APITestCase):
     def assertJsonSchema(self, schema: dict, json_dict: dict):
         """ Validates json_dict against schema. Schema format as defined on json-schema.org . If

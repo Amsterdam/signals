@@ -29,3 +29,9 @@ class TestJWTAuthBackend(TestCase):
         user, _ = self.backend.authenticate(Mock(Request))
 
         assert user == super_user
+
+    def test_authenticate_inactive_user(self) -> None:
+        SuperUserFactory.create(email='signals.admin@example.com', is_active=False)
+
+        with pytest.raises(AuthenticationFailed):
+            self.backend.authenticate(Mock(Request))
