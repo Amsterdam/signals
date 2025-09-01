@@ -16,7 +16,7 @@ class JWTAuthBackend(OIDCAuthentication):
     def authenticate(self, request: Request) -> tuple[User, str]:
         if settings.SIGNALS_AUTH.get("ALWAYS_OK", False):
             try:
-                user = User.objects.get(username__iexact=settings.TEST_LOGIN)
+                user = User.objects.get(username__iexact=settings.TEST_LOGIN, is_active=True)
             except User.DoesNotExist as e:
                 raise AuthenticationFailed("User not found") from e
 

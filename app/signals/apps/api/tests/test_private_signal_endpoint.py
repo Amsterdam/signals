@@ -48,6 +48,7 @@ from signals.apps.signals.tests.attachment_helpers import (
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
 from signals.test.utils import (
+    SIAInactiveUserMixin,
     SIAReadUserMixin,
     SIAReadWriteUserMixin,
     SIAWriteUserMixin,
@@ -86,7 +87,7 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
 })
-class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestPrivateSignalViewSet(SIAInactiveUserMixin, SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
 
@@ -159,6 +160,16 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         for i in range(len(results)):
             location = results[i].get("location")
             self.assertIsNotNone(location.get("postcode"))
+
+    def test_list_user_inactive(self):
+        self.client.logout()
+        self.client.force_authenticate(user=self.sia_inactive_read_write_user)
+
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, 403)
+
+        # Let default user login again
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
     def test_geo_list_endpoint(self):
         response = self.client.get(self.geo_list_endpoint)
