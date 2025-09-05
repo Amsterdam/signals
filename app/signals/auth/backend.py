@@ -24,7 +24,10 @@ class JWTAuthBackend(OIDCAuthentication):
 
         user, access_token = super().authenticate(request)
 
-        if isinstance(user, User) and user.is_active is False:
+        if not isinstance(user, User):
+            raise AuthenticationFailed("Unknown error during authentication")
+
+        if user.is_active is False:
             raise AuthenticationFailed("User is inactive")
 
         return user, access_token
