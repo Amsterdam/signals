@@ -324,6 +324,15 @@ class TestPDFSummaryService(TestCase):
         self.assertIn(date_string, html)
         self.assertIn(time_string, html)
 
+    def show_employee_details_by_default(self):
+        html = PDFSummaryService._get_html(self.signal, self.user, True)
+        self.assertIn(self.user.email, html)
+
+    @override_settings(SHOW_EMPLOYEE_DETAILS_IN_PDF=False)
+    def hide_employee_details_when_configured(self):
+        html = PDFSummaryService._get_html(self.signal, self.user, True)
+        self.assertNotIn(self.user.email, html)
+
 
 class TestPDFSummaryServiceWithExtraProperties(TestCase):
     def setUp(self):
