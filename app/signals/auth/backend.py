@@ -22,4 +22,9 @@ class JWTAuthBackend(OIDCAuthentication):
 
             return user, ""
 
-        return super().authenticate(request)
+        user, access_token = super().authenticate(request)
+
+        if isinstance(user, User) and user.is_active is False:
+            raise AuthenticationFailed("User is inactive")
+
+        return user, access_token
