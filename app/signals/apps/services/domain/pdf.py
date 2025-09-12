@@ -163,6 +163,7 @@ class PDFSummaryService:
             'now': timezone.now(),
             'reporter_email': reporter_email,
             'reporter_phone': reporter_phone,
+            'show_employee_details': settings.FEATURE_FLAGS['SHOW_EMPLOYEE_DETAILS_IN_PDF']
         }
 
     @staticmethod
