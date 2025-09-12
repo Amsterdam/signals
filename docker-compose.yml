@@ -137,8 +137,8 @@ services:
 
   database:
     # postgis 3.2 is the extension version provided by Azure Database for PostgreSQL Flexible Server at the time of writing
-    # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions#postgres-12-extensions
-    image: postgis/postgis:12-3.2-alpine
+    # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions
+    image: postgis/postgis:13-3.5-alpine
     shm_size: '1024m'
     ports:
       - "5409:5432"

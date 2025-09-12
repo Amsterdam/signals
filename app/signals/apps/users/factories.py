@@ -46,6 +46,7 @@ class SuperUserFactory(BaseUserFactory):
 
     is_superuser = True
     is_staff = True
+    is_active = True
 
 
 class GroupFactory(DjangoModelFactory):

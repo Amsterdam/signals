@@ -16,10 +16,21 @@ class JWTAuthBackend(OIDCAuthentication):
     def authenticate(self, request: Request) -> tuple[User, str]:
         if settings.SIGNALS_AUTH.get("ALWAYS_OK", False):
             try:
-                user = User.objects.get(username__iexact=settings.TEST_LOGIN)
+                user = User.objects.get(username__iexact=settings.TEST_LOGIN, is_active=True)
             except User.DoesNotExist as e:
                 raise AuthenticationFailed("User not found") from e
 
             return user, ""
 
-        return super().authenticate(request)
+        user, access_token = super().authenticate(request)
+
+        if user is None:
+            raise AuthenticationFailed("Incorrect access token provided")
+
+        if not isinstance(user, User):
+            raise AuthenticationFailed("Unknown error during authentication")
+
+        if user.is_active is False:
+            raise AuthenticationFailed("User is inactive")
+
+        return user, access_token
