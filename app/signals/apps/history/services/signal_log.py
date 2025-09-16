@@ -18,6 +18,12 @@ from signals.apps.signals.models import (
     Status
 )
 from signals.apps.signals.models import Type as _Type
+from django.dispatch import Signal as DjangoSignal
+
+# When a relevant model in relation to the Signal model is created/updated,
+# the Signal model itself should be updated.
+# This to give more precise info on which Signal has the latest activity.
+signal_update_requested = DjangoSignal()
 
 
 class SignalLogService:
@@ -188,6 +194,9 @@ class SignalLogService:
             _signal=feedback._signal,
         )
 
+        if feedback._signal:
+            signal_update_requested.send(sender=Feedback, signal_instance=feedback._signal)
+
     @staticmethod
     def log_external_reaction_received(session: Session, reaction: str) -> None:
         if not isinstance(session, Session):
@@ -214,6 +223,9 @@ class SignalLogService:
             _signal=session._signal,
         )
 
+        if session._signal:
+            signal_update_requested.send(sender=Session, signal_instance=session._signal)
+
     @staticmethod
     def log_external_reaction_not_received(session: Session) -> None:
         if not isinstance(session, Session):
@@ -239,3 +251,6 @@ class SignalLogService:
             created_at=timezone.now(),
             _signal=session._signal,
         )
+
+        if session._signal:
+            signal_update_requested.send(sender=Session, signal_instance=session._signal)
