@@ -28,7 +28,6 @@ class Classifier(models.Model):
         upload_to='classification_models/main/%Y/%m/%d/',
         null=True,
         blank=True,
-        storage=_get_storage_backend,
         max_length=255,
     )
 
@@ -36,7 +35,6 @@ class Classifier(models.Model):
         upload_to='classification_models/main_sub/%Y/%m/%d/',
         null=True,
         blank=True,
-        storage=_get_storage_backend,
         max_length=255,
     )
 
@@ -44,7 +42,6 @@ class Classifier(models.Model):
         upload_to='classification_models/main_confusion_matrix/%Y/%m/%d/',
         null=True,
         blank=True,
-        storage=_get_storage_backend,
         max_length=255,
     )
 
@@ -52,6 +49,5 @@ class Classifier(models.Model):
         upload_to='classification_models/sub_confusion_matrix/%Y/%m/%d/',
         null=True,
         blank=True,
-        storage=_get_storage_backend,
         max_length=255,
     )

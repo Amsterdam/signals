@@ -19,7 +19,6 @@ class TrainingSet(models.Model):
 
     file = models.FileField(
         upload_to='training_sets/%Y/%m/%d/',
-        storage=_get_storage_backend,
         null=False,
         blank=False,
         max_length=255,
