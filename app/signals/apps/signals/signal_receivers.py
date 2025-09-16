@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from signals.apps.history.services.signal_log import signal_update_requested
 from signals.apps.signals import tasks
-from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.managers import (
     create_initial,
     update_category_assignment,
     update_location,
     update_status
 )
+from signals.apps.signals.models.signal import Signal
+
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
 def signals_create_initial_handler(sender, signal_obj, **kwargs):
@@ -44,4 +44,3 @@ def update_status_handler(sender, signal_obj, status, prev_status, *args, **kwar
 @receiver(signal_update_requested, dispatch_uid='signals_update_requested')
 def signal_update_updated_at(sender, signal_instance: Signal, **kwargs) -> None:
     signal_instance.save(update_fields=['updated_at'])
-

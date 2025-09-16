@@ -5,8 +5,11 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from factory.django import mute_signals
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.history.models import Log
 from signals.apps.history.services import SignalLogService
+from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.signals.factories import (
     CategoryAssignmentFactory,
     DepartmentFactory,
@@ -231,3 +234,84 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         self.signal.delete()
 
         self.assertEqual(0, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_receive_feedback(self):
+        now = timezone.now()
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        feedback = FeedbackFactory.create(_signal=self.signal, submitted_at=now)
+        SignalLogService.log_receive_feedback(feedback)
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_external_reaction_received(self):
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        questionnaire = QuestionnaireFactory.create(flow=Questionnaire.FORWARD_TO_EXTERNAL)
+
+        session = SessionFactory.create(_signal=self.signal, questionnaire=questionnaire)
+        session.frozen = True
+
+        SignalLogService.log_external_reaction_received(session=session, reaction="Super good!")
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_external_reaction_not_received(self):
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        questionnaire = QuestionnaireFactory.create(flow=Questionnaire.FORWARD_TO_EXTERNAL)
+
+        session = SessionFactory.create(_signal=self.signal, questionnaire=questionnaire)
+        session.save()
+
+        SignalLogService.log_external_reaction_not_received(session=session)
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())

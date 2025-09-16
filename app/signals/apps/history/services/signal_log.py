@@ -2,6 +2,7 @@
 # Copyright (C) 2021 - 2025 Gemeente Amsterdam
 import pytz
 from django.conf import settings
+from django.dispatch import Signal as DjangoSignal
 from django.utils import timezone
 
 from signals.apps.feedback.models import Feedback
@@ -18,7 +19,6 @@ from signals.apps.signals.models import (
     Status
 )
 from signals.apps.signals.models import Type as _Type
-from django.dispatch import Signal as DjangoSignal
 
 # When a relevant model in relation to the Signal model is created/updated,
 # the Signal model itself should be updated.

@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth.models import Permission
 from django.test.utils import freeze_time
-from django.utils import timezone
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -45,7 +44,7 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
     def test_list(self) -> None:
         signal = SignalFactory.create()
 
-        now = timezone.now()
+        now = datetime.now()
         for i in range(1, 5):
             with freeze_time((now + timedelta(hours=i)).timestamp()):
                 ReporterFactory.create(_signal=signal)
