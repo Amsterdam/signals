@@ -5,8 +5,11 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from factory.django import mute_signals
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.history.models import Log
 from signals.apps.history.services import SignalLogService
+from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.signals.factories import (
     CategoryAssignmentFactory,
     DepartmentFactory,
@@ -52,7 +55,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
     """
     Simple test case to check if logs are created using the SignalLogService
     """
-    def setUp(self):
+    def setUp(self) -> None:
         self.signal = SignalFactoryValidLocation.create()
 
         # Some Signals that should not have and get any log rules during these tests
@@ -60,7 +63,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_create_initial(self):
+    def test_log_create_initial(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         SignalLogService.log_create_initial(self.signal)
@@ -74,7 +77,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_create_note(self):
+    def test_log_create_note(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         note = NoteFactory.create(_signal=self.signal)
@@ -90,7 +93,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_update_category_assignment(self):
+    def test_log_update_category_assignment(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         category_assignment = CategoryAssignmentFactory.create(_signal=self.signal)
@@ -106,7 +109,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_update_location(self):
+    def test_log_update_location(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         location = LocationFactory.create(_signal=self.signal)
@@ -122,7 +125,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_update_priority(self):
+    def test_log_update_priority(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         priority = PriorityFactory.create(_signal=self.signal)
@@ -138,7 +141,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_update_status(self):
+    def test_log_update_status(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         status = StatusFactory.create(_signal=self.signal)
@@ -154,7 +157,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_update_type(self):
+    def test_log_update_type(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         _type = TypeFactory.create(_signal=self.signal)
@@ -170,7 +173,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_update_user_assignment(self):
+    def test_update_user_assignment(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         user_assignment = SignalUserFactory.create(_signal=self.signal)
@@ -184,7 +187,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_update_signal_departments(self):
+    def test_update_signal_departments(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         signal_departments = SignalDepartmentsFactory.create(_signal=self.signal)
@@ -203,7 +206,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_a_model_no_related_to_a_signal(self):
+    def test_a_model_no_related_to_a_signal(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         stored_signal_filter = StoredSignalFilterFactory.create()
@@ -218,7 +221,7 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
-    def test_log_signal_delete(self):
+    def test_log_signal_delete(self) -> None:
         self.assertEqual(0, Log.objects.count())
 
         SignalLogService.log_create_initial(self.signal)
@@ -231,3 +234,84 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         self.signal.delete()
 
         self.assertEqual(0, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_receive_feedback(self) -> None:
+        now = timezone.now()
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        feedback = FeedbackFactory.create(_signal=self.signal, submitted_at=now)
+        SignalLogService.log_receive_feedback(feedback)
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_external_reaction_received(self) -> None:
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        questionnaire = QuestionnaireFactory.create(flow=Questionnaire.FORWARD_TO_EXTERNAL)
+
+        session = SessionFactory.create(_signal=self.signal, questionnaire=questionnaire)
+        session.frozen = True
+
+        SignalLogService.log_external_reaction_received(session=session, reaction="Super good!")
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())
+
+    @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_log_external_reaction_not_received(self) -> None:
+        current_updated_at = self.signal.updated_at
+
+        self.assertEqual(0, Log.objects.count())
+
+        SignalLogService.log_create_initial(self.signal)
+
+        self.assertSignalsNotInLog(self.signals_no_log)
+
+        self.assertEqual(5, Log.objects.count())
+        self.assertEqual(5, self.signal.history_log.count())
+
+        questionnaire = QuestionnaireFactory.create(flow=Questionnaire.FORWARD_TO_EXTERNAL)
+
+        session = SessionFactory.create(_signal=self.signal, questionnaire=questionnaire)
+        session.save()
+
+        SignalLogService.log_external_reaction_not_received(session=session)
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+
+        assert current_updated_at < new_updated_at
+
+        self.assertEqual(6, Log.objects.count())

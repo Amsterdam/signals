@@ -20,6 +20,7 @@ from signals.apps.api.serializers.signal_reporter import (
     SignalReporterSerializer
 )
 from signals.apps.history.models import Log
+from signals.apps.history.services.signal_log import signal_update_requested
 from signals.apps.signals.models import Reporter, Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -74,6 +75,9 @@ class PrivateSignalReporterViewSet(CreateModelMixin, ListModelMixin, NestedViewS
                 description=description,
                 _signal=instance._signal,
             )
+
+            # # Request an update on the Signal model to note a change
+            signal_update_requested.send(sender=Reporter, signal_instance=instance._signal)
         except TransitionNotAllowed:
             return Response(
                 data={'non_field_errors': ['Cancelling this reporter is not possible.']},

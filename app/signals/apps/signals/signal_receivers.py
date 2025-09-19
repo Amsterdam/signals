@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.dispatch import receiver
 
+from signals.apps.history.services.signal_log import signal_update_requested
 from signals.apps.signals import tasks
 from signals.apps.signals.managers import (
     create_initial,
@@ -10,6 +11,7 @@ from signals.apps.signals.managers import (
     update_location,
     update_status
 )
+from signals.apps.signals.models.signal import Signal
 
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
@@ -37,3 +39,8 @@ def signals_update_category_assignment_handler(sender, signal_obj, **kwargs):
 @receiver(update_status, dispatch_uid='signals_update_status')
 def update_status_handler(sender, signal_obj, status, prev_status, *args, **kwargs):
     tasks.update_status_children_based_on_parent(signal_id=signal_obj.pk)
+
+
+@receiver(signal_update_requested, dispatch_uid='signals_update_requested')
+def signal_update_updated_at(sender, signal_instance: Signal, **kwargs) -> None:
+    signal_instance.save(update_fields=['updated_at'])

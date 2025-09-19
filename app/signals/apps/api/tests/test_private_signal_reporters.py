@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth.models import Permission
 from django.test.utils import freeze_time
-from django.utils import timezone
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -45,7 +44,7 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
     def test_list(self) -> None:
         signal = SignalFactory.create()
 
-        now = timezone.now()
+        now = datetime.now()
         for i in range(1, 5):
             with freeze_time((now + timedelta(hours=i)).timestamp()):
                 ReporterFactory.create(_signal=signal)
@@ -83,6 +82,14 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         reporter = response.json()
         self.assertEqual(reporter.get('state'), Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
 
+        # Check if Signal is updated
+        current_updated_at = signal.updated_at
+        signal_response = self.client.get(f'/signals/v1/private/signals/{signal.pk}')
+        updated_signal = signal_response.json()
+
+        new_updated_at = datetime.fromisoformat(updated_signal.get('updated_at')).astimezone(timezone.utc)
+        assert current_updated_at < new_updated_at
+
     def test_can_cancel_without_reason(self) -> None:
         signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
         reporter = ReporterFactory.create(_signal=signal, state=Reporter.REPORTER_STATE_VERIFICATION_EMAIL_SENT)
@@ -99,6 +106,14 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         log = reporter.history_log.all()[0]
         self.assertEqual(log.what, 'UPDATE_REPORTER')
         self.assertEqual(log.description, 'Contactgegevens wijziging geannuleerd.')
+
+        # Check if Signal is updated
+        current_updated_at = signal.updated_at
+        signal_response = self.client.get(f'/signals/v1/private/signals/{signal.pk}')
+        updated_signal = signal_response.json()
+
+        new_updated_at = datetime.fromisoformat(updated_signal.get('updated_at')).astimezone(timezone.utc)
+        assert current_updated_at < new_updated_at
 
     def test_can_cancel_with_reason(self) -> None:
         signal = SignalFactory.create(reporter__state=Reporter.REPORTER_STATE_APPROVED)
@@ -118,6 +133,14 @@ class TestPrivateSignalReportersEndpoint(SIAReadWriteUserMixin, APITestCase):
         log = reporter.history_log.all()[0]
         self.assertEqual(log.what, 'UPDATE_REPORTER')
         self.assertEqual(log.description, f'Contactgegevens wijziging geannuleerd: {reason}')
+
+        # Check if Signal is updated
+        current_updated_at = signal.updated_at
+        signal_response = self.client.get(f'/signals/v1/private/signals/{signal.pk}')
+        updated_signal = signal_response.json()
+
+        new_updated_at = datetime.fromisoformat(updated_signal.get('updated_at')).astimezone(timezone.utc)
+        assert current_updated_at < new_updated_at
 
     def test_404_when_signal_not_found(self) -> None:
         response = self.client.post(

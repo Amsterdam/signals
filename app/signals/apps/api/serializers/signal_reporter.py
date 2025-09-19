@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.fields import BooleanField, CharField
 
 from signals.apps.history.models import Log
+from signals.apps.history.services.signal_log import signal_update_requested
 from signals.apps.signals.models import Reporter, Signal
 
 
@@ -65,6 +66,9 @@ class SignalReporterSerializer(serializers.ModelSerializer):
             description=description,
             _signal=signal,
         )
+
+        # # Request an update on the Signal model to note a change
+        signal_update_requested.send(sender=Reporter, signal_instance=signal)
 
     def to_representation(self, instance: Reporter) -> dict:
         serialized = super().to_representation(instance)
