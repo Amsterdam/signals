@@ -15,6 +15,7 @@ djangorestframework<3.16
 djangorestframework-gis
 django-silk
 django-storages
+django-storages[s3]
 drf-amsterdam
 drf-extensions
 django-fsm
