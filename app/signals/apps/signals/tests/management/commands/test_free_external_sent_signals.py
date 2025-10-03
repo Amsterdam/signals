@@ -55,7 +55,7 @@ class TestUpdateSignals(TestCase):
             "(Dry run: no changes were saved)",
             output
         )
-        
+
         # Ensure no changes were made to the database
         self.signal_in_range.refresh_from_db()
         self.assertEqual(self.signal_in_range.status.state, workflow.VERZONDEN)

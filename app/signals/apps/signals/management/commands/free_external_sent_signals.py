@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Gemeente Amsterdam
 from django.core.management import BaseCommand
 from django.utils.timezone import make_aware
 from datetime import datetime
