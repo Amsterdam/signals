@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2025 Gemeente Amsterdam
-from django.core.management import BaseCommand
-from django.utils.timezone import make_aware
 from datetime import datetime
+
+from django.core.management import BaseCommand
+from django.db import transaction
+from django.utils.timezone import make_aware
+
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal, Status
-from django.db import transaction
 
 
 # Transfer Signals stuck in state VERZONDEN to AFGEHANDELD_EXTERN

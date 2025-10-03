@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2025 Gemeente Amsterdam
-from io import StringIO
 from datetime import datetime, timedelta, timezone
+from io import StringIO
 
 from django.core.management import call_command
 from django.test import TestCase
 
-from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestUpdateSignals(TestCase):
