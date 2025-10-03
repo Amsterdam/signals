@@ -35,11 +35,6 @@ class Command(BaseCommand):
         end_date = make_aware(datetime.strptime(options['end_date'], '%Y-%m-%d %H:%M'))
         dry_run = not options['no_dry_run']
 
-        from django.utils.timezone import localtime
-        signals = Signal.objects.all()
-        for signal in signals:
-            self.stdout.write(f"Signal ID: {signal.id}, Created At: {localtime(signal.created_at)}")
-
         if dry_run:
             self.stdout.write(self.style.WARNING('Dry run mode enabled. No changes will be saved.'))
 
