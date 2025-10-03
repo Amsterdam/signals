@@ -146,7 +146,7 @@ distlib==0.4.0
     # via
     #   -r requirements_test.txt
     #   virtualenv
-django==4.2.24
+django==4.2.25
     # via
     #   -r requirements_test.txt
     #   django-appconf

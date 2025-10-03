@@ -92,7 +92,7 @@ defusedxml==0.7.1
     # via
     #   cairosvg
     #   djangorestframework-xml
-django==4.2.24
+django==4.2.25
     # via
     #   -r requirements.in
     #   django-appconf
