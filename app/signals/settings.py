@@ -250,7 +250,7 @@ STATIC_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL: str = '/signals/media/'
 MEDIA_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
-S3_STORAGE_ENABLED: bool = os.getenv('S3_STORAGE_ENABLED', True) in TRUE_VALUES
+S3_STORAGE_ENABLED: bool = os.getenv('S3_STORAGE_ENABLED', False) in TRUE_VALUES
 if S3_STORAGE_ENABLED:
     # S3 Settings
     DEFAULT_FILE_STORAGE: str = 'storages.backends.s3.S3Storage'
