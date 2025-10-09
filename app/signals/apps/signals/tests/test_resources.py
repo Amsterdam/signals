@@ -23,7 +23,7 @@ class CategoryImportExportTest(TestCase):
         json_data = dataset.json
 
         self.assertIn(self.parent_category.slug, json_data)
-        self.assertNotIn('"slug":', json_data)
+        self.assertNotIn('"id":', json_data)
         self.assertNotIn('"departments":', json_data)
         self.assertNotIn('"questions":', json_data)
         self.assertNotIn('"questionnaire":', json_data)
@@ -64,6 +64,7 @@ class QuestionImportExportTest(TestCase):
 
         self.assertIn(self.question.key, json_data)
         self.assertIn(f"{self.category.slug}|{self.category_question.order}", json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_question_import_json(self):
         resource = QuestionResource()
@@ -103,6 +104,7 @@ class DepartmentImportExportTest(TestCase):
 
         self.assertIn(self.department.code, json_data)
         self.assertIn(f"{self.category.slug}|{self.category_department.is_responsible}|{self.category_department.can_view}", json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_department_import_json(self):
         resource = DepartmentResource()
@@ -141,6 +143,7 @@ class ExpressionImportExportTest(TestCase):
 
         self.assertIn(self.expression.code, json_data)
         self.assertIn(self.expression._type.name, json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_expression_import_json(self):
         resource = ExpressionResource()
@@ -175,6 +178,7 @@ class AreaImportExportTest(TestCase):
 
         self.assertIn(self.area.code, json_data)
         self.assertIn(self.area._type.code, json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_area_import_json(self):
         resource = AreaResource()
@@ -215,10 +219,10 @@ class RoutingExpressionImportExportTest(TestCase):
         dataset = resource.export([self.routing_expression], format=JSON())
         json_data = dataset.json
 
-        self.assertIn(str(self.routing_expression.id), json_data)
         self.assertIn(self.user.username, json_data)
         self.assertIn(self.department.code, json_data)
         self.assertIn(self.expression.name, json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_routing_expression_import_json(self):
         resource = RoutingExpressionResource()
@@ -239,10 +243,9 @@ class RoutingExpressionImportExportTest(TestCase):
 
         # verify that routing_expression was imported correctly
         imported = RoutingExpression.objects.get(pk=self.routing_expression.id)
-        self.assertEqual(imported.id, self.routing_expression.id)
-        self.assertEqual(imported._user.username, self.user.username)
-        self.assertEqual(imported._department.code, self.department.code)
-        self.assertEqual(imported._expression.name, self.expression.name)
+        self.assertEqual(imported._expression, self.expression)
+        self.assertEqual(imported._user, self.user)
+        self.assertEqual(imported._department, self.department)
 
 
 class AreaTypeImportExportTest(TestCase):
@@ -255,7 +258,7 @@ class AreaTypeImportExportTest(TestCase):
         json_data = dataset.json
 
         self.assertIn(self.area_type.code, json_data)
-        self.assertNotIn(str(self.area_type.id), json_data)
+        self.assertNotIn('"id":', json_data)
 
     def test_area_type_import_json(self):
         resource = AreaTypeResource()

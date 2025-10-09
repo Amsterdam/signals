@@ -26,3 +26,5 @@ class RoutingExpressionResource(resources.ModelResource):
 
     class Meta:
         model = RoutingExpression
+        import_id_fields = ('_expression',)
+        exclude = ('id',)

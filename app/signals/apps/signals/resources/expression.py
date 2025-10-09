@@ -12,3 +12,5 @@ class ExpressionResource(resources.ModelResource):
 
     class Meta:
         model = Expression
+        import_id_fields = ('code',)
+        exclude = ('id',)

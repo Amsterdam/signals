@@ -15,6 +15,8 @@ class DepartmentResource(resources.ModelResource):
 
     class Meta:
         model = Department
+        import_id_fields = ('code',)
+        exclude = ('id',)
 
     def after_save_instance(self, instance, row, **kwargs):
         dry_run = kwargs.get('dry_run', False)

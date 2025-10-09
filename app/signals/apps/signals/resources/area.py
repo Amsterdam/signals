@@ -12,3 +12,5 @@ class AreaResource(resources.ModelResource):
 
     class Meta:
         model = Area
+        import_id_fields = ('code',)
+        exclude = ('id',)

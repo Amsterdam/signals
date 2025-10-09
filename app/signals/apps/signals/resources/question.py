@@ -14,6 +14,8 @@ class QuestionResource(resources.ModelResource):
 
     class Meta:
         model = Question
+        import_id_fields = ('key',)
+        exclude = ('id',)
 
     def after_save_instance(self, instance, row, **kwargs):
         dry_run = kwargs.get('dry_run', False)

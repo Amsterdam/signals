@@ -11,4 +11,5 @@ class CategoryResource(resources.ModelResource):
 
     class Meta:
         model = Category
-        exclude = ('slug', 'departments', 'questions', 'questionnaire', )
+        import_id_fields = ('slug',)
+        exclude = ('id', 'departments', 'questions', 'questionnaire', )
