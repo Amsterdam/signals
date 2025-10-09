@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib import admin
 
-from signals.apps.signals.admin.area import AreaAdmin
+from signals.apps.signals.admin.area import AreaAdmin, AreaTypeAdmin
 from signals.apps.signals.admin.category import (
     CategoryAdmin,
     StatusMessageAdmin,
@@ -32,13 +32,15 @@ from signals.apps.signals.models import (
     Signal,
     Source,
     StatusMessage,
-    StatusMessageTemplate
+    StatusMessageTemplate,
+    AreaType
 )
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Area, AreaAdmin)
+admin.site.register(AreaType, AreaTypeAdmin)
 admin.site.register(StatusMessageTemplate, StatusMessageTemplatesAdmin)
 admin.site.register(Signal, SignalAdmin)
 admin.site.register(Source, SourceAdmin)

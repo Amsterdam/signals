@@ -3,12 +3,12 @@ from import_export.formats.base_formats import JSON
 from tablib import Dataset
 
 from signals.apps.signals.factories import DepartmentFactory, CategoryFactory, QuestionFactory, ParentCategoryFactory, \
-    ExpressionFactory, AreaFactory, RoutingExpressionFactory
+    ExpressionFactory, AreaFactory, RoutingExpressionFactory, AreaTypeFactory
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.factories.category_question import CategoryQuestionFactory
-from signals.apps.signals.models import Category, Question, Department, Expression, Area, RoutingExpression
+from signals.apps.signals.models import Category, Question, Department, Expression, Area, RoutingExpression, AreaType
 from signals.apps.signals.resources import CategoryResource, QuestionResource, DepartmentResource, ExpressionResource, \
-    AreaResource, RoutingExpressionResource
+    AreaResource, RoutingExpressionResource, AreaTypeResource
 from signals.apps.users.factories import UserFactory
 
 
@@ -243,3 +243,37 @@ class RoutingExpressionImportExportTest(TestCase):
         self.assertEqual(imported._user.username, self.user.username)
         self.assertEqual(imported._department.code, self.department.code)
         self.assertEqual(imported._expression.name, self.expression.name)
+
+
+class AreaTypeImportExportTest(TestCase):
+    def setUp(self):
+        self.area_type = AreaTypeFactory.create()
+
+    def test_area_type_export_json(self):
+        resource = AreaTypeResource()
+        dataset = resource.export([self.area_type], format=JSON())
+        json_data = dataset.json
+
+        self.assertIn(self.area_type.code, json_data)
+        self.assertNotIn(str(self.area_type.id), json_data)
+
+    def test_area_type_import_json(self):
+        resource = AreaTypeResource()
+
+        # export to json
+        export_area_type = resource.export([self.area_type], format=JSON())
+        json_data = export_area_type.json
+
+        # import json
+        import_dataset = Dataset().load(json_data, format="json")
+
+        # dry run: should not have errors
+        result = resource.import_data(import_dataset, dry_run=True)
+        self.assertFalse(result.has_errors())
+
+        # actual import
+        resource.import_data(import_dataset, dry_run=False)
+
+        # verify that area_type was imported correctly
+        imported = AreaType.objects.get(code=self.area_type.code)
+        self.assertEqual(imported.code, self.area_type.code)
