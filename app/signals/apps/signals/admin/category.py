@@ -6,9 +6,11 @@ from django.contrib import admin
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
+from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
 from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category, ServiceLevelObjective, StatusMessageCategory
+from signals.apps.signals.resources import CategoryResource
 
 
 class ParentCategoryFilter(admin.SimpleListFilter):
@@ -67,7 +69,9 @@ class StatusMessageCategoryInline(admin.TabularInline):
     extra = 1
 
 
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
+    resource_class = CategoryResource
+
     list_display = ('name', 'public_name', 'parent', 'is_active', 'is_public_accessible',)
     list_per_page = 20
     list_filter = ('is_active', 'is_public_accessible', ParentCategoryFilter,)

@@ -15,6 +15,8 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# Django-import-export formats
+from import_export.formats.base_formats import JSON
 
 from signals import __version__
 
@@ -109,6 +111,7 @@ INSTALLED_APPS: list[str] = [
     'silk',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'import_export',
 ] + SIGNAL_APPS
 
 MIDDLEWARE: list[str] = [
@@ -647,3 +650,8 @@ else:
             'filters': ['require_debug_true', ],
         }
     })
+
+# django-import-export configuration
+IMPORT_EXPORT_SKIP_ADMIN_ACTION_EXPORT_UI = True
+IMPORT_EXPORT_SKIP_ADMIN_EXPORT_UI = True
+IMPORT_EXPORT_FORMATS = [JSON]

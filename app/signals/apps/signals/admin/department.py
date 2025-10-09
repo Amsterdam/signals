@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
 from signals.apps.signals.models import CategoryDepartment
+from signals.apps.signals.resources import DepartmentResource
 
 
 class CategoryDepartmentInline(admin.TabularInline):
@@ -11,7 +13,9 @@ class CategoryDepartmentInline(admin.TabularInline):
     extra = 0
 
 
-class DepartmentAdmin(admin.ModelAdmin):
+class DepartmentAdmin(ImportExportModelAdmin, ExportActionMixin):
+    resource_class = DepartmentResource
+
     inlines = (CategoryDepartmentInline, )
     fields = ('code', 'name', 'is_intern', 'can_direct')
     list_display = ('code', 'name', 'is_intern', 'can_direct')
