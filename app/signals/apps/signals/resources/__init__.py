@@ -1,10 +1,13 @@
-from .question import QuestionResource
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Delta10 B.V.
+
+from .area import AreaResource
+from .area_type import AreaTypeResource
 from .category import CategoryResource
 from .department import DepartmentResource
 from .expression import ExpressionResource
-from .area import AreaResource
+from .question import QuestionResource
 from .routing_expression import RoutingExpressionResource
-from .area_type import AreaTypeResource
 
 __all__ = [
     'QuestionResource',

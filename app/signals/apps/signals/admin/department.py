@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
 from signals.apps.signals.models import CategoryDepartment
 from signals.apps.signals.resources import DepartmentResource

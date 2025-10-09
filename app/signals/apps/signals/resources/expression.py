@@ -1,4 +1,7 @@
-from import_export import resources, fields, widgets
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Delta10 B.V.
+
+from import_export import fields, resources, widgets
 
 from signals.apps.signals.models import Expression, ExpressionType
 

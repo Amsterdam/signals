@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
-from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
 from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category, ServiceLevelObjective, StatusMessageCategory

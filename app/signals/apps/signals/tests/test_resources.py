@@ -1,14 +1,40 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Delta10 B.V.
+
 from django.test import TestCase
 from import_export.formats.base_formats import JSON
 from tablib import Dataset
 
-from signals.apps.signals.factories import DepartmentFactory, CategoryFactory, QuestionFactory, ParentCategoryFactory, \
-    ExpressionFactory, AreaFactory, RoutingExpressionFactory, AreaTypeFactory
+from signals.apps.signals.factories import (
+    AreaFactory,
+    AreaTypeFactory,
+    CategoryFactory,
+    DepartmentFactory,
+    ExpressionFactory,
+    ParentCategoryFactory,
+    QuestionFactory,
+    RoutingExpressionFactory
+)
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.factories.category_question import CategoryQuestionFactory
-from signals.apps.signals.models import Category, Question, Department, Expression, Area, RoutingExpression, AreaType
-from signals.apps.signals.resources import CategoryResource, QuestionResource, DepartmentResource, ExpressionResource, \
-    AreaResource, RoutingExpressionResource, AreaTypeResource
+from signals.apps.signals.models import (
+    Area,
+    AreaType,
+    Category,
+    Department,
+    Expression,
+    Question,
+    RoutingExpression
+)
+from signals.apps.signals.resources import (
+    AreaResource,
+    AreaTypeResource,
+    CategoryResource,
+    DepartmentResource,
+    ExpressionResource,
+    QuestionResource,
+    RoutingExpressionResource
+)
 from signals.apps.users.factories import UserFactory
 
 
@@ -27,7 +53,6 @@ class CategoryImportExportTest(TestCase):
         self.assertNotIn('"departments":', json_data)
         self.assertNotIn('"questions":', json_data)
         self.assertNotIn('"questionnaire":', json_data)
-
 
     def test_category_import_json(self):
         resource = CategoryResource()
@@ -103,7 +128,12 @@ class DepartmentImportExportTest(TestCase):
         json_data = dataset.json
 
         self.assertIn(self.department.code, json_data)
-        self.assertIn(f"{self.category.slug}|{self.category_department.is_responsible}|{self.category_department.can_view}", json_data)
+        self.assertIn(
+            f"{
+                self.category.slug}|{
+                self.category_department.is_responsible}|{
+                self.category_department.can_view}",
+            json_data)
         self.assertNotIn('"id":', json_data)
 
     def test_department_import_json(self):
@@ -128,7 +158,9 @@ class DepartmentImportExportTest(TestCase):
         self.assertEqual(imported.code, self.department.code)
         self.assertEqual(imported.categorydepartment_set.first().category, self.category)
         self.assertEqual(imported.categorydepartment_set.first().department, self.department)
-        self.assertEqual(imported.categorydepartment_set.first().is_responsible, self.category_department.is_responsible)
+        self.assertEqual(
+            imported.categorydepartment_set.first().is_responsible,
+            self.category_department.is_responsible)
         self.assertEqual(imported.categorydepartment_set.first().can_view, self.category_department.can_view)
 
 

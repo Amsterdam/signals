@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.contrib.gis.admin import GISModelAdmin
-from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
 from signals.apps.signals.resources import AreaResource, AreaTypeResource
 
@@ -19,4 +19,3 @@ class AreaTypeAdmin(ImportExportModelAdmin, ExportActionMixin):
 
     search_fields = ['name', 'code']
     list_display = ['name', 'code', 'description']
-

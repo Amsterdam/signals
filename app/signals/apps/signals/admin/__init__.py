@@ -21,6 +21,7 @@ from signals.apps.signals.admin.signal import SignalAdmin
 from signals.apps.signals.admin.source import SourceAdmin
 from signals.apps.signals.models import (
     Area,
+    AreaType,
     Category,
     DeletedSignal,
     Department,
@@ -32,8 +33,7 @@ from signals.apps.signals.models import (
     Signal,
     Source,
     StatusMessage,
-    StatusMessageTemplate,
-    AreaType
+    StatusMessageTemplate
 )
 
 admin.site.register(Question, QuestionAdmin)

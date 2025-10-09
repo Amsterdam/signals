@@ -1,6 +1,9 @@
-from import_export import resources, fields
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Delta10 B.V.
 
-from signals.apps.signals.models import Department, CategoryDepartment, Category
+from import_export import fields, resources
+
+from signals.apps.signals.models import Category, CategoryDepartment, Department
 
 
 class DepartmentResource(resources.ModelResource):
