@@ -1,10 +1,37 @@
-from import_export import resources
-
-from signals.apps.signals.models import Question
+from import_export import resources, fields
+from signals.apps.signals.models import Question, CategoryQuestion, Category
 
 
 class QuestionResource(resources.ModelResource):
-    # TODO: Categories mee exporteren en importeren, incl order (through table)?
+    categories = fields.Field(column_name='categories')
+
+    def dehydrate_categories(self, question):
+        # Returns a string like: "CAT1|1, CAT1|2"
+        return ', '.join(
+            f"{cq.category.slug}|{cq.order or 0}"
+            for cq in question.categoryquestion_set.all()
+        )
 
     class Meta:
         model = Question
+
+    def after_save_instance(self, instance, row, **kwargs):
+        dry_run = kwargs.get('dry_run', False)
+
+        if dry_run:
+            return
+
+        categories = row.get('categories', '')
+        CategoryQuestion.objects.filter(question=instance).delete()
+        for item in [v.strip() for v in categories.split(',') if v.strip()]:
+            try:
+                category_slug, order = item.split('|')
+                category = Category.objects.get(slug=category_slug)
+
+                CategoryQuestion.objects.create(
+                    category=category,
+                    question=instance,
+                    order=int(order)
+                )
+            except Exception:
+                continue

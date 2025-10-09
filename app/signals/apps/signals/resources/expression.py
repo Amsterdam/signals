@@ -10,7 +10,5 @@ class ExpressionResource(resources.ModelResource):
         widget=widgets.ForeignKeyWidget(ExpressionType, 'name')
     )
 
-    # TODO: Linken via import / export aan bijbehorende RoutingExpression?
-
     class Meta:
         model = Expression

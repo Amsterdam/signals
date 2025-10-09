@@ -14,7 +14,7 @@ class CategoryQuestionInline(admin.StackedInline):
 
 
 class QuestionAdmin(ImportExportModelAdmin, ExportActionMixin):
-    resource_class = [QuestionResource]
+    resource_class = QuestionResource
 
     inlines = (CategoryQuestionInline, )
     fields = ('key', 'field_type', 'meta', 'required')
