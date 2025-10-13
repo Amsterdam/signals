@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2025 Delta10 B.V.
+from typing import Any
 
 from import_export import fields, resources
 
@@ -9,7 +10,7 @@ from signals.apps.signals.models import Category, CategoryQuestion, Question
 class QuestionResource(resources.ModelResource):
     categories = fields.Field(column_name='categories')
 
-    def dehydrate_categories(self, question):
+    def dehydrate_categories(self, question: Question) -> str:
         # Returns a string like: "CAT1|1, CAT1|2"
         return ', '.join(
             f"{cq.category.slug}|{cq.order or 0}"
@@ -21,7 +22,7 @@ class QuestionResource(resources.ModelResource):
         import_id_fields = ('key',)
         exclude = ('id',)
 
-    def after_save_instance(self, instance, row, **kwargs):
+    def after_save_instance(self, instance: Question, row: dict[str, Any], **kwargs: Any) -> None:
         dry_run = kwargs.get('dry_run', False)
 
         if dry_run:
