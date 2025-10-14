@@ -7,7 +7,7 @@ from django.utils import timezone
 from signals.apps.dsl.evaluators.evaluator import Evaluator
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 from signals.apps.signals.managers import SignalManager
-from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
+from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal, Expression
 
 
 class DslService:
@@ -139,4 +139,26 @@ class SignalDslService(DslService):
 
                     self.signal_manager.update_multiple(data, signal)
                     return True
+        return False
+
+    def evaluate_expression(self, signal: Signal, expression: Expression) -> bool:  # noqa C901
+        ctx = self.context_func(signal)
+
+        evaluator = None
+        try:
+            evaluator = self._compile(expression.code)
+        except Exception:
+            # ignore runtime errors
+            pass
+
+        if evaluator:
+            eval_result = False
+            try:
+                eval_result = evaluator.evaluate(ctx)
+            except Exception:
+                # ignore runtime errors
+                pass
+            if eval_result:
+                return True
+
         return False
