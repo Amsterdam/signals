@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib import admin, messages
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
+from signals.apps.signals.resources import ExpressionResource, RoutingExpressionResource
 
 
-class RoutingExpressionAdmin(admin.ModelAdmin):
+class RoutingExpressionAdmin(ImportExportModelAdmin, ExportActionMixin):
+    resource_class = RoutingExpressionResource
+
     list_filter = ['_expression___type__name', '_department__code']
     list_display = ['order', '_expression', '_department', 'is_active']
     list_editable = ['order']
@@ -25,7 +29,9 @@ class RoutingExpressionAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-class ExpressionAdmin(admin.ModelAdmin):
+class ExpressionAdmin(ImportExportModelAdmin, ExportActionMixin):
+    resource_class = ExpressionResource
+
     list_filter = ['_type__name']
     list_display = ['name', 'code', '_type']
 
