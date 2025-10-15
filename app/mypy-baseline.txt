@@ -1,4 +1,5 @@
 signals/apps/email_integrations/markdown/plaintext.py:0: error: "PageElement" has no attribute "name"  [attr-defined]
+signals/settings.py:0: error: Name "DEFAULT_FILE_STORAGE" already defined on line 0  [no-redef]
 signals/apps/services/domain/pdf.py:0: error: Skipping analyzing "weasyprint": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Skipping analyzing "rest_framework_extensions.settings": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Definition of "refresh_from_db" in base class "TrackFields" is incompatible with definition in base class "Model"  [misc]
@@ -29,6 +30,7 @@ signals/apps/signals/tests/test_reporter_state_machine.py:0: error: Skipping ana
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_voegZaakdocumentToe_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/sigmax/tests/stuf_protocol/outgoing/test_creeerZaak_Lk01.py:0: error: Skipping analyzing "xmlunittest": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/apps.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/api/tests/test_s3_storage_integration.py:0: error: Skipping analyzing "storages.backends": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/schema.py:0: error: Incompatible types in assignment (expression has type "DictField", base class "Serializer" defined the type as "ReturnDict[Any, Any]")  [assignment]
 signals/schema.py:0: error: Need type annotation for "non_field_errors"  [var-annotated]
 signals/schema.py:0: error: Argument "direction" to "_get_response_bodies" of "AutoSchema" has incompatible type "str"; expected "Literal['request', 'response']"  [arg-type]
