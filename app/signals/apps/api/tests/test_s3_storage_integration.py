@@ -38,13 +38,6 @@ class TestS3StorageIntegration(SignalsBaseApiTestCase):
         self.bucket = self.storage.connection.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
         self.bucket.create()
 
-        def _save_fixed(self, name, content):
-            obj = self.bucket.Object(name)
-            obj.upload_fileobj(content, ExtraArgs={}, Config=self.transfer_config)
-            return name
-
-        s3.S3Storage._save = _save_fixed
-
         self.create_attachment_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
