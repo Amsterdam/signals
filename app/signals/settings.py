@@ -6,6 +6,8 @@ from typing import Any, Callable
 
 # Export modules to Azure Application Insights
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
+# Django-import-export formats
+from import_export.formats.base_formats import JSON
 # Opentelemetry modules needed for logging and tracing
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -109,6 +111,7 @@ INSTALLED_APPS: list[str] = [
     'silk',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'import_export',
 ] + SIGNAL_APPS
 
 MIDDLEWARE: list[str] = [
@@ -659,3 +662,8 @@ else:
             'filters': ['require_debug_true', ],
         }
     })
+
+# django-import-export configuration
+IMPORT_EXPORT_SKIP_ADMIN_ACTION_EXPORT_UI = True
+IMPORT_EXPORT_SKIP_ADMIN_EXPORT_UI = True
+IMPORT_EXPORT_FORMATS = [JSON]

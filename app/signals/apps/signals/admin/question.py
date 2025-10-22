@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib import admin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
 from signals.apps.signals.models import CategoryQuestion
+from signals.apps.signals.resources.question import QuestionResource
 
 
 class CategoryQuestionInline(admin.StackedInline):
@@ -11,7 +13,9 @@ class CategoryQuestionInline(admin.StackedInline):
     extra = 1
 
 
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(ImportExportModelAdmin, ExportActionMixin):
+    resource_class = QuestionResource
+
     inlines = (CategoryQuestionInline, )
     fields = ('key', 'field_type', 'meta', 'required')
     list_display = ('key', 'field_type', 'meta', 'required', 'categories')

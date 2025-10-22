@@ -98,7 +98,9 @@ defusedxml==0.7.1
     # via
     #   cairosvg
     #   djangorestframework-xml
-django==4.2.24
+diff-match-patch==20241021
+    # via django-import-export
+django==4.2.25
     # via
     #   -r requirements.in
     #   django-appconf
@@ -108,6 +110,7 @@ django==4.2.24
     #   django-cors-headers
     #   django-extensions
     #   django-filter
+    #   django-import-export
     #   django-markdownx
     #   django-silk
     #   django-storages
@@ -135,6 +138,8 @@ django-filter==25.1
     #   -r requirements.in
     #   djangorestframework-gis
 django-fsm==3.0.0
+    # via -r requirements.in
+django-import-export==4.3.10
     # via -r requirements.in
 django-markdownx==4.0.9
     # via -r requirements.in
@@ -347,6 +352,8 @@ sqlparse==0.5.3
     # via
     #   django
     #   django-silk
+tablib==3.8.0
+    # via django-import-export
 textx==4.2.2
     # via -r requirements.in
 tinycss2==1.4.0
