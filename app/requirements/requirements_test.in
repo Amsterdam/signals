@@ -33,3 +33,4 @@ types-Markdown
 types-python-dateutil
 types-pytz
 xmlunittest
+moto
