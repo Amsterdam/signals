@@ -25,7 +25,7 @@ flower
 jsonschema
 jwcrypto
 lxml
-amsterdam-django-oidc
+amsterdam-django-oidc @ git+https://github.com/Amsterdam/amsterdam-django-oidc@task/improve-handling-nonce-in-access-tokens
 networkx
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-psycopg2
