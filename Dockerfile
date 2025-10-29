@@ -26,7 +26,6 @@ RUN set -eux;  \
         proj-bin \
         mime-support \
         gettext \
-        git \
         libwebpmux3 \
         libwebpdemux2 \
         libxml2 \

@@ -8,7 +8,7 @@ amqp==5.3.1
     # via
     #   -r requirements.txt
     #   kombu
-amsterdam-django-oidc @ git+https://github.com/Amsterdam/amsterdam-django-oidc.git@task/improve-handling-nonce-in-access-tokens
+amsterdam-django-oidc==0.2.2
     # via -r requirements.txt
 arpeggio==2.0.2
     # via
