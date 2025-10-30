@@ -92,7 +92,7 @@ class Category(TrackFields, models.Model):
                                null=True, blank=True)
 
     # SIG-1135, the slug is auto populated using the django-extensions "AutoSlugField"
-    slug = AutoSlugField(populate_from=['name', ], blank=False, overwrite=False, editable=False)
+    slug = AutoSlugField(populate_from=['name', ], blank=False, overwrite=False, editable=True)
 
     name = models.CharField(max_length=255)
 
@@ -187,10 +187,6 @@ class Category(TrackFields, models.Model):
 
     def clean(self):
         super().clean()
-
-        if self.pk and self.slug:
-            if not Category.objects.filter(id=self.pk, slug=self.slug).exists():
-                raise ValidationError('Category slug cannot be changed')
 
         if self.is_parent() and self.is_child() or self.is_child() and self.parent.is_child():
             raise ValidationError('Category hierarchy can only go one level deep')

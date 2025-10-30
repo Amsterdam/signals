@@ -4,6 +4,7 @@ import csv
 
 from django.contrib import admin
 from django.db.models import Q
+from django.forms import ModelForm
 from django.http import HttpResponse
 from django.utils import timezone
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
@@ -69,6 +70,17 @@ class StatusMessageCategoryInline(admin.TabularInline):
     extra = 1
 
 
+class CategoryAdminForm(ModelForm):
+    class Meta:
+        model = Category
+        fields = '__all__'
+        help_texts = {
+            'slug': (
+                "<br><b>Note:</b> After modifying the slug, the machine learning model must be retrained."
+            ),
+        }
+
+
 class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     resource_class = CategoryResource
 
@@ -78,9 +90,9 @@ class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     sortable_by = ('name', 'parent', 'is_active',)
 
     inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline, StatusMessageCategoryInline)
+    form = CategoryAdminForm
     fields = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message', 'public_name',
               'is_public_accessible', 'icon',)
-    readonly_fields = ('slug',)
     view_on_site = True
 
     search_fields = ('name', 'public_name',)
