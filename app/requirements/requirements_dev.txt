@@ -162,7 +162,7 @@ distlib==0.4.0
     # via
     #   -r requirements_test.txt
     #   virtualenv
-django==4.2.25
+django==4.2.26
     # via
     #   -r requirements_test.txt
     #   django-appconf
@@ -747,7 +747,6 @@ typing-extensions==4.14.1
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   pytest-bdd
-    #   referencing
     #   types-factory-boy
 tzdata==2025.2
     # via

@@ -100,7 +100,7 @@ defusedxml==0.7.1
     #   djangorestframework-xml
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.25
+django==4.2.26
     # via
     #   -r requirements.in
     #   django-appconf
