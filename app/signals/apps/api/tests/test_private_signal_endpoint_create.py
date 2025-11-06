@@ -181,6 +181,34 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), 3)
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException) # Skip address validation
+    def test_create_child_signal_without_note_where_parent_signal_is_updated(self, validate_address):
+        """Test if creating a child Signal updates the parent's updated_at field,
+        This will make sure that Signal's updated_at state is aligned with the history log
+        Previously this didn't happen when no extra note was added to the Parent when creating the Child Signal"""
+
+        parent_signal = SignalFactory.create()
+        current_updated_at = parent_signal.updated_at
+        source = SourceFactory(name='Interne Melding', is_active=True)
+
+        data = copy.deepcopy(self.initial_data_base)
+        data['parent'] = parent_signal.pk
+        data['source'] = source.name
+
+        response = self.client.post(self.list_endpoint, data, format='json')
+        new_signal = response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        signal_response = self.client.get(f'/signals/v1/private/signals/{parent_signal.pk}')
+        updated_signal = signal_response.json()
+
+        parent_signal.refresh_from_db()
+
+        assert parent_signal.updated_at > current_updated_at
+
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_create_initial_child_signals_max_exceeded(self, validate_address):
