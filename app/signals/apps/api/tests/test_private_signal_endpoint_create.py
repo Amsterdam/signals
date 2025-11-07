@@ -602,11 +602,9 @@ class TestPrivateSignalViewSetCreateWithApiTransactionClass(SIAReadWriteUserMixi
 
         parent_signal = SignalFactory.create()
         current_updated_at = parent_signal.updated_at
-        # source = SourceFactory(name='Interne Melding', is_active=True)
 
         data = copy.deepcopy(self.initial_data_base)
         data['parent'] = parent_signal.pk
-        # data['source'] = source.name
 
         response = self.client.post(self.list_endpoint, data, format='json')
         response.json()
