@@ -75,6 +75,18 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         self.assertEqual(0, self.signal.history_log.exclude(action=Log.ACTION_UPDATE).count())
         self.assertEqual(5, self.signal.history_log.filter(action=Log.ACTION_UPDATE).count())
 
+    @mute_signals(post_save, update_category_assignment, update_location, update_priority,
+                  update_signal_departments, update_status, update_type, update_user_assignment)
+    def test_parent_updated_when_log_create_initial_with_child(self) -> None:
+        current_updated_at = self.signal.updated_at
+        child_signal = SignalFactoryValidLocation.create(parent=self.signal)
+
+        SignalLogService.log_create_initial(child_signal)
+
+        self.signal.refresh_from_db()
+        new_updated_at = self.signal.updated_at
+        assert current_updated_at < new_updated_at
+
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
     def test_log_create_note(self) -> None:
