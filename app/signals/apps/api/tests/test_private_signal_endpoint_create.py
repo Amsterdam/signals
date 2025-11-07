@@ -9,6 +9,7 @@ from django.contrib.auth.models import Permission
 from django.test import override_settings
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.test import APITransactionTestCase
 
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
 from signals.apps.questionnaires.factories import SessionFactory
@@ -552,3 +553,64 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual(response.json()['session'][0], 'Session already used')
         self.assertEqual(signal_count, Signal.objects.count())
+
+
+class TestPrivateSignalViewSetCreateWithApiTransactionClass(SIAReadWriteUserMixin, APITransactionTestCase):
+    """
+    Similar to the above class, but specifically using APITransactionTestCase to test
+    functionality that needs to wait on the transaction's on_commit hooks to complete.
+    Only use this where necessary, as it is slower than the regular TestCase.
+    """
+    list_endpoint = '/signals/v1/private/signals/'
+
+    def setUp(self):
+        SourceFactory.create(name='online', is_active=True, is_public=True)
+        SourceFactory.create(name='Telefoon – ASC', is_active=True)
+
+        self.main_category = ParentCategoryFactory.create(name='main', slug='main')
+        self.link_main_category = '/signals/v1/public/terms/categories/main'
+
+        self.sub_category_1 = CategoryFactory.create(name='sub1', slug='sub1', parent=self.main_category)
+        self.link_sub_category_1 = f'{self.link_main_category}/sub_categories/sub1'
+
+        self.sub_category_2 = CategoryFactory.create(name='sub2', slug='sub2', parent=self.main_category)
+        self.link_sub_category_2 = f'{self.link_main_category}/sub_categories/sub2'
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.initial_data_base = dict(
+            text='Mensen in het cafe maken erg veel herrie',
+            location=dict(
+                geometrie=dict(
+                    type='point',
+                    coordinates=[4.90022563, 52.36768424]
+                )
+            ),
+            category=dict(category_url=self.link_sub_category_1),
+            reporter=dict(email='melder@example.com'),
+            incident_date_start=timezone.now().strftime('%Y-%m-%dT%H:%M'),
+            source='Telefoon – ASC',
+        )
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_child_signal_without_note_where_parent_signal_is_updated(self, validate_address) -> None:
+        """Test if creating a child Signal updates the parent's updated_at field,
+        This will make sure that Signal's updated_at state is aligned with the history log
+        Previously this didn't happen when no extra note was added to the Parent when creating the Child Signal"""
+
+        parent_signal = SignalFactory.create()
+        current_updated_at = parent_signal.updated_at
+
+        data = copy.deepcopy(self.initial_data_base)
+        data['parent'] = parent_signal.pk
+
+        response = self.client.post(self.list_endpoint, data, format='json')
+        response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        parent_signal.refresh_from_db()
+
+        assert parent_signal.updated_at > current_updated_at

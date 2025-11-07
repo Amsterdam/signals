@@ -41,6 +41,11 @@ class SignalLogService:
                 _signal=signal.parent,
             )
 
+            # Update the parent Signal so that it's updated_at column and history are aligned.
+            # Without this, there will be no update if there is no note added to the deelmelding action
+            if signal.parent:
+                signal_update_requested.send(sender=Signal, signal_instance=signal.parent)
+
         if signal.location:
             SignalLogService.log_update_location(signal.location)
 
