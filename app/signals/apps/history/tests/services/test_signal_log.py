@@ -87,7 +87,6 @@ class TestLogSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         new_updated_at = self.signal.updated_at
         assert current_updated_at < new_updated_at
 
-
     @mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
                   update_signal_departments, update_status, update_type, update_user_assignment)
     def test_log_create_note(self) -> None:

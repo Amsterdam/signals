@@ -554,6 +554,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(response.json()['session'][0], 'Session already used')
         self.assertEqual(signal_count, Signal.objects.count())
 
+
 class TestPrivateSignalViewSetCreateWithApiTransactionClass(SIAReadWriteUserMixin, APITransactionTestCase):
     """
     Similar to the above class, but specifically using APITransactionTestCase to test
@@ -593,8 +594,8 @@ class TestPrivateSignalViewSetCreateWithApiTransactionClass(SIAReadWriteUserMixi
         )
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
-           side_effect=AddressValidationUnavailableException) # Skip address validation
-    def test_create_child_signal_without_note_where_parent_signal_is_updated(self, validate_address):
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_child_signal_without_note_where_parent_signal_is_updated(self, validate_address) -> None:
         """Test if creating a child Signal updates the parent's updated_at field,
         This will make sure that Signal's updated_at state is aligned with the history log
         Previously this didn't happen when no extra note was added to the Parent when creating the Child Signal"""
@@ -615,4 +616,3 @@ class TestPrivateSignalViewSetCreateWithApiTransactionClass(SIAReadWriteUserMixi
         parent_signal.refresh_from_db()
 
         assert parent_signal.updated_at > current_updated_at
-
