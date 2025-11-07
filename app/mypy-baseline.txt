@@ -1,6 +1,6 @@
 signals/apps/email_integrations/markdown/plaintext.py:0: error: "PageElement" has no attribute "name"  [attr-defined]
-signals/settings.py:0: error: Name "DEFAULT_FILE_STORAGE" already defined on line 0  [no-redef]
 signals/settings.py:0: error: Library stubs not installed for "import_export.formats.base_formats"  [import-untyped]
+signals/settings.py:0: error: Name "DEFAULT_FILE_STORAGE" already defined on line 0  [no-redef]
 signals/apps/services/domain/pdf.py:0: error: Skipping analyzing "weasyprint": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Skipping analyzing "rest_framework_extensions.settings": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/models/category.py:0: error: Definition of "refresh_from_db" in base class "TrackFields" is incompatible with definition in base class "Model"  [misc]
@@ -25,7 +25,27 @@ signals/apps/search/documents/status_message.py:0: error: Skipping analyzing "el
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/documents/signal.py:0: error: Skipping analyzing "elasticsearch_dsl.query": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/reporting/csv/utils.py:0: error: Skipping analyzing "storages.backends.azure_storage": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: note: This violates the Liskov substitution principle
+signals/apps/questionnaires/rest_framework/fields.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: note: This violates the Liskov substitution principle
+signals/apps/questionnaires/rest_framework/fields.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: note: This violates the Liskov substitution principle
+signals/apps/questionnaires/rest_framework/fields.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/questionnaires/rest_framework/fields.py:0: note: This violates the Liskov substitution principle
+signals/apps/questionnaires/rest_framework/fields.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/questionnaires/rest_framework/fields.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/dsl/evaluators/meta_model.py:0: error: Skipping analyzing "textx": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/api/fields/stored_signal_filter.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/stored_signal_filter.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/stored_signal_filter.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/stored_signal_filter.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/signals/admin/department.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
 signals/apps/signals/admin/category.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
 signals/apps/signals/admin/area.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
@@ -34,13 +54,50 @@ signals/apps/signals/admin/area.py:0: note: (or run "mypy --install-types" to in
 signals/apps/search/management/commands/delete_status_messages_index.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/search/elasticsearch_dsl/search.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/reporting/csv/datawarehouse/statusses.py:0: error: Argument 2 to "map_choices" has incompatible type "tuple[tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str]]"; expected "list[Any]"  [arg-type]
+signals/apps/reporting/csv/datawarehouse/reporters.py:0: error: Attribute "is_anonymized" already defined on "signals.apps.signals.models.reporter.Reporter"  [no-redef]
 signals/apps/reporting/csv/datawarehouse/locations.py:0: error: Argument 2 to "map_choices" has incompatible type "tuple[tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str]]"; expected "list[Any]"  [arg-type]
 signals/apps/questionnaires/admin/options.py:0: error: Incompatible types in assignment (expression has type "type[NonRelatedInlineFormSet]", base class "InlineModelAdmin" defined the type as "type[BaseInlineFormSet[Any, Any, ModelForm[Any]]]")  [assignment]
+signals/apps/users/rest_framework/fields/user.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/users/rest_framework/fields/user.py:0: note: This violates the Liskov substitution principle
+signals/apps/users/rest_framework/fields/user.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/users/rest_framework/fields/user.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/signals/admin/expression.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
+signals/apps/my_signals/rest_framework/fields/signals.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/my_signals/rest_framework/fields/signals.py:0: note: This violates the Liskov substitution principle
+signals/apps/my_signals/rest_framework/fields/signals.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/my_signals/rest_framework/fields/signals.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/my_signals/rest_framework/fields/signals.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/my_signals/rest_framework/fields/signals.py:0: note: This violates the Liskov substitution principle
+signals/apps/my_signals/rest_framework/fields/signals.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/my_signals/rest_framework/fields/signals.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/api/serializers/area.py:0: error: Skipping analyzing "rest_framework_gis.fields": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/serializers/area.py:0: error: Skipping analyzing "rest_framework_gis.serializers": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/signal.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/signal.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/signal.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/signal.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/signal.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/signal.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/api/fields/category.py:0: error: Skipping analyzing "rest_framework_extensions.settings": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/fields/category.py:0: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+signals/apps/api/fields/attachment.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/attachment.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/attachment.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/attachment.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/attachment.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "datapunt_api.serializers.LinksField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
+signals/apps/api/fields/attachment.py:0: note: This violates the Liskov substitution principle
+signals/apps/api/fields/attachment.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+signals/apps/api/fields/attachment.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/signals/tests/test_resources.py:0: error: Library stubs not installed for "import_export.formats.base_formats"  [import-untyped]
 signals/apps/signals/tests/test_resources.py:0: error: Skipping analyzing "tablib": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/tests/test_reporter_state_machine.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
