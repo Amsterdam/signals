@@ -2,6 +2,7 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 import csv
 
+from django.conf import settings
 from django.contrib import admin
 from django.db.models import Q
 from django.forms import ModelForm
@@ -90,7 +91,6 @@ class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     sortable_by = ('name', 'parent', 'is_active',)
 
     inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline, StatusMessageCategoryInline)
-    form = CategoryAdminForm
     fields = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message', 'public_name',
               'is_public_accessible', 'icon',)
     view_on_site = True
@@ -99,6 +99,17 @@ class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     ordering = ('parent__name', 'name',)
 
     actions = ['download_csv']
+
+    def get_form(self, request, obj=None, **kwargs):
+        if settings.FEATURE_FLAGS.get('CATEGORY_SLUG_EDITABLE', False):
+            kwargs['form'] = CategoryAdminForm
+        return super().get_form(request, obj, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        if not settings.FEATURE_FLAGS.get('CATEGORY_SLUG_EDITABLE', False):
+            readonly_fields = list(readonly_fields) + ['slug']
+        return readonly_fields
 
     def has_delete_permission(self, request, obj=None):
         return False
