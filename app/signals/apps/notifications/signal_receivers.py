@@ -8,7 +8,6 @@ from signals.apps.signals.managers import update_status
 
 from . import tasks
 from ..signals.models import Signal, Status
-from ..signals.workflow import STATUS_CHOICES
 from ... import settings
 
 logger = logging.getLogger(__name__)
@@ -24,16 +23,12 @@ def send_notification_for_updated_signal_status(sender, signal_obj: Signal, stat
         logger.warning("There is no MUNICIPALITY_CODE environment variable in the environment configured")
         return
 
-    STATUS_DICT = dict(STATUS_CHOICES)
-    status_label = STATUS_DICT.get(status.state, status.state)
-    message = f"De status van uw melding SIG-{signal_obj.pk} is aangepast naar: {status_label.lower()}."
-
     tasks.send_notification.delay(
         municipality_code=municipality_code,
         payload={
-            'message': message,
             'status_code': status.state,
+            'signal_uuid': signal_obj.uuid,
+            'signal_id': signal_obj.pk,
         },
-        signal_id=signal_obj.pk,
         notification_type='UPDATE_STATUS'
     )
