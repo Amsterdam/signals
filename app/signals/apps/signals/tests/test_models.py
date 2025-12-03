@@ -703,6 +703,37 @@ class TestCategory(TestCase):
                 self.assertIn('Value of "show_children_in_filter" is not a valid boolean', messages)
                 self.assertIn('Only "show_children_in_filter" is allowed', messages)
 
+    @override_settings(FEATURE_FLAGS={'CATEGORY_SLUG_EDITABLE': True})
+    def test_slug_can_be_updated_when_feature_flag_enabled(self):
+        """
+        When CATEGORY_SLUG_EDITABLE feature flag is True, category slug should be editable
+        """
+        category = factories.CategoryFactory(name='Original Name')
+        original_slug = category.slug
+
+        category.slug = 'new-custom-slug'
+        category.save()
+        category.refresh_from_db()
+
+        self.assertEqual(category.slug, 'new-custom-slug')
+        self.assertNotEqual(category.slug, original_slug)
+
+    @override_settings(FEATURE_FLAGS={'CATEGORY_SLUG_EDITABLE': False})
+    def test_slug_cannot_be_updated_when_feature_flag_disabled(self):
+        """
+        When CATEGORY_SLUG_EDITABLE feature flag is False, category slug should not be editable
+        """
+        category = factories.CategoryFactory(name='Original Name')
+        original_slug = category.slug
+
+        category.slug = 'new-custom-slug'
+
+        with self.assertRaises(ValidationError):
+            category.save()
+
+        category.refresh_from_db()
+        self.assertEqual(category.slug, original_slug)
+
 
 class TestCategoryDeclarations(TestCase):
 

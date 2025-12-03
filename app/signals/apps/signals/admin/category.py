@@ -2,8 +2,10 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 import csv
 
+from django.conf import settings
 from django.contrib import admin
 from django.db.models import Q
+from django.forms import ModelForm
 from django.http import HttpResponse
 from django.utils import timezone
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
@@ -69,6 +71,17 @@ class StatusMessageCategoryInline(admin.TabularInline):
     extra = 1
 
 
+class CategoryAdminForm(ModelForm):
+    class Meta:
+        model = Category
+        fields = '__all__'
+        help_texts = {
+            'slug': (
+                "<br><b>Note:</b> After modifying the slug, the machine learning model must be retrained."
+            ),
+        }
+
+
 class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     resource_class = CategoryResource
 
@@ -80,13 +93,23 @@ class CategoryAdmin(ImportExportModelAdmin, ExportActionMixin):
     inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline, StatusMessageCategoryInline)
     fields = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message', 'public_name',
               'is_public_accessible', 'icon',)
-    readonly_fields = ('slug',)
     view_on_site = True
 
     search_fields = ('name', 'public_name',)
     ordering = ('parent__name', 'name',)
 
     actions = ['download_csv']
+
+    def get_form(self, request, obj=None, **kwargs):
+        if settings.FEATURE_FLAGS.get('CATEGORY_SLUG_EDITABLE', False):
+            kwargs['form'] = CategoryAdminForm
+        return super().get_form(request, obj, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        if not settings.FEATURE_FLAGS.get('CATEGORY_SLUG_EDITABLE', False):
+            readonly_fields = list(readonly_fields) + ['slug']
+        return readonly_fields
 
     def has_delete_permission(self, request, obj=None):
         return False

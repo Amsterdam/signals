@@ -543,7 +543,10 @@ FEATURE_FLAGS: dict[str, bool] = {
     'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
 
     # Enable/Disable showing employee details in the PDF export
-    'SHOW_EMPLOYEE_DETAILS_IN_PDF': os.getenv('SHOW_EMPLOYEE_DETAILS_IN_PDF', True) in TRUE_VALUES
+    'SHOW_EMPLOYEE_DETAILS_IN_PDF': os.getenv('SHOW_EMPLOYEE_DETAILS_IN_PDF', True) in TRUE_VALUES,
+
+    # Enable/Disable editing category slug in Django admin
+    'CATEGORY_SLUG_EDITABLE': os.getenv('CATEGORY_SLUG_EDITABLE', False) in TRUE_VALUES
 }
 
 # Per default log to console
