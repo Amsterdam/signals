@@ -37,6 +37,7 @@ python-dateutil
 python-magic
 requests
 textX
+urllib3>2.6.1
 uWSGI
 weasyprint==52.5
 django-import-export

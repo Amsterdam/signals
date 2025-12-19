@@ -131,3 +131,5 @@ signals/apps/api/views/category.py:0: error: Skipping analyzing "rest_framework_
 signals/apps/api/views/attachment.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/views/signals/public/signals.py:0: error: "type[PublicSignalGeographyFeature]" has no attribute "objects"  [attr-defined]
 signals/apps/api/views/signals/private/signals.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/search/documents/base.py:0: error: Skipping analyzing "elasticsearch.helpers": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/search/tasks.py:0: error: Skipping analyzing "elasticsearch": module is installed, but missing library stubs or py.typed marker  [import-untyped]
