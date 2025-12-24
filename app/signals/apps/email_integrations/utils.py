@@ -139,9 +139,17 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
     Makes a context dictionary containing all values needed for the email templates
     Can add additional context, but will make sure that none of the default values are overridden.
     """
-    # Decode the text and text_area before removing any URL to make sure that urlencoded URLs are also removed.
+    # Decode the text, text_extra and address before removing any URL to make sure that urlencoded URLs are also removed.
     text = _cleanup_signal_text(signal.text, dry_run=dry_run)
     text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
+
+    address = None
+    if signal.location and signal.location.address:
+        address = signal.location.address.copy()  # Don't modify the original object
+        # Clean all string fields within address to prevent URL injection
+        for field, value in address.items():
+            if value and isinstance(value, str):
+                address[field] = _cleanup_signal_text(value, dry_run=dry_run)
 
     assert signal.category_assignment is not None
     category = signal.category_assignment.category
@@ -162,7 +170,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'created_at': signal.created_at,
         'text': text,
         'text_extra': text_extra,
-        'address': signal.location.address if signal.location and signal.location.address else None,
+        'address': address,
         'status_text': signal.status.text,
         'status_state': signal.status.state,
         'handling_message': signal.category_assignment.stored_handling_message,
