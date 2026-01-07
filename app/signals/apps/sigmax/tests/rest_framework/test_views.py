@@ -9,6 +9,7 @@ from unittest import mock
 from django.contrib.auth.models import Permission
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.test import override_settings
 from lxml import etree
 from rest_framework.status import HTTP_200_OK
 
@@ -327,8 +328,10 @@ class TestSoapEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
 
-    @mock.patch('signals.settings.SIGMAX_END_STATE_IS_AFGEHANDELD', True)
-    @mock.patch('signals.settings.SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT', 'Test opgelost bericht')
+    @override_settings(
+        SIGMAX_END_STATE_IS_AFGEHANDELD=True,
+        SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT='Test opgelost bericht'
+    )
     def test_with_sigmax_end_state_is_afgehandeld_enabled_and_afgerond_result(self):
         """Test that when SIGMAX_END_STATE_IS_AFGEHANDELD=True and resultaat='afgerond',
         the signal gets AFGEHANDELD status instead of AFGEHANDELD_EXTERN"""
