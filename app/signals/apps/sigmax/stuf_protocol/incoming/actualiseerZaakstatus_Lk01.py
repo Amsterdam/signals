@@ -108,19 +108,10 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
     """
     resultaat_text = request_data.get('resultaat', '').strip()
 
-    if settings.SIGMAX_END_STATE_IS_AFGEHANDELD and resultaat_text == 'afgerond':
-        set_status_to_afgehandeld = True
-        note_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
-        status_text = settings.SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT
-    else:
-        set_status_to_afgehandeld = False
-        note_text = None
-        status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
-
     status_data = {
-        'state': workflow.AFGEHANDELD if set_status_to_afgehandeld else workflow.AFGEHANDELD_EXTERN,
-        'send_email': True if set_status_to_afgehandeld else False,
-        'text': status_text,
+        'state': workflow.AFGEHANDELD_EXTERN,
+        'send_email': False,
+        'text': _get_status_text_actualiseerZaakstatus_Lk01(request_data),
         'extra_properties': {
             'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
             'sigmax_resultaat': request_data['resultaat'],
@@ -128,12 +119,22 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
         }
     }
 
-    if note_text:
-        note_data = {'text': note_text}
-        Signal.actions.create_note(note_data, signal)
-
     # We let exceptions bubble up (must lead to a error message to CityControl).
     Signal.actions.update_status(data=status_data, signal=signal)
+
+    if settings.SIGMAX_END_STATE_IS_AFGEHANDELD and resultaat_text == 'afgerond':
+        status_data = {
+            'state': workflow.AFGEHANDELD,
+            'send_email': True,
+            'text': settings.SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT,
+            'extra_properties': {
+                'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
+                'sigmax_resultaat': request_data['resultaat'],
+                'sigmax_reden': request_data['reden'],
+            }
+        }
+
+        Signal.actions.update_status(data=status_data, signal=signal)
 
 
 def _add_note_actualiseerZaakstatus_Lk01(signal, request_data):
