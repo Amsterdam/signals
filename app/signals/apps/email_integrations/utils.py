@@ -134,34 +134,45 @@ def _cleanup_signal_text(text: str, dry_run: bool = False) -> str:
     return text
 
 
+def _get_parent_category_public_name(category) -> str:
+    """Get the public name of the parent category."""
+    if category.parent and category.parent.public_name:
+        # Category has a parent with a public name
+        return category.parent.public_name
+    elif category.parent and not category.parent.public_name:
+        #  Category has a parent without a public name
+        return category.parent.name
+    else:
+        # Fallback to a blank parent category name, this should not happen
+        return ''
+
+
+def _clean_address_fields(address: dict, dry_run: bool = False) -> dict:
+    """Clean string fields in address to prevent URL injection."""
+    cleaned_address = address.copy()  # Don't modify the original object
+    for field, value in cleaned_address.items():
+        if value and isinstance(value, str):
+            cleaned_address[field] = _cleanup_signal_text(value, dry_run=dry_run)
+    return cleaned_address
+
+
 def make_email_context(signal: Signal, additional_context: Optional[dict] = None, dry_run: bool = False) -> dict:
     """
     Makes a context dictionary containing all values needed for the email templates
     Can add additional context, but will make sure that none of the default values are overridden.
     """
-    # Decode the text, text_extra and address before removing any URL to make sure that urlencoded URLs are also removed.
+    # Decode the text, text_extra and address before removing any URL to make sure that
+    # urlencoded URLs are also removed.
     text = _cleanup_signal_text(signal.text, dry_run=dry_run)
     text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
 
     address = None
     if signal.location and signal.location.address:
-        address = signal.location.address.copy()  # Don't modify the original object
-        # Clean all string fields within address to prevent URL injection
-        for field, value in address.items():
-            if value and isinstance(value, str):
-                address[field] = _cleanup_signal_text(value, dry_run=dry_run)
+        address = _clean_address_fields(signal.location.address, dry_run=dry_run)
 
     assert signal.category_assignment is not None
     category = signal.category_assignment.category
-    if category.parent and category.parent.public_name:
-        # Category has a parent with a public name
-        parent_public_name = category.parent.public_name
-    elif category.parent and not category.parent.public_name:
-        #  Category has a parent without a public name
-        parent_public_name = category.parent.name
-    else:
-        # Fallback to a blank parent category name, this should not happen
-        parent_public_name = ''
+    parent_public_name = _get_parent_category_public_name(category)
 
     assert signal.status is not None
     context = {
@@ -181,11 +192,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'incident_date_start': signal.incident_date_start,
     }
 
-    if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
-        # Add the "My Signals" login url to the context
-        # Emails can be configured to contain a "My Signals" login link
-        from signals.apps.my_signals.app_settings import MY_SIGNALS_LOGIN_URL
-        context.update({'my_signals_login_url': MY_SIGNALS_LOGIN_URL})
+    _add_my_signals_context(context)
 
     if additional_context:
         # Make sure the additional_context do not override the default context values
@@ -195,6 +202,15 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         context.update(additional_context)
 
     return context
+
+
+def _add_my_signals_context(context: dict) -> None:
+    """Add My Signals login URL to context if feature is enabled."""
+    if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
+        # Add the "My Signals" login url to the context
+        # Emails can be configured to contain a "My Signals" login link
+        from signals.apps.my_signals.app_settings import MY_SIGNALS_LOGIN_URL
+        context.update({'my_signals_login_url': MY_SIGNALS_LOGIN_URL})
 
 
 def validate_email_template(email_template: EmailTemplate) -> bool:
