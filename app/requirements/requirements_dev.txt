@@ -800,7 +800,7 @@ webencodings==0.5.1
     #   cssselect2
     #   html5lib
     #   tinycss2
-werkzeug==3.1.4
+werkzeug==3.1.5
     # via
     #   -r requirements_test.txt
     #   moto

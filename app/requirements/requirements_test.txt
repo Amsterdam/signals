@@ -736,7 +736,7 @@ webencodings==0.5.1
     #   cssselect2
     #   html5lib
     #   tinycss2
-werkzeug==3.1.4
+werkzeug==3.1.5
     # via moto
 wrapt==1.17.3
     # via
