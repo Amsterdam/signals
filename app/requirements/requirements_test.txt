@@ -513,7 +513,7 @@ pyjwt[crypto]==2.10.1
     # via
     #   -r requirements.txt
     #   msal
-pypdf==6.4.2
+pypdf==6.6.0
     # via -r requirements.txt
 pyphen==0.17.2
     # via
