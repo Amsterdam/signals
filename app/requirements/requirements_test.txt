@@ -722,7 +722,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.35.4
+virtualenv==20.36.1
     # via tox
 wcwidth==0.2.14
     # via
