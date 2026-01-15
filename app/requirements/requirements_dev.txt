@@ -25,7 +25,7 @@ attrs==25.4.0
     #   jsonschema
     #   pytest-subtests
     #   referencing
-azure-core==1.37.0
+azure-core==1.38.0
     # via
     #   -r requirements_test.txt
     #   azure-identity
