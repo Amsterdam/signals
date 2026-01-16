@@ -296,3 +296,38 @@ class TestUtils(TestCase):
 
         with self.assertRaises(URLEncodedCharsFoundInText):
             make_email_context(signal=signal)
+
+    def test_make_email_context_with_urls_in_address(self):
+        """
+        Test that URLs are stripped from address fields in email context.
+        """
+        from signals.apps.signals.factories import LocationFactory
+
+        signal = SignalFactory.create()
+        for schema in self.test_schemas:
+            for uri in self.test_uris:
+                unquoted_url = f'{schema}{uri}'
+                quoted_url = quote(unquoted_url)
+
+                # Create address with URLs in text fields
+                malicious_address = {
+                    'openbare_ruimte': f'Kerkstraat {unquoted_url}',
+                    'woonplaats': f'Amsterdam {quoted_url}',
+                    'huisnummer': 123,  # numeric field should remain unchanged
+                    'postcode': '1000AA'
+                }
+
+                # Create location with malicious address
+                location = LocationFactory.create(address=malicious_address)
+                signal.location = location
+                signal.save()
+
+                context = make_email_context(signal=signal)
+
+                # URLs should be stripped from text fields
+                if context['address']:
+                    self.assertNotIn(unquoted_url, context['address'].get('openbare_ruimte', ''))
+                    self.assertNotIn(quoted_url, context['address'].get('woonplaats', ''))
+                    # Non-string fields should remain unchanged
+                    self.assertEqual(context['address'].get('huisnummer'), 123)
+                    self.assertEqual(context['address'].get('postcode'), '1000AA')
