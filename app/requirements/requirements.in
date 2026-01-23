@@ -39,5 +39,5 @@ requests
 textX
 urllib3>2.6.1
 uWSGI
-weasyprint==52.5
+weasyprint==68.0
 django-import-export
