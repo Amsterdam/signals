@@ -25,7 +25,7 @@ flower
 jsonschema
 jwcrypto
 lxml
-amsterdam-django-oidc
+amsterdam-django-oidc==0.2.2
 networkx
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-psycopg2
