@@ -46,7 +46,6 @@ class Attachment(CreatedUpdatedModel):
                     'image/jpeg',
                     'image/png',
                     'image/gif',
-                    'application/pdf',
                 )
             ),
             MimeTypeIntegrityValidator(
