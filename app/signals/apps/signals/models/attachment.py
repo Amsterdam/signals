@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2026 Gemeente Amsterdam
 import logging
 
 from django.conf import settings
@@ -46,7 +46,6 @@ class Attachment(CreatedUpdatedModel):
                     'image/jpeg',
                     'image/png',
                     'image/gif',
-                    'application/pdf',
                 )
             ),
             MimeTypeIntegrityValidator(
