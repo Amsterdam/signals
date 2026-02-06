@@ -19,6 +19,7 @@ from signals.test.utils import SignalsBaseApiTestCase
 THIS_DIR = os.path.dirname(__file__)
 
 DOC_FILE = os.path.join(THIS_DIR, 'test-data', 'sia-ontwerp-testfile.doc')
+PDF_FILE = os.path.join(THIS_DIR, 'test-data', 'sia-ontwerp-testfile.pdf')
 JPG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.jpg')
 PNG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.png')
 GIF_FILE = os.path.join(THIS_DIR, 'test-data', 'test.gif')
@@ -28,7 +29,7 @@ ALLOWED = [
     (JPG_FILE, 'image/jpeg'),
     (PNG_FILE, 'image/png')
 ]
-DISALLOWED = [(DOC_FILE, 'application/msword')]
+DISALLOWED = [(DOC_FILE, 'application/msword'), (PDF_FILE, 'application/pdf')]
 
 
 class TestAttachmentValidation(SignalsBaseApiTestCase):
