@@ -76,7 +76,7 @@ click-repl==0.3.0
     # via celery
 cron-descriptor==2.0.6
     # via django-celery-beat
-cryptography==46.0.4
+cryptography==46.0.5
     # via
     #   azure-identity
     #   azure-storage-blob
