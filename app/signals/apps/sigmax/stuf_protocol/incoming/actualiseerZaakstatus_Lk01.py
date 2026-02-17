@@ -7,6 +7,7 @@ Support for actualiseerZaakstatus_Lk01 messages from CityControl.
 import logging
 import re
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from lxml import etree
@@ -105,9 +106,20 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
     Note: this is the happy flow, only happens when the Signal was in the
     expected state in SIA --- else see _add_note_actualiseerZaakstatus_Lk01.
     """
-    status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+    resultaat_text = request_data.get('resultaat', '').strip()
+
+    if settings.SIGMAX_END_STATE_IS_AFGEHANDELD and resultaat_text == 'afgerond':
+        set_status_to_afgehandeld = True
+        note_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+        status_text = settings.SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT
+    else:
+        set_status_to_afgehandeld = False
+        note_text = None
+        status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+
     status_data = {
-        'state': workflow.AFGEHANDELD_EXTERN,
+        'state': workflow.AFGEHANDELD if set_status_to_afgehandeld else workflow.AFGEHANDELD_EXTERN,
+        'send_email': True if set_status_to_afgehandeld else False,
         'text': status_text,
         'extra_properties': {
             'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
@@ -115,6 +127,10 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
             'sigmax_reden': request_data['reden'],
         }
     }
+
+    if note_text:
+        note_data = {'text': note_text}
+        Signal.actions.create_note(note_data, signal)
 
     # We let exceptions bubble up (must lead to a error message to CityControl).
     Signal.actions.update_status(data=status_data, signal=signal)

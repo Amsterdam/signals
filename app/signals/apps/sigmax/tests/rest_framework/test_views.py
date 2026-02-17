@@ -9,6 +9,7 @@ from unittest import mock
 from django.contrib.auth.models import Permission
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.test import override_settings
 from lxml import etree
 from rest_framework.status import HTTP_200_OK
 
@@ -326,3 +327,55 @@ class TestSoapEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         })
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+
+    @override_settings(
+        SIGMAX_END_STATE_IS_AFGEHANDELD=True,
+        SIGMAX_END_STATE_IS_AFGEHANDELD_STATUS_TEXT='Test opgelost bericht'
+    )
+    def test_with_sigmax_end_state_is_afgehandeld_enabled_and_afgerond_result(self):
+        """Test that when SIGMAX_END_STATE_IS_AFGEHANDELD=True and resultaat='afgerond',
+        the signal gets AFGEHANDELD status instead of AFGEHANDELD_EXTERN"""
+        signal = SignalFactoryValidLocation.create()
+        signal.status.state = workflow.VERZONDEN
+        signal.status.save()
+        signal.refresh_from_db()
+
+        self.assertEqual(Signal.objects.count(), 1)
+
+        incoming_context = {
+            'signal': signal,
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'afgerond',  # This triggers the special behavior
+            'resultaat_toelichting': 'Het probleem is opgelost',
+            'resultaat_datum': '2018101111485276',
+        }
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
+
+        # authenticate
+        self.client.force_authenticate(user=self.sigmax_user)
+
+        # call our SOAP endpoint
+        response = self.client.post(
+            SOAP_ENDPOINT,
+            data=incoming_msg,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
+            content_type='text/xml',
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        signal.refresh_from_db()
+        # Should be AFGEHANDELD instead of AFGEHANDELD_EXTERN when setting is enabled
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD)
+        # Should use the special status text
+        self.assertEqual(signal.status.text, 'Test opgelost bericht')
+        # Should have the same extra properties
+        self.assertEqual(signal.status.extra_properties, {
+            'sigmax_datum_afgehandeld': incoming_context['resultaat_datum'],
+            'sigmax_resultaat': incoming_context['resultaat_omschrijving'],
+            'sigmax_reden': incoming_context['resultaat_toelichting'],
+        })
+        # Check that a note was added with the regular status text
+        self.assertEqual(signal.notes.count(), 1)
+        note = signal.notes.first()
+        self.assertEqual(note.text, 'afgerond: Het probleem is opgelost')
