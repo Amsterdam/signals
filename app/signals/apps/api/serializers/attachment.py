@@ -14,7 +14,10 @@ from signals.apps.api.fields import (
 )
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.models import Feedback
+from signals.apps.services.domain.mimetypes import MimeTypeFromContentResolverFactory
+from signals.apps.services.validator.file import MimeTypeAllowedValidator
 from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.models.attachment import IMAGE_MIME_TYPES
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD
 
 PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
@@ -67,6 +70,27 @@ class PublicSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
         )
 
         extra_kwargs = {'file': {'write_only': True}}
+
+    def validate_file(self, file):
+        """For users that are not authenticated we only allow the uploading of images.
+        Because it is different on the file model, we do an early validation here"""
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+
+        print('found user', user, user.is_authenticated)
+
+        # Authenticated users can upload any file type that is
+        # allowed by the File model validators, so we skip
+        if user and user.is_authenticated:
+            return file
+
+        public_allowed_mimetypes = IMAGE_MIME_TYPES
+
+        # Determine mimetype using the same resolver as the File model
+        validator = MimeTypeAllowedValidator(MimeTypeFromContentResolverFactory(), public_allowed_mimetypes)
+        validator(file)
+
+        return file
 
     def create(self, validated_data: dict) -> Attachment:
         signal = self.context['view'].get_signal()
