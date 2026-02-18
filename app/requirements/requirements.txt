@@ -269,7 +269,7 @@ packaging==26.0
     #   drf-extensions
     #   kombu
     #   opentelemetry-instrumentation
-pillow==12.1.0
+pillow==12.1.1
     # via
     #   -r requirements.in
     #   django-markdownx

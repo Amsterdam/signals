@@ -498,7 +498,7 @@ pathspec==1.0.4
     # via
     #   -r requirements_test.txt
     #   mypy
-pillow==12.1.0
+pillow==12.1.1
     # via
     #   -r requirements_test.txt
     #   django-markdownx
