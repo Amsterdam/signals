@@ -25,7 +25,7 @@ flower
 jsonschema
 jwcrypto
 lxml
-amsterdam-django-oidc==0.2.2
+amsterdam-django-oidc
 networkx
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-psycopg2
@@ -37,6 +37,7 @@ python-dateutil
 python-magic
 requests
 textX
+types-requests
 urllib3>2.6.1
 uWSGI
 weasyprint==68.0

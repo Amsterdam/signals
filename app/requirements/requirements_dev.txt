@@ -8,7 +8,7 @@ amqp==5.3.1
     # via
     #   -r requirements/requirements_test.txt
     #   kombu
-amsterdam-django-oidc==0.2.2
+amsterdam-django-oidc==0.2.4
     # via -r requirements/requirements_test.txt
 arpeggio==2.0.3
     # via
@@ -131,7 +131,6 @@ cryptography==46.0.5
     #   -r requirements/requirements_test.txt
     #   azure-identity
     #   azure-storage-blob
-    #   josepy
     #   jwcrypto
     #   moto
     #   mozilla-django-oidc
@@ -336,10 +335,6 @@ jmespath==1.1.0
     #   -r requirements/requirements_test.txt
     #   boto3
     #   botocore
-josepy==2.2.0
-    # via
-    #   -r requirements/requirements_test.txt
-    #   mozilla-django-oidc
 jsonschema==4.26.0
     # via
     #   -r requirements/requirements_test.txt
@@ -384,7 +379,7 @@ mccabe==0.7.0
     #   flake8
 moto==5.1.21
     # via -r requirements/requirements_test.txt
-mozilla-django-oidc==4.0.1
+mozilla-django-oidc==5.0.2
     # via
     #   -r requirements/requirements_test.txt
     #   amsterdam-django-oidc
@@ -551,6 +546,7 @@ pygments==2.19.2
 pyjwt[crypto]==2.11.0
     # via
     #   -r requirements/requirements_test.txt
+    #   mozilla-django-oidc
     #   msal
 pypdf==6.7.1
     # via -r requirements/requirements_test.txt
@@ -716,6 +712,8 @@ types-pyyaml==6.0.12.20250915
     #   -r requirements/requirements_test.txt
     #   django-stubs
     #   djangorestframework-stubs
+types-requests==2.32.4.20260107
+    # via -r requirements/requirements_test.txt
 types-webencodings==0.5.0.20251108
     # via
     #   -r requirements/requirements_test.txt
@@ -763,6 +761,7 @@ urllib3==2.6.3
     #   elasticsearch
     #   requests
     #   responses
+    #   types-requests
 uwsgi==2.0.31
     # via -r requirements/requirements_test.txt
 vine==5.1.0
