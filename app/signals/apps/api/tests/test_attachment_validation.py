@@ -24,13 +24,15 @@ JPG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.jpg')
 PNG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.png')
 GIF_FILE = os.path.join(THIS_DIR, 'test-data', 'test.gif')
 
-ALLOWED = [
+PUBLIC_ALLOWED = [
     (GIF_FILE, 'image/gif'),
     (JPG_FILE, 'image/jpeg'),
     (PNG_FILE, 'image/png')
 ]
-DISALLOWED = [(DOC_FILE, 'application/msword'), (PDF_FILE, 'application/pdf')]
+PUBLIC_DISALLOWED = [(DOC_FILE, 'application/msword'), (PDF_FILE, 'application/pdf')]
 
+PRIVATE_ALLOWED = PUBLIC_ALLOWED + [(PDF_FILE, 'application/pdf')]
+PRIVATE_DISALLOWED =  [(DOC_FILE, 'application/msword')]
 
 class TestAttachmentValidation(SignalsBaseApiTestCase):
     """
@@ -50,7 +52,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
     def test_upload_allowed_public(self):
         # Test uploads of files with allowed filetypes with correct content and
         # filename extensions - test public endpoint.
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PUBLIC_ALLOWED:
             with open(filename, 'rb') as allowed_file:
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(self.public_upload_url, data={'file': allowed})
@@ -59,7 +61,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
     def test_upload_allowed_private(self):
         # Private endpoint version of above.
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PRIVATE_ALLOWED:
             with open(filename, 'rb') as allowed_file:
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': allowed})
@@ -67,7 +69,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
 
     def test_upload_allowed_private_with_public_field(self):
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PRIVATE_ALLOWED:
             with open(filename, 'rb') as allowed_file:
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': allowed, 'public': True})
@@ -75,7 +77,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
 
     def test_upload_allowed_private_with_caption_field(self):
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PRIVATE_ALLOWED:
             with open(filename, 'rb') as allowed_file:
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': allowed, 'caption': 'Allowed'})
@@ -83,7 +85,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
 
     def test_upload_allowed_private_with_public_and_caption_fields(self):
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PRIVATE_ALLOWED:
             with open(filename, 'rb') as allowed_file:
                 allowed = SimpleUploadedFile(filename, allowed_file.read(), content_type=content_type)
                 response = self.client.post(
@@ -152,7 +154,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
     def test_upload_disallowed_public(self):
         # Test uploads of disfiles with allowed filetypes with correct content
         # and filename extensions - test public endpoint.
-        for filename, content_type in DISALLOWED:
+        for filename, content_type in PUBLIC_DISALLOWED:
             with open(filename, 'rb') as disallowed_file:
                 disallowed = SimpleUploadedFile(filename, disallowed_file.read(), content_type=content_type)
                 response = self.client.post(self.public_upload_url, data={'file': disallowed})
@@ -161,7 +163,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
     def test_upload_disallowed_private(self):
         # Private endpoint version of above.
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in DISALLOWED:
+        for filename, content_type in PRIVATE_DISALLOWED:
             with open(filename, 'rb') as disallowed_file:
                 disallowed = SimpleUploadedFile(filename, disallowed_file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': disallowed})
@@ -213,7 +215,7 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
             https://pillow.readthedocs.io/en/stable/reference/Image.html?highlight=MAX_IMAGE_PIXELS#PIL.Image.open
         """
         self.client.force_authenticate(user=self.superuser)
-        for filename, content_type in ALLOWED:
+        for filename, content_type in PUBLIC_ALLOWED:
             with open(filename, 'rb') as file:
                 suf = SimpleUploadedFile(filename, file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': suf})
@@ -235,7 +237,7 @@ class TestAttachmentConcurrency(APILiveServerTestCase):
 
     def test_concurrent_uploads(self):
         with ThreadPoolExecutor(max_workers=3) as executor:
-            executor.map(self._upload, ALLOWED)
+            executor.map(self._upload, PUBLIC_ALLOWED)
 
-        self.assertEqual(self.signal.attachments.all().count(), len(ALLOWED))
-        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), len(ALLOWED))
+        self.assertEqual(self.signal.attachments.all().count(), len(PUBLIC_ALLOWED))
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), len(PUBLIC_ALLOWED))

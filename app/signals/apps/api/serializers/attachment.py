@@ -72,21 +72,11 @@ class PublicSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
         extra_kwargs = {'file': {'write_only': True}}
 
     def validate_file(self, file):
-        """For users that are not authenticated we only allow the uploading of images.
-        Because it is different on the file model, we do an early validation here"""
-        request = self.context.get('request')
-        user = getattr(request, 'user', None)
-
-        print('found user', user, user.is_authenticated)
-
-        # Authenticated users can upload any file type that is
-        # allowed by the File model validators, so we skip
-        if user and user.is_authenticated:
-            return file
-
+        """For attachments uploaded via the public endpoint we only allow image mimetypes.
+        This includes Signals reported by authenticated users.
+        This is a second line of defense  next to the validator on the model field itself."""
         public_allowed_mimetypes = IMAGE_MIME_TYPES
 
-        # Determine mimetype using the same resolver as the File model
         validator = MimeTypeAllowedValidator(MimeTypeFromContentResolverFactory(), public_allowed_mimetypes)
         validator(file)
 
