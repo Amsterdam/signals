@@ -48,12 +48,12 @@ billiard==4.2.4
     # via
     #   -r requirements/requirements_test.txt
     #   celery
-boto3==1.42.52
+boto3==1.42.53
     # via
     #   -r requirements/requirements_test.txt
     #   django-storages
     #   moto
-botocore==1.42.52
+botocore==1.42.53
     # via
     #   -r requirements/requirements_test.txt
     #   boto3
@@ -324,7 +324,7 @@ isodate==0.7.2
     #   -r requirements/requirements_test.txt
     #   azure-storage-blob
     #   msrest
-isort==7.0.0
+isort==8.0.0
     # via -r requirements/requirements_test.txt
 jinja2==3.1.6
     # via
@@ -675,7 +675,7 @@ tornado==6.5.4
     # via
     #   -r requirements/requirements_test.txt
     #   flower
-tox==4.40.0
+tox==4.42.0
     # via -r requirements/requirements_test.txt
 types-beautifulsoup4==4.12.0.20250516
     # via -r requirements/requirements_test.txt
