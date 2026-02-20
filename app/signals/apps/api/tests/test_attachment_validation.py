@@ -32,7 +32,8 @@ PUBLIC_ALLOWED = [
 PUBLIC_DISALLOWED = [(DOC_FILE, 'application/msword'), (PDF_FILE, 'application/pdf')]
 
 PRIVATE_ALLOWED = PUBLIC_ALLOWED + [(PDF_FILE, 'application/pdf')]
-PRIVATE_DISALLOWED =  [(DOC_FILE, 'application/msword')]
+PRIVATE_DISALLOWED = [(DOC_FILE, 'application/msword')]
+
 
 class TestAttachmentValidation(SignalsBaseApiTestCase):
     """
