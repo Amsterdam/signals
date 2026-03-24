@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 # Allow truncated image to be loaded:
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+IMAGE_MIME_TYPES = (
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+)
+
+# We allow adding PDF's as attachments for authenticated users only
+PRIVATE_ALLOWED_MIME_TYPES = (
+    *IMAGE_MIME_TYPES,
+    'application/pdf',
+)
+
 
 class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
@@ -42,11 +54,7 @@ class Attachment(CreatedUpdatedModel):
         validators=[
             MimeTypeAllowedValidator(
                 MimeTypeFromContentResolverFactory(),
-                (
-                    'image/jpeg',
-                    'image/png',
-                    'image/gif',
-                )
+                PRIVATE_ALLOWED_MIME_TYPES,
             ),
             MimeTypeIntegrityValidator(
                 MimeTypeFromContentResolverFactory(),
