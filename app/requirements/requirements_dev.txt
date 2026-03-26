@@ -543,7 +543,7 @@ pygments==2.19.2
     # via
     #   -r requirements_test.txt
     #   pytest
-pyjwt[crypto]==2.11.0
+pyjwt[crypto]==2.12.0
     # via
     #   -r requirements_test.txt
     #   mozilla-django-oidc
