@@ -18,5 +18,11 @@ requirements: pip-tools             ## Upgrade requirements (in requirements.in)
 	pip-compile --upgrade --output-file requirements/requirements.txt requirements/requirements.in
 	pip-compile --upgrade --output-file requirements/requirements_test.txt requirements/requirements_test.in
 	pip-compile --upgrade --output-file requirements/requirements_dev.txt requirements/requirements_dev.in
+	pip-compile --upgrade \
+		--constraint=requirements/requirements.txt \
+		--constraint=requirements/requirements_test.txt \
+		--constraint=requirements/requirements_dev.txt \
+		--output-file=signals/apps/classification/requirements.txt \
+		signals/apps/classification/requirements.in
 
 upgrade: requirements install       ## Run 'requirements' and 'install' targets
