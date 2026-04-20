@@ -5,7 +5,6 @@ from django.urls import include, path, re_path
 
 from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.views import (
-    LegacyMlPredictCategoryView,
     NamespaceView,
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
@@ -189,7 +188,8 @@ urlpatterns = [
                     name="private-status-message-templates-parent",
                 ),
                 re_path(
-                    r"terms/categories/(?P<slug>[-\w]+)/sub_categories/(?P<sub_slug>[-\w]+)/status-message-templates/?$",
+                    r"terms/categories/(?P<slug>[-\w]+)"
+                    r"/sub_categories/(?P<sub_slug>[-\w]+)/status-message-templates/?$",
                     StatusMessageTemplatesViewSet.as_view(
                         {"get": "retrieve", "post": "create"}
                     ),

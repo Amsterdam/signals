@@ -26,9 +26,9 @@ matplotlib.use('agg')
 if settings.NLTK_DOWNLOAD_DIR:
     nltk.data.path.append(settings.NLTK_DOWNLOAD_DIR)
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
 
-from signals.apps.classification.models import TrainingSet, Classifier
+from signals.apps.classification.models import TrainingSet, Classifier  # noqa: E402
 
 
 class TrainClassifier:
@@ -149,9 +149,9 @@ class TrainClassifier:
         recall = recall_score(test_labels, test_predict, average='macro')
         accuracy = accuracy_score(test_labels, test_predict)
 
-        plt.rcParams["figure.figsize"] = (30,30)
+        plt.rcParams["figure.figsize"] = (30, 30)
 
-        confusion_matrix = ConfusionMatrixDisplay.from_predictions(
+        ConfusionMatrixDisplay.from_predictions(
             y_true=test_labels,
             y_pred=test_predict,
             xticks_rotation='vertical',
@@ -202,9 +202,9 @@ class TrainClassifier:
         classifier.sub_model = ContentFile(pickled_sub_model, '_sub_model.pkl')
         classifier.main_confusion_matrix = ContentFile(main_confusion_matrix, '_main_confusion_matrix.pdf')
         classifier.sub_confusion_matrix = ContentFile(sub_confusion_matrix, '_sub_confusion_matrix.pdf')
-        classifier.precision=precision
-        classifier.recall=recall
-        classifier.accuracy=accuracy
+        classifier.precision = precision
+        classifier.recall = recall
+        classifier.accuracy = accuracy
         classifier.save()
 
     def update_status(self, classifier, status, error):
@@ -237,4 +237,3 @@ class TrainClassifier:
             self.update_status(classifier, 'COMPLETED', None)
         except ValueError as e:
             self.update_status(classifier, 'FAILED', e)
-

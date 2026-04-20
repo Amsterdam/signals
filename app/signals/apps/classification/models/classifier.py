@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 
 from signals.apps.classification.utils import _get_storage_backend
 
+
 class Classifier(models.Model):
     TRAINING_STATUSES = (
         ('RUNNING', 'Running'),

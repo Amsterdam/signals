@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from signals.apps.classification.models import TrainingSet
 from signals.apps.classification.tasks import train_classifier
 
+
 class Command(BaseCommand):
     help = "Train specific model"
 
@@ -16,4 +17,3 @@ class Command(BaseCommand):
             raise CommandError('Training Set "%s" does not exist' % options["training_set_id"])
 
         train_classifier(training_set.id)
-
