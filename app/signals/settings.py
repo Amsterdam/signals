@@ -5,14 +5,9 @@ import os
 from typing import Any, Callable
 
 # Export modules to Azure Application Insights
-from azure.monitor.opentelemetry.exporter import (
-    AzureMonitorLogExporter,
-    AzureMonitorTraceExporter,
-)
-
+from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
 # Django-import-export formats
 from import_export.formats.base_formats import JSON
-
 # Opentelemetry modules needed for logging and tracing
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor

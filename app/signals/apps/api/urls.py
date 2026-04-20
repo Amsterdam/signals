@@ -24,21 +24,19 @@ from signals.apps.api.views import (
     SignalContextViewSet,
     SignalPromotedToParentViewSet,
     StatusMessageTemplatesViewSet,
-    StoredSignalFilterViewSet,
+    StoredSignalFilterViewSet
 )
 from signals.apps.api.views.area import PrivateAreaCreateViewSet, PrivateAreaTypeViewSet
 from signals.apps.api.views.category import PrivateCategoryIconViewSet
 from signals.apps.api.views.email_verification import EmailVerificationView
-from signals.apps.api.views.signals.private.signal_reporters import (
-    PrivateSignalReporterViewSet,
-)
+from signals.apps.api.views.signals.private.signal_reporters import PrivateSignalReporterViewSet
 from signals.apps.api.views.status_message import (
     StatusMessagesCategoryPositionViewSet,
-    StatusMessagesViewSet,
+    StatusMessagesViewSet
 )
 from signals.apps.api.views.translations import (
     PrivateCreateI18NextTranslationFileView,
-    PublicRetrieveI18NextTranslationFileView,
+    PublicRetrieveI18NextTranslationFileView
 )
 from signals.apps.search.rest_framework.views import SearchView, StatusMessageSearchView
 from signals.apps.users.rest_framework.views import (
@@ -46,7 +44,7 @@ from signals.apps.users.rest_framework.views import (
     LoggedInUserView,
     PermissionViewSet,
     RoleViewSet,
-    UserViewSet,
+    UserViewSet
 )
 
 # Public API

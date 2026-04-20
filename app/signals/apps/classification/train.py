@@ -1,22 +1,24 @@
-from datetime import datetime
-import os
-import re
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Gemeente Amsterdam
 import io
+import os
+import pickle
+import re
+from datetime import datetime
 
-import pandas as pd
+import matplotlib
 import nltk
+import pandas as pd
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db.models import F
+from django.utils.text import slugify
 from nltk.stem.snowball import DutchStemmer
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import precision_score, recall_score, accuracy_score, ConfusionMatrixDisplay
-import pickle
-from django.conf import settings
-from django.utils.text import slugify
-import matplotlib
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, precision_score, recall_score
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.pipeline import Pipeline
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -28,7 +30,7 @@ if settings.NLTK_DOWNLOAD_DIR:
 
 import matplotlib.pyplot as plt  # noqa: E402
 
-from signals.apps.classification.models import TrainingSet, Classifier  # noqa: E402
+from signals.apps.classification.models import Classifier, TrainingSet  # noqa: E402
 
 
 class TrainClassifier:
