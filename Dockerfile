@@ -75,7 +75,7 @@ USER root
 
 RUN set -eux; \
     pip install pip-tools; \
-    pip-sync requirements/requirements.txt requirements/requirements_dev.txt
+    pip-sync requirements/requirements.txt requirements/requirements_dev.txt signals/apps/classification/requirements.txt
 
 USER signals
 
@@ -89,6 +89,6 @@ USER root
 
 RUN set -eux; \
     pip install pip-tools; \
-    pip-sync requirements/requirements.txt requirements/requirements_test.txt
+    pip-sync requirements/requirements.txt requirements/requirements_test.txt signals/apps/classification/requirements.txt
 
 USER signals
