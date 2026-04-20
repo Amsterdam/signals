@@ -8,6 +8,7 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS prod
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
+ENV NLTK_DOWNLOAD_DIR=/tmp/nltk_data
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 
 WORKDIR /app
@@ -44,9 +45,11 @@ RUN set -eux;  \
     rm -rf /var/lib/apt/lists/*
 
 COPY app/requirements /app/requirements
+COPY app/signals/apps/classification/requirements.txt /app/signals/apps/classification/requirements.txt
 
 RUN set -eux; \
     pip install --no-cache -r /app/requirements/requirements.txt; \
+    pip install --no-cache -r /app/signals/apps/classification/requirements.txt; \
     pip install --no-cache tox; \
     chgrp signals /app; \
     chmod g+w /app; \

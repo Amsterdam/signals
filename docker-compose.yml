@@ -9,7 +9,7 @@ services:
   api:
     build:
       context: .
-      target: dev
+      target: prod
     ports:
       - "8000:8000"
     depends_on:
@@ -51,6 +51,7 @@ services:
       - docker-compose/environments/.celery
     volumes:
       - ./app:/app
+      - ./dwh_media:/dwh_media
     command: celery -A signals worker -l debug
 
   flower:
@@ -156,7 +157,7 @@ services:
       retries: 5
 
   rabbit:
-    image: rabbitmq:3.8-management
+    image: rabbitmq:4.1.3-management
     ports:
       - "5672:5672"
       - "15672:15672"
