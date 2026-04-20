@@ -1,15 +1,16 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Gemeente Amsterdam
+import openpyxl
 import pandas as pd
-from django.contrib import admin, messages
 from django import forms
+from django.contrib import admin, messages
 from django.db.models import F
 from django.http import FileResponse, HttpResponse
-from django.urls import reverse, path
+from django.urls import path, reverse
 from django.utils.html import format_html
 
 from signals.apps.classification.models import Classifier
 from signals.apps.classification.tasks import train_classifier
-import openpyxl
-
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Category, Signal
 

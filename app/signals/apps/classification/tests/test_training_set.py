@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Gemeente Amsterdam
 import tempfile
 from unittest import mock
 

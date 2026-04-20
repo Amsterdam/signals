@@ -1,12 +1,20 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2025 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 from signals import settings
 from signals.apps.classification.utils import _get_storage_backend
 from signals.apps.services.domain.checker_factories import ContentCheckerFactory
-from signals.apps.services.domain.mimetypes import MimeTypeFromContentResolverFactory, \
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolverFactory,
     MimeTypeFromFilenameResolverFactory
-from signals.apps.services.validator.file import MimeTypeAllowedValidator, MimeTypeIntegrityValidator, \
-    ContentIntegrityValidator, FileSizeValidator
+)
+from signals.apps.services.validator.file import (
+    ContentIntegrityValidator,
+    FileSizeValidator,
+    MimeTypeAllowedValidator,
+    MimeTypeIntegrityValidator
+)
 
 
 class TrainingSet(models.Model):
