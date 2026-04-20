@@ -38,4 +38,3 @@ class TrainingSet(models.Model):
             FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
         ],
     )
-

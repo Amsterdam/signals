@@ -6,4 +6,3 @@ from signals.apps.classification.models.classifier import Classifier
 
 admin.site.register(TrainingSet, TrainingSetAdmin)
 admin.site.register(Classifier, ClassifierAdmin)
-

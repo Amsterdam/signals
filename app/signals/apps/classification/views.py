@@ -92,13 +92,21 @@ class MlPredictCategoryView(APIView):
                     [main_prob],
                 ],
                 'subrubriek': [
-                    [settings.BACKEND_URL + f'/signals/v1/public/terms/categories/{main_prediction}/sub_categories/{sub_category}'],
+                    [
+                        settings.BACKEND_URL
+                        + f'/signals/v1/public/terms/categories/{main_prediction}'
+                        + f'/sub_categories/{sub_category}'
+                    ],
                     [sub_prob]
                 ]
             }
         except Exception as e:
             logging.error(e)
-            return Response('Predicting sub and main category went wrong', content_type='application/json', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                'Predicting sub and main category went wrong',
+                content_type='application/json',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         else:
             return Response(status=status.HTTP_200_OK, data=data)
 
@@ -108,7 +116,3 @@ class MlPredictCategoryView(APIView):
             return self.get_prediction_new_ml_proxy(request, classifier)
         except Classifier.DoesNotExist:
             return self.get_prediction_old_ml_proxy(request)
-
-
-
-

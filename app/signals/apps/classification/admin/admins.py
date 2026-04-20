@@ -28,12 +28,13 @@ class TrainingSetAdmin(admin.ModelAdmin):
     action_form = RunTrainingForm
 
     @admin.action(description="Train model met geselecteerde dataset")
-    def run_training_with_training_set(self, request, queryset):
+    def run_training_with_training_set(self, request, queryset):  # noqa: C901
         """
         Run validation, if validation fails show an error message.
 
-        First we validate if there are no missing columns (Main, Sub and Text column are required), after this we check if there is atleast one row of data (next
-        to the headers)
+        First we validate if there are no missing columns (Main, Sub and Text column are
+        required), after this we check if there is atleast one row of data (next to the
+        headers)
         """
         training_set_ids = []
         use_signals_in_database_for_training = request.POST['use_signals_in_database_for_training']
@@ -52,7 +53,7 @@ class TrainingSetAdmin(admin.ModelAdmin):
             if missing_columns:
                 self.message_user(
                     request,
-                    f"Training set { training_set.name } is missing required columns: {', '.join(missing_columns)}",
+                    f"Training set {training_set.name} is missing required columns: {', '.join(missing_columns)}",
                     messages.ERROR,
                 )
 
@@ -63,7 +64,7 @@ class TrainingSetAdmin(admin.ModelAdmin):
             if not any(data_rows):
                 self.message_user(
                     request,
-                    f"The training set { training_set.name } does not contain any data rows.",
+                    f"The training set {training_set.name} does not contain any data rows.",
                     messages.ERROR
                     )
                 return
@@ -71,13 +72,16 @@ class TrainingSetAdmin(admin.ModelAdmin):
             # Check if there are no sub categories present in the training set that are not present in the database
             sub_col_index = headers.index("Sub")
             subcategory_values = {row[sub_col_index] for row in data_rows if row[sub_col_index]}
-            existing_subcategories = set(Category.objects.filter(name__in=subcategory_values).values_list('name', flat=True))
+            existing_subcategories = set(
+                Category.objects.filter(name__in=subcategory_values).values_list('name', flat=True)
+            )
             missing_subcategories = subcategory_values - existing_subcategories
 
             if missing_subcategories:
                 self.message_user(
                     request,
-                    f"The training set {training_set.name} contains unknown sub categories: {', '.join(missing_subcategories)}. Add these to Signalen before continuing.",
+                    f"The training set {training_set.name} contains unknown sub categories: "
+                    f"{', '.join(missing_subcategories)}. Add these to Signalen before continuing.",
                     messages.ERROR
                 )
                 return
@@ -92,7 +96,8 @@ class TrainingSetAdmin(admin.ModelAdmin):
             if missing_maincategories:
                 self.message_user(
                     request,
-                    f"The training set {training_set.name} contains unknown main categories: {', '.join(missing_maincategories)}. Add these to Signalen before continuing.",
+                    f"The training set {training_set.name} contains unknown main categories: "
+                    f"{', '.join(missing_maincategories)}. Add these to Signalen before continuing.",
                     messages.ERROR
                 )
                 return
@@ -169,7 +174,12 @@ class ClassifierAdmin(admin.ModelAdmin):
     """
     list_display = ('name', 'precision', 'recall', 'accuracy', 'is_active', )
     actions = ["activate_classifier"]
-    readonly_fields = ('training_status', 'training_error', 'download_main_confusion_matrix', 'download_sub_confusion_matrix',)
+    readonly_fields = (
+        'training_status',
+        'training_error',
+        'download_main_confusion_matrix',
+        'download_sub_confusion_matrix',
+    )
 
     @admin.action(description="Maak deze classifier actief")
     def activate_classifier(self, request, queryset):
@@ -191,13 +201,13 @@ class ClassifierAdmin(admin.ModelAdmin):
 
             self.message_user(
                 request,
-                f"Classifier { queryset.first().name } has been activated.",
+                f"Classifier {queryset.first().name} has been activated.",
                 messages.SUCCESS
             )
         except Exception:
             self.message_user(
                 request,
-                f"Classifier { queryset.first().name } has not been activated.",
+                f"Classifier {queryset.first().name} has not been activated.",
                 messages.ERROR
             )
 
@@ -222,7 +232,8 @@ class ClassifierAdmin(admin.ModelAdmin):
             url = reverse('admin:classification_classifier_download', args=[obj.pk, 'main_confusion_matrix'])
 
             return format_html(
-                '<a href="{}" class="button" style="padding:6px 12px; background:#007bff; color:white; border-radius:4px;">Download main confusion matrix</a>',
+                '<a href="{}" class="button" style="padding:6px 12px; background:#007bff;'
+                ' color:white; border-radius:4px;">Download main confusion matrix</a>',
                 url
             )
         return "No file found"
@@ -232,7 +243,8 @@ class ClassifierAdmin(admin.ModelAdmin):
             url = reverse('admin:classification_classifier_download', args=[obj.pk, 'sub_confusion_matrix'])
 
             return format_html(
-                '<a href="{}" class="button" style="padding:6px 12px; background:#007bff; color:white; border-radius:4px;">Download sub confusion matrix</a>',
+                '<a href="{}" class="button" style="padding:6px 12px; background:#007bff;'
+                ' color:white; border-radius:4px;">Download sub confusion matrix</a>',
                 url
             )
         return "No file found"
