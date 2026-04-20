@@ -7,11 +7,12 @@ import logging
 import os
 
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import CharField, F, Value
+from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import Note, Signal, SignalDepartments
+from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,34 @@ def create_signals_csv(location: str) -> str:
                            'upload', 'extra_properties', 'category_assignment_id', 'location_id', 'reporter_id',
                            'status_id', 'priority', 'priority_created_at', 'parent', 'type', 'type_created_at',
                            'directing_departments_assignment_id', ]
+    reorder_csv(csv_file.name, ordered_field_names)
+
+    return csv_file.name
+
+
+def create_ml_csv(location: str) -> str:
+    """
+    Create the CSV file with all categorized `Signal` objects for ML purposes.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    queryset = Signal.objects.filter(
+        category_assignment__isnull=False,
+        category_assignment__category__isnull=False,
+        status__state__in=[AFGEHANDELD, GEANNULEERD],
+    ).exclude(
+        Q(category_assignment__category__parent__name__contains='Overig') |
+        Q(category_assignment__category__name__contains='Overig')
+    ).values(
+        Text=F('text'),
+        Main=F('category_assignment__category__parent__name'),
+        Sub=F('category_assignment__category__name'),
+    ).order_by('created_at')
+
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'ml.csv'))
+
+    ordered_field_names = ['Text', 'Main', 'Sub']
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name

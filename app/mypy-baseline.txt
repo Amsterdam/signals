@@ -116,7 +116,7 @@ signals/apps/api/views/signals/private/signal_reporters.py:0: error: Skipping an
 signals/apps/api/views/signals/private/signal_reporters.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/generics/routers.py:0: error: Skipping analyzing "rest_framework_extensions.routers": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/my_signals/rest_framework/views/signals.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
-signals/apps/api/serializers/signal.py:0: error: Incompatible types in assignment (expression has type "PrimaryKeyRelatedField[Any]", base class "Field" defined the type as "BaseSerializer[Any]")  [assignment]
+signals/apps/api/serializers/signal.py:0: error: Incompatible types in assignment (expression has type "PrimaryKeyRelatedField[Signal]", base class "Field" defined the type as "BaseSerializer[Any]")  [assignment]
 signals/apps/api/serializers/signal.py:0: error: Incompatible types in assignment (expression has type "CharField", base class "Field" defined the type as "Callable[..., Any] | str | None")  [assignment]
 signals/apps/api/serializers/departments.py:0: error: Incompatible types in assignment (expression has type "type[TemporaryCategoryHALSerializer]", variable has type "type[TemporaryParentCategoryHALSerializer]")  [assignment]
 signals/apps/users/rest_framework/views/user.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]

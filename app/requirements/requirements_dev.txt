@@ -19,24 +19,24 @@ asgiref==3.11.1
     #   -r requirements_test.txt
     #   django
     #   django-cors-headers
-attrs==25.4.0
+attrs==26.1.0
     # via
     #   -r requirements_test.txt
     #   jsonschema
     #   pytest-subtests
     #   referencing
-azure-core==1.38.2
+azure-core==1.39.0
     # via
     #   -r requirements_test.txt
     #   azure-identity
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
-azure-identity==1.25.2
+azure-identity==1.25.3
     # via
     #   -r requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
-azure-monitor-opentelemetry-exporter==1.0.0b48
+azure-monitor-opentelemetry-exporter==1.0.0b51
     # via -r requirements_test.txt
 azure-storage-blob==12.28.0
     # via -r requirements_test.txt
@@ -48,12 +48,12 @@ billiard==4.2.4
     # via
     #   -r requirements_test.txt
     #   celery
-boto3==1.42.53
+boto3==1.42.86
     # via
     #   -r requirements_test.txt
     #   django-storages
     #   moto
-botocore==1.42.53
+botocore==1.42.86
     # via
     #   -r requirements_test.txt
     #   boto3
@@ -63,20 +63,20 @@ brotli==1.2.0
     # via
     #   -r requirements_test.txt
     #   fonttools
-cachetools==7.0.1
+cachetools==7.0.5
     # via
     #   -r requirements_test.txt
     #   tox
-celery==5.6.2
+celery==5.6.3
     # via
     #   -r requirements_test.txt
     #   django-celery-beat
     #   django-celery-email
     #   django-celery-results
     #   flower
-celery-types==0.24.0
+celery-types==0.26.0
     # via -r requirements_test.txt
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   -r requirements_test.txt
     #   elasticsearch
@@ -87,15 +87,11 @@ cffi==2.0.0
     #   -r requirements_test.txt
     #   cryptography
     #   weasyprint
-chardet==5.2.0
-    # via
-    #   -r requirements_test.txt
-    #   tox
-charset-normalizer==3.4.4
+charset-normalizer==3.4.7
     # via
     #   -r requirements_test.txt
     #   requests
-click==8.3.1
+click==8.3.2
     # via
     #   -r requirements_test.txt
     #   celery
@@ -118,15 +114,15 @@ colorama==0.4.6
     # via
     #   -r requirements_test.txt
     #   tox
-coverage[toml]==7.13.4
+coverage[toml]==7.13.5
     # via
     #   -r requirements_test.txt
     #   pytest-cov
-cron-descriptor==2.0.6
+cron-descriptor==1.4.5
     # via
     #   -r requirements_test.txt
     #   django-celery-beat
-cryptography==46.0.5
+cryptography==46.0.7
     # via
     #   -r requirements_test.txt
     #   azure-identity
@@ -153,7 +149,7 @@ distlib==0.4.0
     # via
     #   -r requirements_test.txt
     #   virtualenv
-django==4.2.29
+django==4.2.30
     # via
     #   -r requirements_test.txt
     #   django-appconf
@@ -181,7 +177,7 @@ django-appconf==1.2.0
     # via
     #   -r requirements_test.txt
     #   django-celery-email
-django-celery-beat==2.8.1
+django-celery-beat==2.9.0
     # via -r requirements_test.txt
 django-celery-email==3.0.0
     # via -r requirements_test.txt
@@ -189,7 +185,7 @@ django-celery-results==2.6.0
     # via -r requirements_test.txt
 django-cors-headers==4.9.0
     # via -r requirements_test.txt
-django-debug-toolbar==6.2.0
+django-debug-toolbar==6.3.0
     # via -r requirements_dev.in
 django-extensions==4.1
     # via -r requirements_test.txt
@@ -207,16 +203,16 @@ django-markdownx==4.0.9
     # via -r requirements_test.txt
 django-o365mail==1.1.0
     # via -r requirements_test.txt
-django-silk==5.4.3
+django-silk==5.5.0
     # via -r requirements_test.txt
 django-storages[s3]==1.14.6
     # via -r requirements_test.txt
-django-stubs[compatible-mypy]==5.2.9
+django-stubs[compatible-mypy]==6.0.2
     # via
     #   -r requirements_test.txt
     #   django-filter-stubs
     #   djangorestframework-stubs
-django-stubs-ext==5.2.9
+django-stubs-ext==6.0.2
     # via
     #   -r requirements_test.txt
     #   django-stubs
@@ -238,7 +234,7 @@ djangorestframework-csv==3.0.2
     #   drf-amsterdam
 djangorestframework-gis==1.2.0
     # via -r requirements_test.txt
-djangorestframework-stubs[compatible-mypy]==3.16.8
+djangorestframework-stubs[compatible-mypy]==3.16.9
     # via
     #   -r requirements_test.txt
     #   django-filter-stubs
@@ -254,7 +250,7 @@ drf-extensions==0.8.0
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.29.0
     # via -r requirements_test.txt
-drf-spectacular-sidecar==2026.1.1
+drf-spectacular-sidecar==2026.4.1
     # via
     #   -r requirements_test.txt
     #   drf-spectacular
@@ -272,20 +268,21 @@ factory-boy==3.3.3
     # via
     #   -r requirements_test.txt
     #   types-factory-boy
-faker==40.4.0
+faker==40.13.0
     # via
     #   -r requirements_test.txt
     #   factory-boy
-filelock==3.24.3
+filelock==3.25.2
     # via
     #   -r requirements_test.txt
+    #   python-discovery
     #   tox
     #   virtualenv
 flake8==7.3.0
     # via -r requirements_test.txt
 flower==2.0.1
     # via -r requirements_test.txt
-fonttools[woff]==4.61.1
+fonttools[woff]==4.62.1
     # via
     #   -r requirements_test.txt
     #   weasyprint
@@ -324,7 +321,7 @@ isodate==0.7.2
     #   -r requirements_test.txt
     #   azure-storage-blob
     #   msrest
-isort==8.0.0
+isort==8.0.1
     # via -r requirements_test.txt
 jinja2==3.1.6
     # via
@@ -343,7 +340,7 @@ jsonschema-specifications==2025.9.1
     # via
     #   -r requirements_test.txt
     #   jsonschema
-jwcrypto==1.5.6
+jwcrypto==1.5.7
     # via -r requirements_test.txt
 kombu==5.6.2
     # via
@@ -359,7 +356,7 @@ lxml==6.0.2
     #   xmlunittest
 lxml-stubs==0.5.1
     # via -r requirements_test.txt
-mako==1.3.10
+mako==1.3.11
     # via
     #   -r requirements_test.txt
     #   pytest-bdd
@@ -377,13 +374,13 @@ mccabe==0.7.0
     # via
     #   -r requirements_test.txt
     #   flake8
-moto==5.1.21
+moto==5.1.22
     # via -r requirements_test.txt
 mozilla-django-oidc==5.0.2
     # via
     #   -r requirements_test.txt
     #   amsterdam-django-oidc
-msal==1.34.0
+msal==1.36.0
     # via
     #   -r requirements_test.txt
     #   azure-identity
@@ -397,7 +394,7 @@ msrest==0.7.1
     # via
     #   -r requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
-mypy==1.19.1
+mypy==1.20.0
     # via
     #   -r requirements_test.txt
     #   django-filter-stubs
@@ -423,7 +420,7 @@ oauthlib==3.3.1
     # via
     #   -r requirements_test.txt
     #   requests-oauthlib
-opentelemetry-api==1.39.0
+opentelemetry-api==1.40.0
     # via
     #   -r requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
@@ -434,30 +431,30 @@ opentelemetry-api==1.39.0
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-instrumentation==0.60b0
+opentelemetry-instrumentation==0.61b0
     # via
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-psycopg2
     #   opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-dbapi==0.60b0
+opentelemetry-instrumentation-dbapi==0.61b0
     # via
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation-psycopg2
-opentelemetry-instrumentation-django==0.60b0
+opentelemetry-instrumentation-django==0.61b0
     # via -r requirements_test.txt
-opentelemetry-instrumentation-psycopg2==0.60b0
+opentelemetry-instrumentation-psycopg2==0.61b0
     # via -r requirements_test.txt
-opentelemetry-instrumentation-wsgi==0.60b0
+opentelemetry-instrumentation-wsgi==0.61b0
     # via
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation-django
-opentelemetry-sdk==1.39.0
+opentelemetry-sdk==1.40.0
     # via
     #   -r requirements_test.txt
     #   azure-monitor-opentelemetry-exporter
-opentelemetry-semantic-conventions==0.60b0
+opentelemetry-semantic-conventions==0.61b0
     # via
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation
@@ -465,7 +462,7 @@ opentelemetry-semantic-conventions==0.60b0
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.60b0
+opentelemetry-util-http==0.61b0
     # via
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation-django
@@ -493,14 +490,15 @@ pathspec==1.0.4
     # via
     #   -r requirements_test.txt
     #   mypy
-pillow==12.1.1
+pillow==12.2.0
     # via
     #   -r requirements_test.txt
     #   django-markdownx
     #   weasyprint
-platformdirs==4.9.2
+platformdirs==4.9.6
     # via
     #   -r requirements_test.txt
+    #   python-discovery
     #   tox
     #   virtualenv
 pluggy==1.6.0
@@ -539,16 +537,16 @@ pyflakes==3.4.0
     # via
     #   -r requirements_test.txt
     #   flake8
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   -r requirements_test.txt
     #   pytest
-pyjwt[crypto]==2.12.0
+pyjwt[crypto]==2.12.1
     # via
     #   -r requirements_test.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.9.2
+pypdf==6.10.2
     # via -r requirements_test.txt
 pyphen==0.17.2
     # via
@@ -558,7 +556,7 @@ pyproject-api==1.10.0
     # via
     #   -r requirements_test.txt
     #   tox
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   -r requirements_test.txt
     #   pytest-bdd
@@ -569,7 +567,7 @@ pytest==9.0.2
     #   pytest-xdist
 pytest-bdd==8.1.0
     # via -r requirements_test.txt
-pytest-cov==7.0.0
+pytest-cov==7.1.0
     # via -r requirements_test.txt
 pytest-django==4.12.0
     # via -r requirements_test.txt
@@ -592,9 +590,14 @@ python-dateutil==2.9.0.post0
     #   freezegun
     #   moto
     #   o365
+python-discovery==1.2.2
+    # via
+    #   -r requirements_test.txt
+    #   tox
+    #   virtualenv
 python-magic==0.4.27
     # via -r requirements_test.txt
-pytz==2025.2
+pytz==2026.1.post1
     # via
     #   -r requirements_test.txt
     #   flower
@@ -609,7 +612,7 @@ referencing==0.37.0
     #   jsonschema
     #   jsonschema-specifications
     #   types-jsonschema
-requests==2.32.5
+requests==2.33.1
     # via
     #   -r requirements_test.txt
     #   azure-core
@@ -667,54 +670,58 @@ tinycss2==1.5.1
     #   -r requirements_test.txt
     #   cssselect2
     #   weasyprint
-tinyhtml5==2.0.0
+tinyhtml5==2.1.0
     # via
     #   -r requirements_test.txt
     #   weasyprint
+tomli-w==1.2.0
+    # via
+    #   -r requirements_test.txt
+    #   tox
 tornado==6.5.5
     # via
     #   -r requirements_test.txt
     #   flower
-tox==4.42.0
+tox==4.52.0
     # via -r requirements_test.txt
 types-beautifulsoup4==4.12.0.20250516
     # via -r requirements_test.txt
 types-cryptography==3.3.23.2
     # via -r requirements_test.txt
-types-docutils==0.22.3.20251115
+types-docutils==0.22.3.20260408
     # via
     #   -r requirements_test.txt
     #   types-pygments
 types-factory-boy==0.4.1
     # via -r requirements_test.txt
-types-html5lib==1.1.11.20251117
+types-html5lib==1.1.11.20260408
     # via
     #   -r requirements_test.txt
     #   types-beautifulsoup4
-types-jsonschema==4.26.0.20260202
+types-jsonschema==4.26.0.20260408
     # via -r requirements_test.txt
-types-jwcrypto==1.5.0.20251102
+types-jwcrypto==1.5.7.20260409
     # via -r requirements_test.txt
-types-markdown==3.10.2.20260211
+types-markdown==3.10.2.20260408
     # via -r requirements_test.txt
 types-pillow==10.2.0.20240822
     # via -r requirements_test.txt
-types-psycopg2==2.9.21.20251012
+types-psycopg2==2.9.21.20260408
     # via -r requirements_test.txt
-types-pygments==2.19.0.20251121
+types-pygments==2.20.0.20260408
     # via -r requirements_test.txt
-types-python-dateutil==2.9.0.20260124
+types-python-dateutil==2.9.0.20260408
     # via -r requirements_test.txt
-types-pytz==2025.2.0.20251108
+types-pytz==2026.1.1.20260408
     # via -r requirements_test.txt
-types-pyyaml==6.0.12.20250915
+types-pyyaml==6.0.12.20260408
     # via
     #   -r requirements_test.txt
     #   django-stubs
     #   djangorestframework-stubs
-types-requests==2.32.4.20260107
+types-requests==2.33.0.20260408
     # via -r requirements_test.txt
-types-webencodings==0.5.0.20251108
+types-webencodings==0.5.0.20260408
     # via
     #   -r requirements_test.txt
     #   types-html5lib
@@ -726,7 +733,6 @@ typing-extensions==4.15.0
     #   azure-storage-blob
     #   beautifulsoup4
     #   celery-types
-    #   cron-descriptor
     #   django-filter-stubs
     #   django-stubs
     #   django-stubs-ext
@@ -739,7 +745,7 @@ typing-extensions==4.15.0
     #   pytest-bdd
     #   referencing
     #   types-factory-boy
-tzdata==2025.3
+tzdata==2026.1
     # via
     #   -r requirements_test.txt
     #   django-celery-beat
@@ -770,7 +776,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.38.0
+virtualenv==21.2.0
     # via
     #   -r requirements_test.txt
     #   tox
@@ -786,7 +792,7 @@ webencodings==0.5.1
     #   cssselect2
     #   tinycss2
     #   tinyhtml5
-werkzeug==3.1.6
+werkzeug==3.1.8
     # via
     #   -r requirements_test.txt
     #   moto
@@ -795,7 +801,7 @@ wrapt==1.17.3
     #   -r requirements_test.txt
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-dbapi
-xmltodict==1.0.3
+xmltodict==1.0.4
     # via
     #   -r requirements_test.txt
     #   moto
