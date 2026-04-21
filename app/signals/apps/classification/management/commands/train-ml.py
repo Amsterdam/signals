@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2025 Gemeente Amsterdam
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from signals.apps.classification.models import TrainingSet
@@ -13,6 +14,9 @@ class Command(BaseCommand):
         parser.add_argument("training_set_id", type=int)
 
     def handle(self, *args, **options):
+        if not settings.FEATURE_FLAGS.get("CLASSIFICATION_ENABLED"):
+            raise CommandError("Classification feature is disabled (CLASSIFICATION_ENABLED flag off).")
+
         try:
             training_set = TrainingSet.objects.get(pk=options["training_set_id"])
         except TrainingSet.DoesNotExist:

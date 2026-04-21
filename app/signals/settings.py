@@ -648,6 +648,8 @@ FEATURE_FLAGS: dict[str, bool] = {
     in TRUE_VALUES,
     # Enable/Disable editing category slug in Django admin
     "CATEGORY_SLUG_EDITABLE": os.getenv("CATEGORY_SLUG_EDITABLE", False) in TRUE_VALUES,
+    # Enable/Disable the in-tree ML classification tool (delta10 ML tool) and its API endpoint
+    "CLASSIFICATION_ENABLED": os.getenv("CLASSIFICATION_ENABLED", False) in TRUE_VALUES,
 }
 
 # Per default log to console

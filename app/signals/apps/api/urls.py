@@ -137,7 +137,6 @@ urlpatterns = [
     ),
     # # Legacy prediction proxy endpoint, still needed
     # path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
-    path("", include("signals.apps.classification.urls")),
     # The base routes of the API
     path("v1/", include(base_router.urls)),
     # Used for namespacing SIA, a HAL standard
@@ -274,4 +273,13 @@ if (
     urlpatterns += [
         # My Signals
         path("v1/", include("signals.apps.my_signals.urls")),
+    ]
+
+if (
+    "CLASSIFICATION_ENABLED" in settings.FEATURE_FLAGS
+    and settings.FEATURE_FLAGS["CLASSIFICATION_ENABLED"]
+):
+    urlpatterns += [
+        # Classification (delta10 ML tool)
+        path("", include("signals.apps.classification.urls")),
     ]

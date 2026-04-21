@@ -3,6 +3,8 @@
 import tempfile
 from typing import Callable
 
+from django.conf import settings
+
 from signals.apps.reporting.csv.datawarehouse.categories import (
     create_category_assignments_csv,
     create_category_sla_csv
@@ -54,7 +56,8 @@ def save_csv_files_datawarehouse(using: str = 'datawarehouse') -> list[str]:
     """
     csv_files = list()
     csv_files.extend(save_csv_file_datawarehouse(create_signals_csv, using=using))
-    csv_files.extend(save_csv_file_datawarehouse(create_ml_csv, using=using))
+    if settings.FEATURE_FLAGS.get('CLASSIFICATION_ENABLED'):
+        csv_files.extend(save_csv_file_datawarehouse(create_ml_csv, using=using))
     csv_files.extend(save_csv_file_datawarehouse(create_signals_assigned_user_csv, using=using))
     csv_files.extend(save_csv_file_datawarehouse(create_locations_csv, using=using))
     csv_files.extend(save_csv_file_datawarehouse(create_reporters_csv, using=using))

@@ -43,6 +43,22 @@ class TestDatawarehouse(testcases.TestCase):
     @mock.patch.dict('os.environ', {}, clear=True)
     @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
     @freeze_time('2020-09-10T12:00:00+00:00')
+    def test_save_csv_files_datawarehouse_excludes_ml_csv_when_flag_off(self, mocked_get_storage_backend):
+        # CLASSIFICATION_ENABLED is off by default in the test environment.
+        mocked_get_storage_backend.return_value = FileSystemStorage(location=self.file_backend_tmp_dir)
+
+        for i in range(3):
+            SignalFactory.create()
+
+        datawarehouse.save_csv_files_datawarehouse()
+
+        ml_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_ml.csv')
+        self.assertFalse(path.exists(ml_csv))
+
+    @override_settings(FEATURE_FLAGS={'CLASSIFICATION_ENABLED': True})
+    @mock.patch.dict('os.environ', {}, clear=True)
+    @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
+    @freeze_time('2020-09-10T12:00:00+00:00')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
         # In this test case we don't want to make usage of the remote Object
@@ -81,6 +97,7 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(sla_csv))
         self.assertTrue(path.getsize(directing_departments_csv))
 
+    @override_settings(FEATURE_FLAGS={'CLASSIFICATION_ENABLED': True})
     @mock.patch.dict('os.environ', {}, clear=True)
     @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
     @freeze_time('2020-09-10T12:00:00+00:00')
