@@ -350,7 +350,7 @@ librt==0.8.1
     # via
     #   -r requirements_test.txt
     #   mypy
-lxml==6.0.2
+lxml==6.1.0
     # via
     #   -r requirements_test.txt
     #   xmlunittest
