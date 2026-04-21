@@ -32,7 +32,6 @@ from signals.apps.reporting.csv.datawarehouse.tasks import (
 REPORT_OPTIONS = {
     # Option, Func
     'signals': create_signals_csv,
-    'ml': create_ml_csv,
     'signals_assigned_user': create_signals_assigned_user_csv,
     'locations': create_locations_csv,
     'reporters': create_reporters_csv,
@@ -44,6 +43,9 @@ REPORT_OPTIONS = {
     'routing_departments': create_signals_routing_departments_csv,
     'notes': create_signals_notes_csv
 }
+
+if settings.FEATURE_FLAGS.get('CLASSIFICATION_ENABLED'):
+    REPORT_OPTIONS['ml'] = create_ml_csv
 
 
 class Command(BaseCommand):

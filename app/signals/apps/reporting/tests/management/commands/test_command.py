@@ -18,7 +18,8 @@ class TestCommand(TransactionTestCase):
         self.assertNotEqual(out.getvalue(), '')
         self.assertEqual(err.getvalue(), '')
 
-        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 12)
+        # CLASSIFICATION_ENABLED is off by default, so the ML CSV report is excluded.
+        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 11)
 
 
 class TestCSVHorecaCommand(TransactionTestCase):
