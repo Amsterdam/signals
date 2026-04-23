@@ -201,7 +201,7 @@ jwcrypto==1.5.7
     # via -r requirements.in
 kombu==5.6.2
     # via celery
-lxml==6.0.2
+lxml==6.1.0
     # via -r requirements.in
 markdown==3.10.2
     # via django-markdownx
