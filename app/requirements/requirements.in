@@ -38,7 +38,7 @@ python-magic
 requests
 textX
 types-requests
-urllib3>2.6.1
+urllib3>=2.7.0
 uWSGI
 weasyprint==68.0
 django-import-export
