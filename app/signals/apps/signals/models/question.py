@@ -13,6 +13,7 @@ class Question(models.Model):
     TEXT_AREA_INPUT = 'text_area_input'
     ASSET_SELECT = 'asset_select'
     LOCATION_SELECT = 'location_select'
+    DATE_TIME_INPUT = 'date_time_input'
 
     FIELD_TYPE_CHOICES = (
         (PLAIN_TEXT, 'PlainText'),
@@ -23,7 +24,8 @@ class Question(models.Model):
         (SELECT_INPUT, 'SelectInput'),
         (TEXT_AREA_INPUT, 'TextareaInput'),
         (ASSET_SELECT, 'AssetSelect'),
-        (LOCATION_SELECT, 'LocationSelect')
+        (LOCATION_SELECT, 'LocationSelect'),
+        (DATE_TIME_INPUT, 'DateTimeInput')
     )
 
     key = models.CharField(max_length=255)
