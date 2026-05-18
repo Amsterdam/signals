@@ -4,26 +4,35 @@ from django.contrib.gis.db import models
 
 
 class Question(models.Model):
-    PLAIN_TEXT = 'plain_text'
-    TEXT_INPUT = 'text_input'
-    MULTI_TEXT_INPUT = 'multi_text_input'
+    ASSET_SELECT = 'asset_select'
+    CATERPILLAR_SELECT = 'caterpillar_select'
     CHECKBOX_INPUT = 'checkbox_input'
+    CLOCK_SELECT = 'clock_select'
+    DATE_TIME_INPUT = 'date_time_input'
+    QUESTION_HEADER = 'question_header'
+    LOCATION_SELECT = 'location_select'
+    MULTI_TEXT_INPUT = 'multi_text_input'
+    PLAIN_TEXT = 'plain_text'
     RADIO_INPUT = 'radio_input'
     SELECT_INPUT = 'select_input'
+    STREETLIGHT_SELECT = 'streetlight_select'
+    TEXT_INPUT = 'text_input'
     TEXT_AREA_INPUT = 'text_area_input'
-    ASSET_SELECT = 'asset_select'
-    LOCATION_SELECT = 'location_select'
 
     FIELD_TYPE_CHOICES = (
-        (PLAIN_TEXT, 'PlainText'),
-        (TEXT_INPUT, 'TextInput'),
-        (MULTI_TEXT_INPUT, 'MultiTextInput'),
-        (CHECKBOX_INPUT, 'CheckboxInput'),
-        (RADIO_INPUT, 'RadioInput'),
-        (SELECT_INPUT, 'SelectInput'),
-        (TEXT_AREA_INPUT, 'TextareaInput'),
         (ASSET_SELECT, 'AssetSelect'),
-        (LOCATION_SELECT, 'LocationSelect')
+        (CATERPILLAR_SELECT, 'CaterpillarSelect'),
+        (CHECKBOX_INPUT, 'CheckboxInput'),
+        (CLOCK_SELECT, 'ClockSelect'),
+        (DATE_TIME_INPUT, 'DateTimeInput'),
+        (QUESTION_HEADER, 'QuestionHeader'),
+        (LOCATION_SELECT, 'AssetSelect'),
+        (PLAIN_TEXT, 'PlainText'),
+        (RADIO_INPUT, 'RadioInputGroup'),
+        (SELECT_INPUT, 'SelectInput'),
+        (STREETLIGHT_SELECT, 'StreetlightSelect'),
+        (TEXT_INPUT, 'TextInput'),
+        (TEXT_AREA_INPUT, 'TextareaInput'),
     )
 
     key = models.CharField(max_length=255)
