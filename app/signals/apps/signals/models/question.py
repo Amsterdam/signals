@@ -20,18 +20,17 @@ class Question(models.Model):
     TEXT_AREA_INPUT = 'text_area_input'
 
     FIELD_TYPE_CHOICES = (
-        (ASSET_SELECT, 'AssetSelectRenderer'),
-        (CATERPILLAR_SELECT, 'CaterpillarSelectRenderer'),
+        (ASSET_SELECT, 'AssetSelect'),
+        (CATERPILLAR_SELECT, 'CaterpillarSelect'),
         (CHECKBOX_INPUT, 'CheckboxInput'),
-        (CLOCK_SELECT, 'ClockSelectRenderer'),
+        (CLOCK_SELECT, 'ClockSelect'),
         (DATE_TIME_INPUT, 'DateTimeInput'),
         (QUESTION_HEADER, 'QuestionHeader'),
-        (LOCATION_SELECT, 'AssetSelectRenderer'),
-        (MULTI_TEXT_INPUT, 'MultiTextInput'),
+        (LOCATION_SELECT, 'AssetSelect'),
         (PLAIN_TEXT, 'PlainText'),
         (RADIO_INPUT, 'RadioInputGroup'),
         (SELECT_INPUT, 'SelectInput'),
-        (STREETLIGHT_SELECT, 'StreetlightSelectRenderer'),
+        (STREETLIGHT_SELECT, 'StreetlightSelect'),
         (TEXT_INPUT, 'TextInput'),
         (TEXT_AREA_INPUT, 'TextareaInput'),
     )
