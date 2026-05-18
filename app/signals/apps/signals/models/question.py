@@ -11,6 +11,7 @@ class Question(models.Model):
     DATE_TIME_INPUT = 'date_time_input'
     QUESTION_HEADER = 'question_header'
     LOCATION_SELECT = 'location_select'
+    MULTI_TEXT_INPUT = 'multi_text_input'
     PLAIN_TEXT = 'plain_text'
     RADIO_INPUT = 'radio_input'
     SELECT_INPUT = 'select_input'
@@ -26,6 +27,7 @@ class Question(models.Model):
         (DATE_TIME_INPUT, 'DateTimeInput'),
         (QUESTION_HEADER, 'QuestionHeader'),
         (LOCATION_SELECT, 'AssetSelectRenderer'),
+        (MULTI_TEXT_INPUT, 'MultiTextInput'),
         (PLAIN_TEXT, 'PlainText'),
         (RADIO_INPUT, 'RadioInputGroup'),
         (SELECT_INPUT, 'SelectInput'),
