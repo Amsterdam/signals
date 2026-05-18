@@ -90,7 +90,7 @@ def delete_signal(signal_id: int, batch_uuid: uuid.UUID | None = None):  # noqa 
 
 
 @app.task
-def delete_closed_signals(days: int = 365):
+def delete_closed_signals(days: int = 1825):
     """
     Delete Signals in one of the Signalen system's closed states
     """
