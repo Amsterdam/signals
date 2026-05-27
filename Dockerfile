@@ -17,7 +17,7 @@ RUN useradd --no-create-home signals
 RUN set -eux;  \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y \
         libgeos3.11.1 \
         gdal-bin \
         libgdal32 \
