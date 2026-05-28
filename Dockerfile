@@ -15,7 +15,9 @@ WORKDIR /app
 RUN useradd --no-create-home signals
 
 RUN set -eux;  \
-    apt-get update && apt-get install -y \
+    apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y \
         libgeos3.11.1 \
         gdal-bin \
         libgdal32 \
