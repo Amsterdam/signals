@@ -4,7 +4,7 @@
 #
 #    pip-compile --constraint=requirements/requirements.txt --constraint=requirements/requirements_dev.txt --constraint=requirements/requirements_test.txt --output-file=signals/apps/classification/requirements.txt signals/apps/classification/requirements.in
 #
-click==8.3.2
+click==8.4.1
     # via
     #   -c requirements/requirements.txt
     #   -c requirements/requirements_dev.txt
@@ -16,7 +16,7 @@ cycler==0.12.1
     # via matplotlib
 et-xmlfile==2.0.0
     # via openpyxl
-fonttools==4.62.1
+fonttools==4.63.0
     # via
     #   -c requirements/requirements.txt
     #   -c requirements/requirements_dev.txt
@@ -28,11 +28,11 @@ joblib==1.5.3
     #   scikit-learn
 kiwisolver==1.5.0
     # via matplotlib
-matplotlib==3.10.8
+matplotlib==3.10.9
     # via -r signals/apps/classification/requirements.in
 nltk==3.9.4
     # via -r signals/apps/classification/requirements.in
-numpy==2.4.4
+numpy==2.4.6
     # via
     #   contourpy
     #   matplotlib
@@ -41,13 +41,13 @@ numpy==2.4.4
     #   scipy
 openpyxl==3.1.5
     # via -r signals/apps/classification/requirements.in
-packaging==26.0
+packaging==26.2
     # via
     #   -c requirements/requirements.txt
     #   -c requirements/requirements_dev.txt
     #   -c requirements/requirements_test.txt
     #   matplotlib
-pandas==3.0.2
+pandas==3.0.3
     # via -r signals/apps/classification/requirements.in
 pillow==12.2.0
     # via
@@ -64,7 +64,7 @@ python-dateutil==2.9.0.post0
     #   -c requirements/requirements_test.txt
     #   matplotlib
     #   pandas
-regex==2026.4.4
+regex==2026.5.9
     # via nltk
 scikit-learn==1.8.0
     # via -r signals/apps/classification/requirements.in
