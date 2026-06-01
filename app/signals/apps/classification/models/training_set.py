@@ -16,6 +16,8 @@ from signals.apps.services.validator.file import (
     MimeTypeIntegrityValidator
 )
 
+TRAINING_SET_FILE_MAX_SIZE = 524288000 # 500MB # TODO dertermine later what is neceessary for Amsterdam.
+# Depends on if we will use CSV or XLXX files, and how many rows we will need to train the model.
 
 class TrainingSet(models.Model):
     """
@@ -43,6 +45,6 @@ class TrainingSet(models.Model):
                 MimeTypeFromFilenameResolverFactory()
             ),
             ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory()),
-            FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
+            FileSizeValidator(TRAINING_SET_FILE_MAX_SIZE),
         ],
     )
