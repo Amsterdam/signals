@@ -26,7 +26,7 @@ class Question(models.Model):
         (CLOCK_SELECT, 'ClockSelect'),
         (DATE_TIME_INPUT, 'DateTimeInput'),
         (QUESTION_HEADER, 'QuestionHeader'),
-        (LOCATION_SELECT, 'AssetSelect'),
+        (LOCATION_SELECT, 'LocationSelect'),
         (PLAIN_TEXT, 'PlainText'),
         (RADIO_INPUT, 'RadioInputGroup'),
         (SELECT_INPUT, 'SelectInput'),
