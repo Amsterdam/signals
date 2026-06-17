@@ -5,4 +5,3 @@ class URLEncodedCharsFoundInText(Exception):
     """
     Exception to be raised when a URL encoded character is found in a text
     """
-    pass

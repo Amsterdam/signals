@@ -50,7 +50,6 @@ signals/apps/search/management/commands/delete_status_messages_index.py:0: error
 signals/apps/signals/admin/department.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
 signals/apps/signals/admin/area.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
 signals/apps/signals/admin/area.py:0: note: Hint: "python3 -m pip install types-django-import-export"
-signals/apps/signals/admin/area.py:0: note: (or run "mypy --install-types" to install all missing stub packages)
 signals/apps/search/elasticsearch_dsl/search.py:0: error: Skipping analyzing "elasticsearch_dsl": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/reporting/csv/datawarehouse/statusses.py:0: error: Argument 2 to "map_choices" has incompatible type "tuple[tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str], tuple[str, str]]"; expected "list[Any]"  [arg-type]
 signals/apps/reporting/csv/datawarehouse/reporters.py:0: error: Attribute "is_anonymized" already defined on "signals.apps.signals.models.reporter.Reporter"  [no-redef]
@@ -98,6 +97,15 @@ signals/apps/api/fields/attachment.py:0: note: This violates the Liskov substitu
 signals/apps/api/fields/attachment.py:0: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
 signals/apps/api/fields/attachment.py:0: error: Argument 1 of "to_representation" is incompatible with supertype "rest_framework.relations.RelatedField"; supertype defines the argument type as "Any | PKOnlyObject"  [override]
 signals/apps/signals/admin/expression.py:0: error: Library stubs not installed for "import_export.admin"  [import-untyped]
+signals/apps/classification/views.py:0: error: Skipping analyzing "nltk": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "nltk": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Library stubs not installed for "pandas"  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "nltk.stem.snowball": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "sklearn.feature_extraction.text": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "sklearn.linear_model": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "sklearn.metrics": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "sklearn.model_selection": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/classification/train.py:0: error: Skipping analyzing "sklearn.pipeline": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/tests/test_resources.py:0: error: Library stubs not installed for "import_export.formats.base_formats"  [import-untyped]
 signals/apps/signals/tests/test_resources.py:0: error: Skipping analyzing "tablib": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/signals/tests/test_reporter_state_machine.py:0: error: Skipping analyzing "django_fsm": module is installed, but missing library stubs or py.typed marker  [import-untyped]
@@ -109,6 +117,12 @@ signals/apps/signals/migrations/0192_auto_20230626_1312.py:0: error: Skipping an
 signals/schema.py:0: error: Incompatible types in assignment (expression has type "DictField", base class "Serializer" defined the type as "ReturnDict[Any, Any]")  [assignment]
 signals/schema.py:0: error: Need type annotation for "non_field_errors"  [var-annotated]
 signals/schema.py:0: error: Argument "direction" to "_get_response_bodies" of "AutoSchema" has incompatible type "str"; expected "Literal['request', 'response']"  [arg-type]
+signals/apps/classification/admin/admins.py:0: error: Library stubs not installed for "openpyxl"  [import-untyped]
+signals/apps/classification/admin/admins.py:0: note: Hint: "python3 -m pip install types-openpyxl"
+signals/apps/classification/admin/admins.py:0: note: (or run "mypy --install-types" to install all missing stub packages)
+signals/apps/classification/admin/admins.py:0: error: Library stubs not installed for "pandas"  [import-untyped]
+signals/apps/classification/admin/admins.py:0: note: Hint: "python3 -m pip install pandas-stubs"
+signals/apps/classification/admin/admins.py:0: error: Name "admin.helpers.ActionForm" is not defined  [name-defined]
 signals/apps/questionnaires/rest_framework/viewsets.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/serializers/signal_context.py:0: error: Skipping analyzing "rest_framework_gis.fields": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/serializers/signal_context.py:0: error: Skipping analyzing "rest_framework_gis.serializers": module is installed, but missing library stubs or py.typed marker  [import-untyped]
