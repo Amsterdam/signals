@@ -499,7 +499,7 @@ pyjwt[crypto]==2.13.0
     #   -r requirements.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.12.2
+pypdf==6.13.0
     # via -r requirements.txt
 pyphen==0.17.2
     # via
