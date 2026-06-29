@@ -17,6 +17,7 @@ from signals.apps.reporting.csv.datawarehouse.kto_feedback import create_kto_fee
 from signals.apps.reporting.csv.datawarehouse.locations import create_locations_csv
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import (
+    create_ml_amsterdam_csv,
     create_ml_csv,
     create_signals_assigned_user_csv,
     create_signals_csv,
@@ -33,6 +34,7 @@ REPORT_OPTIONS = {
     # Option, Func
     'signals': create_signals_csv,
     'ml': create_ml_csv,
+    'ml_amsterdam': create_ml_amsterdam_csv,
     'signals_assigned_user': create_signals_assigned_user_csv,
     'locations': create_locations_csv,
     'reporters': create_reporters_csv,

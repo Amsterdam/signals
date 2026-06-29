@@ -258,6 +258,61 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertNotIn('Overig sub text', texts)
         self.assertNotIn('Open text', texts)
 
+    def test_create_ml_amsterdam_csv(self):
+        category = CategoryFactory.create(name='Sub', parent__name='Main')
+        signal = SignalFactory.create(text='ML text', category_assignment__category=category, status__state=AFGEHANDELD)
+        SignalFactory.create(
+            text='Cancelled text',
+            category_assignment__category=category,
+            status__state=GEANNULEERD,
+        )
+        SignalFactory.create(
+            text='Overig main text',
+            category_assignment__category=CategoryFactory.create(name='Sub', parent__name='Overig main'),
+            status__state=AFGEHANDELD,
+        )
+        SignalFactory.create(
+            text='Overig sub text',
+            category_assignment__category=CategoryFactory.create(name='Overig sub', parent__name='Main'),
+            status__state=AFGEHANDELD,
+        )
+
+        # Invalid state, should not be included
+        SignalFactory.create(
+            text='Open text',
+            category_assignment__category=category,
+            status__state=GEMELD,
+        )
+        uncategorized_signal = SignalFactory.create()
+        uncategorized_signal.category_assignment = None
+        uncategorized_signal.save(update_fields=['category_assignment'])
+
+        # Inactive category should not be included
+        SignalFactory.create(
+            text='Inactive category text',
+            category_assignment__category=CategoryFactory.create(name='Sub', parent__name='Main', is_active=False),
+            status__state=AFGEHANDELD,
+        )
+
+        csv_file = datawarehouse.create_ml_csv(self.csv_tmp_dir)
+
+        self.assertEqual(path.join(self.csv_tmp_dir, 'ml.csv'), csv_file)
+
+        with open(csv_file) as opened_csv_file:
+            rows = list(csv.DictReader(opened_csv_file))
+            texts = [row['Text'] for row in rows]
+
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['Text'], signal.text)
+        self.assertEqual(rows[0]['Main'], signal.category_assignment.category.parent.slug)
+        self.assertEqual(rows[0]['Sub'], signal.category_assignment.category.slug)
+        self.assertEqual(rows[1]['Text'], 'Cancelled text')
+        self.assertEqual(rows[1]['Main'], 'Main')
+        self.assertEqual(rows[1]['Sub'], 'Sub')
+        self.assertNotIn('Overig main text', texts)
+        self.assertNotIn('Overig sub text', texts)
+        self.assertNotIn('Open text', texts)
+
     def test_create_locations_csv(self):
         signal = SignalFactory.create(location__area_code='AREACODE', location__area_name='AREA_NAME')
         location = signal.location

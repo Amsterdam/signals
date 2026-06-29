@@ -96,6 +96,35 @@ def create_ml_csv(location: str) -> str:
     return csv_file.name
 
 
+def create_ml_amsterdam_csv(location: str) -> str:
+    """
+    Create the CSV file with all categorized `Signal` objects for ML purposes.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    queryset = Signal.objects.filter(
+        category_assignment__isnull=False,
+        category_assignment__category__is_active=True,
+        category_assignment__category__isnull=False,
+        status__state__in=[AFGEHANDELD, GEANNULEERD],
+    ).exclude(
+        Q(category_assignment__category__parent__name__contains='Overig') |
+        Q(category_assignment__category__name__contains='Overig')
+    ).values(
+        Text=F('text'),
+        Main=F('category_assignment__category__parent__slug'),
+        Sub=F('category_assignment__category__slug'),
+    ).order_by('created_at')
+
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'ml_amsterdam.csv'))
+
+    ordered_field_names = ['Text', 'Main', 'Sub']
+    reorder_csv(csv_file.name, ordered_field_names)
+
+    return csv_file.name
+
+
 def create_signals_assigned_user_csv(location: str) -> str:
     """
     Create the CSV file with all `Signal - assigned user relation` objects.
