@@ -288,15 +288,17 @@ class TestDatawarehouse(testcases.TestCase):
         uncategorized_signal.save(update_fields=['category_assignment'])
 
         # Inactive category should not be included
-        SignalFactory.create(
+        inactive = SignalFactory.create(
             text='Inactive category text',
-            category_assignment__category=CategoryFactory.create(name='Sub', parent__name='Main', is_active=False),
+            category_assignment__category=CategoryFactory.create(name='Inactive', parent__name='Main'),
             status__state=AFGEHANDELD,
         )
+        inactive.category_assignment.category.is_active = False
+        inactive.category_assignment.category.save(update_fields=['is_active'])
 
-        csv_file = datawarehouse.create_ml_csv(self.csv_tmp_dir)
+        csv_file = datawarehouse.create_ml_amsterdam_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.csv_tmp_dir, 'ml.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'ml_amsterdam.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             rows = list(csv.DictReader(opened_csv_file))
@@ -307,11 +309,13 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertEqual(rows[0]['Main'], signal.category_assignment.category.parent.slug)
         self.assertEqual(rows[0]['Sub'], signal.category_assignment.category.slug)
         self.assertEqual(rows[1]['Text'], 'Cancelled text')
-        self.assertEqual(rows[1]['Main'], 'Main')
-        self.assertEqual(rows[1]['Sub'], 'Sub')
+        self.assertEqual(rows[1]['Main'], 'main')
+        self.assertEqual(rows[1]['Sub'], 'sub')
+
         self.assertNotIn('Overig main text', texts)
         self.assertNotIn('Overig sub text', texts)
         self.assertNotIn('Open text', texts)
+        self.assertNotIn('Inactive category text', texts)
 
     def test_create_locations_csv(self):
         signal = SignalFactory.create(location__area_code='AREACODE', location__area_name='AREA_NAME')
