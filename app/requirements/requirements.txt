@@ -7,7 +7,7 @@
 amqp==5.3.1
     # via kombu
 amsterdam-django-oidc==0.2.4
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 arpeggio==2.0.3
     # via textx
 asgiref==3.11.1
@@ -26,19 +26,19 @@ azure-core==1.41.0
     #   msrest
 azure-identity==1.25.3
     # via azure-monitor-opentelemetry-exporter
-azure-monitor-opentelemetry-exporter==1.0.0b52
-    # via -r requirements.in
-azure-storage-blob==12.29.0
-    # via -r requirements.in
-beautifulsoup4==4.14.3
+azure-monitor-opentelemetry-exporter==1.0.0b53
+    # via -r requirements/requirements.in
+azure-storage-blob==12.30.0
+    # via -r requirements/requirements.in
+beautifulsoup4==4.15.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   o365
 billiard==4.2.4
     # via celery
-boto3==1.43.14
+boto3==1.43.37
     # via django-storages
-botocore==1.43.14
+botocore==1.43.37
     # via
     #   boto3
     #   s3transfer
@@ -46,12 +46,12 @@ brotli==1.2.0
     # via fonttools
 celery==5.6.3
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   django-celery-beat
     #   django-celery-email
     #   django-celery-results
     #   flower
-certifi==2026.5.20
+certifi==2026.6.17
     # via
     #   elasticsearch
     #   msrest
@@ -62,7 +62,7 @@ cffi==2.0.0
     #   weasyprint
 charset-normalizer==3.4.7
     # via requests
-click==8.4.1
+click==8.4.2
     # via
     #   celery
     #   click-didyoumean
@@ -76,7 +76,7 @@ click-repl==0.3.0
     # via celery
 cron-descriptor==1.4.5
     # via django-celery-beat
-cryptography==48.0.1
+cryptography==49.0.0
     # via
     #   azure-identity
     #   azure-storage-blob
@@ -92,7 +92,7 @@ diff-match-patch==20241021
     # via django-import-export
 django==4.2.30
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   django-appconf
     #   django-celery-beat
     #   django-celery-email
@@ -114,36 +114,36 @@ django==4.2.30
 django-appconf==1.2.0
     # via django-celery-email
 django-celery-beat==2.9.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-celery-email==3.0.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-celery-results==2.6.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-cors-headers==4.9.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-extensions==4.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-filter==25.1
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   djangorestframework-gis
 django-fsm==3.0.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-import-export==4.4.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-markdownx==4.0.11
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-o365mail==1.1.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-silk==5.5.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 django-storages[s3]==1.14.6
-    # via -r requirements.in
-django-timezone-field==7.2.1
+    # via -r requirements/requirements.in
+django-timezone-field==7.2.2
     # via django-celery-beat
 djangorestframework==3.15.2
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   djangorestframework-csv
     #   djangorestframework-gis
     #   drf-amsterdam
@@ -152,32 +152,32 @@ djangorestframework==3.15.2
 djangorestframework-csv==3.0.2
     # via drf-amsterdam
 djangorestframework-gis==1.2.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 djangorestframework-xml==2.0.0
     # via drf-amsterdam
 drf-amsterdam==1.1.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 drf-extensions==0.8.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   drf-amsterdam
 drf-spectacular[sidecar]==0.29.0
-    # via -r requirements.in
-drf-spectacular-sidecar==2026.5.1
+    # via -r requirements/requirements.in
+drf-spectacular-sidecar==2026.6.1
     # via drf-spectacular
 elasticsearch==7.17.13
     # via elasticsearch-dsl
 elasticsearch-dsl==7.4.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 flower==2.0.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 fonttools[woff]==4.63.0
     # via weasyprint
 gprof2dot==2025.4.14
     # via django-silk
 humanize==4.15.0
     # via flower
-idna==3.16
+idna==3.18
     # via requests
 importlib-metadata==8.7.1
     # via opentelemetry-api
@@ -193,21 +193,21 @@ jmespath==1.1.0
     #   botocore
 jsonschema==4.26.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   drf-spectacular
 jsonschema-specifications==2025.9.1
     # via jsonschema
-jwcrypto==1.5.7
-    # via -r requirements.in
+jwcrypto==1.5.8
+    # via -r requirements/requirements.in
 kombu==5.6.2
     # via celery
 lxml==6.1.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 markdown==3.10.2
     # via django-markdownx
 mozilla-django-oidc==5.0.2
     # via amsterdam-django-oidc
-msal==1.36.0
+msal==1.37.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -217,7 +217,7 @@ msal-extensions==1.3.1
 msrest==0.7.1
     # via azure-monitor-opentelemetry-exporter
 networkx==3.6.1
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 o365==2.1.9
     # via django-o365mail
 oauthlib==3.3.1
@@ -241,14 +241,14 @@ opentelemetry-instrumentation==0.61b0
 opentelemetry-instrumentation-dbapi==0.61b0
     # via opentelemetry-instrumentation-psycopg2
 opentelemetry-instrumentation-django==0.61b0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 opentelemetry-instrumentation-psycopg2==0.61b0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 opentelemetry-instrumentation-wsgi==0.61b0
     # via opentelemetry-instrumentation-django
 opentelemetry-sdk==1.40.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   azure-monitor-opentelemetry-exporter
 opentelemetry-semantic-conventions==0.61b0
     # via
@@ -268,7 +268,7 @@ packaging==26.2
     #   opentelemetry-instrumentation
 pillow==12.2.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   django-markdownx
     #   weasyprint
 prometheus-client==0.25.0
@@ -278,7 +278,7 @@ prompt-toolkit==3.0.52
 psutil==7.2.2
     # via azure-monitor-opentelemetry-exporter
 psycopg2-binary==2.9.12
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 pycparser==3.0
     # via cffi
 pydyf==0.12.1
@@ -287,21 +287,21 @@ pyjwt[crypto]==2.13.0
     # via
     #   mozilla-django-oidc
     #   msal
-pypdf==6.12.2
-    # via -r requirements.in
+pypdf==6.14.2
+    # via -r requirements/requirements.in
 pyphen==0.17.2
     # via weasyprint
 python-crontab==3.3.0
     # via django-celery-beat
 python-dateutil==2.9.0.post0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   botocore
     #   celery
     #   elasticsearch-dsl
     #   o365
 python-magic==0.4.27
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 pytz==2026.2
     # via flower
 pyyaml==6.0.3
@@ -312,7 +312,7 @@ referencing==0.37.0
     #   jsonschema-specifications
 requests==2.34.2
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   azure-core
     #   mozilla-django-oidc
     #   msal
@@ -321,11 +321,11 @@ requests==2.34.2
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rpds-py==0.30.0
+rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-s3transfer==0.17.0
+s3transfer==0.19.0
     # via boto3
 six==1.17.0
     # via
@@ -340,7 +340,7 @@ sqlparse==0.5.5
 tablib==3.9.0
     # via django-import-export
 textx==4.3.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 tinycss2==1.5.1
     # via
     #   cssselect2
@@ -350,7 +350,7 @@ tinyhtml5==2.1.0
 tornado==6.5.7
     # via flower
 types-requests==2.33.0.20260518
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 typing-extensions==4.15.0
     # via
     #   azure-core
@@ -367,7 +367,7 @@ tzdata==2026.2
     #   django-celery-beat
     #   kombu
     #   o365
-tzlocal==5.3.1
+tzlocal==5.4.4
     # via
     #   celery
     #   o365
@@ -375,22 +375,22 @@ uritemplate==4.2.0
     # via drf-spectacular
 urllib3==2.7.0
     # via
-    #   -r requirements.in
+    #   -r requirements/requirements.in
     #   botocore
     #   elasticsearch
     #   requests
     #   types-requests
 uwsgi==2.0.31
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 vine==5.1.0
     # via
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.7.0
+wcwidth==0.8.2
     # via prompt-toolkit
 weasyprint==68.0
-    # via -r requirements.in
+    # via -r requirements/requirements.in
 webencodings==0.5.1
     # via
     #   cssselect2
@@ -402,5 +402,5 @@ wrapt==1.17.3
     #   opentelemetry-instrumentation-dbapi
 zipp==4.1.0
     # via importlib-metadata
-zopfli==0.4.2
+zopfli==0.4.3
     # via fonttools
