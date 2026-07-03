@@ -44,7 +44,7 @@ azure-monitor-opentelemetry-exporter==1.0.0b53
     # via -r requirements/requirements_test.txt
 azure-storage-blob==12.30.0
     # via -r requirements/requirements_test.txt
-beautifulsoup4==4.15.0
+beautifulsoup4==4.14.3
     # via
     #   -r requirements/requirements_test.txt
     #   o365
