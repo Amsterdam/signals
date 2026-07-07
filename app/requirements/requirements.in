@@ -1,6 +1,6 @@
 azure-monitor-opentelemetry-exporter
 azure-storage-blob
-beautifulsoup4
+beautifulsoup4==4.14.3
 Celery
 Django>4.2.19,<4.3
 django-celery-beat
