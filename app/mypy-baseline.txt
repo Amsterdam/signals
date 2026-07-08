@@ -131,3 +131,8 @@ signals/apps/api/views/category.py:0: error: Skipping analyzing "rest_framework_
 signals/apps/api/views/attachment.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 signals/apps/api/views/signals/public/signals.py:0: error: "type[PublicSignalGeographyFeature]" has no attribute "objects"  [attr-defined]
 signals/apps/api/views/signals/private/signals.py:0: error: Skipping analyzing "rest_framework_extensions.mixins": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+signals/apps/signals/area_receivers.py:0: error: Library stubs not installed for "import_export.signals"  [import-untyped]
+signals/apps/signals/tests/test_area_cache_invalidation.py:0: error: Library stubs not installed for "import_export.signals"  [import-untyped]
+signals/apps/signals/tests/test_area_cache_invalidation.py:0: note: Hint: "python3 -m pip install types-django-import-export"
+signals/apps/signals/tests/test_area_cache_invalidation.py:0: note: (or run "mypy --install-types" to install all missing stub packages)
+signals/apps/signals/tests/test_area_cache_invalidation.py:0: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
