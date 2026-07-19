@@ -518,6 +518,13 @@ SIGNALS_API_GEO_PAGINATE_BY: int = int(os.getenv(
     'SIGNALS_API_GEO_PAGINATE_BY', '4000'
 ))
 
+STATUS_UPDATE_FEED_ALLOWED_SOURCES: tuple[str, ...] = tuple(
+    source.strip()
+    for source in os.getenv('STATUS_UPDATE_FEED_ALLOWED_SOURCES', '').split(',')
+    if source.strip()
+)
+STATUS_UPDATE_FEED_MAX_PAGE_SIZE: int = max(1, int(os.getenv('STATUS_UPDATE_FEED_MAX_PAGE_SIZE', '500')))
+
 TEST_LOGIN: str = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 # Feature Flags

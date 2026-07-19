@@ -24,6 +24,7 @@ from signals.apps.api.views.signals.public.signals_map import PublicSignalMapVie
 from signals.apps.api.views.source import PrivateSourcesViewSet
 from signals.apps.api.views.status_message import StatusMessagesViewSet
 from signals.apps.api.views.status_message_template import StatusMessageTemplatesViewSet
+from signals.apps.api.views.status_update import StatusUpdateFeedView
 from signals.apps.api.views.stored_signal_filter import StoredSignalFilterViewSet
 
 __all__ = (
@@ -50,4 +51,5 @@ __all__ = (
     'SignalContextViewSet',
     'api_exception_handler',
     'StatusMessagesViewSet',
+    'StatusUpdateFeedView',
 )
