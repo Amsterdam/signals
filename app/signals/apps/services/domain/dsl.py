@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from signals.apps.dsl.evaluators.evaluator import Evaluator
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
+from signals.apps.signals.area_cache import get_area_cache_version
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
 
@@ -34,6 +35,7 @@ class DslService:
 # maps signal object to context dictionary
 class SignalContext:
     _areas = None
+    _areas_version = None
 
     def _init_areas(self):
         tmp = {}
@@ -45,8 +47,10 @@ class SignalContext:
 
     @property
     def areas(self):
-        if not self._areas:
+        version = get_area_cache_version()
+        if not self._areas or self._areas_version != version:
             self._areas = self._init_areas()
+            self._areas_version = version
         return self._areas
 
     def __call__(self, signal: Signal):
