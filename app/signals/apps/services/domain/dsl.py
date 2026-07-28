@@ -54,8 +54,7 @@ class SignalContext:
         return self._areas
 
     def __call__(self, signal: Signal):
-
-        t = timezone.make_naive(signal.incident_date_start).strftime("%H:%M:%S")
+        local_tz = timezone.make_naive(signal.incident_date_start)
 
         assert signal.category_assignment is not None
         assert signal.category_assignment.category is not None
@@ -66,8 +65,8 @@ class SignalContext:
             'main': signal.category_assignment.category.parent.name,
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
-            'time': time.strptime(t, "%H:%M:%S"),
-            'day': signal.incident_date_start.strftime("%A"),
+            'time': time.strptime(local_tz.strftime("%H:%M:%S"), "%H:%M:%S"),
+            'day': local_tz.strftime("%A"),
             'areas': self.areas
         }
 

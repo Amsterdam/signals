@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+import time
+from datetime import datetime
+from datetime import timezone as datetime_timezone
+
 from django.contrib.gis import geos
 from django.test import TestCase
 
@@ -180,3 +184,38 @@ class TestRoutingMechanism(TestCase):
         self.assertTrue("value 3.1" in ctx['key3_list'])
         self.assertTrue("value 3.2" in ctx['key3_list'])
         self.assertEqual(ctx['key4'], "value 4")
+
+    def test_context_uses_local_incident_datetime_for_time_and_day(self):
+        signal = SignalFactory.create(
+            incident_date_start=datetime(2021, 7, 18, 22, 30, 45, tzinfo=datetime_timezone.utc)
+        )
+
+        ctx = SignalContext()(signal)
+
+        self.assertEqual(ctx['time'], time.strptime("00:30:45", "%H:%M:%S"))
+        self.assertEqual(ctx['day'], "Monday")
+
+    def test_routing_with_time_uses_local_incident_datetime(self):
+        expression = ExpressionFactory.create(
+            _type=self.exp_routing_type,
+            name="local time expression",
+            code='time == 00:30:45 and day == "Monday"'
+        )
+        department = DepartmentFactory.create()
+        RoutingExpressionFactory.create(
+            _expression=expression,
+            _department=department,
+            is_active=True,
+            order=1
+        )
+
+        signal = SignalFactory.create(
+            incident_date_start=datetime(2021, 7, 18, 22, 30, 45, tzinfo=datetime_timezone.utc)
+        )
+
+        self.dsl_service.process_routing_rules(signal)
+        signal.refresh_from_db()
+
+        self.assertIsNotNone(signal.routing_assignment)
+        routing_dep = signal.routing_assignment.departments.first()
+        self.assertEqual(routing_dep.id, department.id)
