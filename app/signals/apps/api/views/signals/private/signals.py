@@ -235,6 +235,26 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                                             'type': 'string',
                                             'format': 'date-time',
                                             'example': '2023-06-01T00:00:00.000000+00:00'
+                                        },
+                                        'sub_category': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'dumping'
+                                        },
+                                        'main_category': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'afval'
+                                        },
+                                        'status': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'm'
+                                        },
+                                        'priority': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'normal'
                                         }
                                     }
                                 }
@@ -269,6 +289,10 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                     properties=JSONObject(
                         id='id',
                         created_at='created_at',
+                        sub_category='category_assignment__category__slug',
+                        main_category='category_assignment__category__parent__slug',
+                        status='status__state',
+                        priority='priority__priority',
                     ),
                 )
             ).filter_for_user(
