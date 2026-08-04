@@ -174,7 +174,19 @@ class TestPrivateSignalViewSet(SIAInactiveUserMixin, SIAReadUserMixin, SIAReadWr
     def test_geo_list_endpoint(self):
         response = self.client.get(self.geo_list_endpoint)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()['features']), 2)
+        features = response.json()['features']
+        self.assertEqual(len(features), 2)
+
+        features_by_signal_id = {feature['properties']['id']: feature for feature in features}
+        for signal in [self.signal_no_image, self.signal_with_image]:
+            properties = features_by_signal_id[signal.id]['properties']
+            category = properties['category']
+            self.assertEqual(category['name'], signal.category_assignment.category.name)
+            self.assertEqual(category['slug'], signal.category_assignment.category.slug)
+            self.assertEqual(category['parent']['name'], signal.category_assignment.category.parent.name)
+            self.assertEqual(category['parent']['slug'], signal.category_assignment.category.parent.slug)
+            self.assertEqual(properties['status'], signal.status.state)
+            self.assertEqual(properties['priority'], signal.priority.priority)
 
         # Check headers
         self.assertTrue(response.has_header('Link'))
