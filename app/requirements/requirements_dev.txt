@@ -126,7 +126,7 @@ cron-descriptor==1.4.5
     # via
     #   -r requirements_test.txt
     #   django-celery-beat
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   -r requirements_test.txt
     #   azure-identity
