@@ -337,7 +337,7 @@ sqlparse==0.5.5
     # via
     #   django
     #   django-silk
-tablib==3.9.0
+tablib==3.10.0
     # via django-import-export
 textx==4.3.0
     # via -r requirements.in
