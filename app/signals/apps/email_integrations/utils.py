@@ -13,7 +13,6 @@ from rest_framework.exceptions import NotFound
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
-from signals.apps.email_integrations.markdown.escaping import escape_markdown_link_syntax
 from signals.apps.email_integrations.markdown.link_schemes import LinkSchemeExtension
 from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.services.feedback_request import (
@@ -114,13 +113,7 @@ URL_ENCODED_CHARACTERS_PATTERN = re.compile(r'(%[\dA-Z]{2})', re.IGNORECASE)
 
 def _cleanup_signal_text(text: str, dry_run: bool = False) -> str:
     """
-    Cleanup the text of a signal by removing all URL's and URL encoded characters, and by escaping
-    the markdown link syntax.
-
-    Removing the URLs only catches a destination that looks like one, so a scheme without a dotted
-    host behind it (tel:, sms:, javascript:) survives it. Escaping the markdown link syntax is what
-    makes sure that whatever is left cannot become a link: the text is rendered as markdown in the
-    email, and the reporter does not get to decide where an email from us points.
+    Cleanup the text of a signal by removing all URL's and URL encoded characters
     """
     max_iterations = 5  # For now 5 iterations should be enough to remove all URLs. This could be a setting if needed
     while (re.search(URL_ENCODED_CHARACTERS_PATTERN, text) and max_iterations > 0):
@@ -131,16 +124,15 @@ def _cleanup_signal_text(text: str, dry_run: bool = False) -> str:
     if re.search(URL_ENCODED_CHARACTERS_PATTERN, text):
         # After looping X times there are still URL encoded characters in the text, raise an exception
         if dry_run:
-            # Dry run enabled return the text as is, escaped: a dry run is what renders the email
-            # preview in the backoffice, so it may not be the one path that skips the escaping.
-            return escape_markdown_link_syntax(text)
+            # Dry run enabled return the text as is
+            return text
         raise URLEncodedCharsFoundInText()
 
     # Remove URLs from the text
     text = re.sub(URL_PATTERN, '', text)
 
     # This text is clean
-    return escape_markdown_link_syntax(text)
+    return text
 
 
 def _get_parent_category_public_name(category) -> str:

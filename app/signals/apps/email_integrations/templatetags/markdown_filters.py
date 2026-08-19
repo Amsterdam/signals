@@ -12,9 +12,7 @@ register = template.Library()
 
 
 def _render(value: str) -> str:
-    """Render markdown to HTML, with the destination of every link and image restricted to an
-    allowlist of URL schemes. A new Markdown instance per call, because it is not reusable across
-    threads."""
+    # A new Markdown instance per call, because an instance is not reusable across threads.
     return md.markdown(value, extensions=[LinkSchemeExtension()])
 
 

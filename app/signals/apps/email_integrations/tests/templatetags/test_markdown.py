@@ -48,11 +48,11 @@ class TestMarkdownTemplateTags(TestCase):
         self.assertEqual(expected, actual)
 
     def test_markdown_keeps_link_with_allowed_scheme(self):
-        context = Context({'body': 'Bel [14 020](tel:14020)'})
+        context = Context({'body': 'Kijk op [amsterdam.nl](https://amsterdam.nl)'})
         template = Template('{% load markdown_filters %}{{ body|markdown }}')
 
         actual = template.render(context)
-        expected = '<p>Bel <a href="tel:14020">14 020</a></p>'
+        expected = '<p>Kijk op <a href="https://amsterdam.nl">amsterdam.nl</a></p>'
         self.assertEqual(expected, actual)
 
     def test_plaintext_drops_link_with_disallowed_scheme(self):

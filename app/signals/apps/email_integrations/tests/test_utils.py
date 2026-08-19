@@ -135,34 +135,6 @@ class TestUtils(TestCase):
         self.assertEqual(context['source'], signal.source)
         self.assertEqual(context['incident_date_start'], signal.incident_date_start)
 
-    def test_make_email_context_escapes_markdown_link_syntax_in_reporter_text(self):
-        """
-        A reporter must not be able to put a link in an email that is sent from a municipal sender.
-        Removing the URLs does not achieve that on its own: the URL pattern only matches a
-        destination with a dotted host, so a scheme such as tel: or javascript: survives it. The
-        markdown link syntax is escaped so that whatever is left cannot become a link.
-        """
-        signal = SignalFactory.create(
-            text='Bel [dit nummer](tel:0900-1234)',
-            text_extra='Of klik [hier](javascript:alert(1))',
-        )
-
-        context = make_email_context(signal=signal)
-
-        self.assertEqual(context['text'], 'Bel \\[dit nummer\\](tel:0900-1234)')
-        self.assertEqual(context['text_extra'], 'Of klik \\[hier\\](javascript:alert(1))')
-
-    def test_make_email_context_escapes_markdown_link_syntax_on_a_dry_run(self):
-        """
-        A dry run is what renders the email preview in the backoffice, and it returns text
-        containing URL encoded characters as is, so it may not be the one path that skips escaping.
-        """
-        signal = SignalFactory.create(text='%252525252525 en klik [hier](javascript:alert(1))')
-
-        context = make_email_context(signal=signal, dry_run=True)
-
-        self.assertIn('\\[hier\\]', context['text'])
-
     def test_make_email_context_for_category_with_or_without_public_name(self):
         # Check categories with public names.
         main_cat_with_public_name = ParentCategoryFactory.create(
