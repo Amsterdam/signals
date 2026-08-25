@@ -13,6 +13,7 @@ from rest_framework.exceptions import NotFound
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
+from signals.apps.email_integrations.markdown.link_schemes import LinkSchemeExtension
 from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.services.feedback_request import (
     create_session_for_feedback_request,
@@ -252,7 +253,10 @@ def markdownx_md(value: str) -> str:
     """
     Util function for the markdownx Django Admin preview functionality
     """
-    return markdown.markdown(value)
+    # Rendered with the same link scheme allowlist as the emails themselves, so that this preview
+    # shows what the email template will actually produce, and cannot become a link a browser
+    # executes either.
+    return markdown.markdown(value, extensions=[LinkSchemeExtension()])
 
 
 def trigger_mail_action_for_email_preview(signal, status_data):
