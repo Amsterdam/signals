@@ -235,6 +235,44 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                                             'type': 'string',
                                             'format': 'date-time',
                                             'example': '2023-06-01T00:00:00.000000+00:00'
+                                        },
+                                        'category': {
+                                            'type': 'object',
+                                            'nullable': True,
+                                            'properties': {
+                                                'name': {
+                                                    'type': 'string',
+                                                    'example': 'Dumping'
+                                                },
+                                                'slug': {
+                                                    'type': 'string',
+                                                    'example': 'dumping'
+                                                },
+                                                'parent': {
+                                                    'type': 'object',
+                                                    'nullable': True,
+                                                    'properties': {
+                                                        'name': {
+                                                            'type': 'string',
+                                                            'example': 'Afval'
+                                                        },
+                                                        'slug': {
+                                                            'type': 'string',
+                                                            'example': 'afval'
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        'status': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'm'
+                                        },
+                                        'priority': {
+                                            'type': 'string',
+                                            'nullable': True,
+                                            'example': 'normal'
                                         }
                                     }
                                 }
@@ -269,6 +307,16 @@ class PrivateSignalViewSet(DetailSerializerMixin, CreateModelMixin, UpdateModelM
                     properties=JSONObject(
                         id='id',
                         created_at='created_at',
+                        category=JSONObject(
+                            name='category_assignment__category__name',
+                            slug='category_assignment__category__slug',
+                            parent=JSONObject(
+                                name='category_assignment__category__parent__name',
+                                slug='category_assignment__category__parent__slug',
+                            ),
+                        ),
+                        status='status__state',
+                        priority='priority__priority',
                     ),
                 )
             ).filter_for_user(

@@ -5,16 +5,22 @@ from django import template
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
+from signals.apps.email_integrations.markdown.link_schemes import LinkSchemeExtension
 from signals.apps.email_integrations.markdown.plaintext import strip_markdown_html
 
 register = template.Library()
 
 
+def _render(value: str) -> str:
+    # A new Markdown instance per call, because an instance is not reusable across threads.
+    return md.markdown(value, extensions=[LinkSchemeExtension()])
+
+
 @register.filter
 def markdown(value: str) -> str:
-    return mark_safe(md.markdown(escape(value)))
+    return mark_safe(_render(escape(value)))
 
 
 @register.filter(is_safe=True)
 def plaintext(value: str) -> str:
-    return strip_markdown_html(md.markdown(value))
+    return strip_markdown_html(_render(value))

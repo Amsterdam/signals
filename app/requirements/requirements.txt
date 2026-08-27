@@ -76,7 +76,7 @@ click-repl==0.3.0
     # via celery
 cron-descriptor==1.4.5
     # via django-celery-beat
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   azure-identity
     #   azure-storage-blob
@@ -287,7 +287,7 @@ pyjwt[crypto]==2.13.0
     # via
     #   mozilla-django-oidc
     #   msal
-pypdf==6.14.2
+pypdf==6.15.0
     # via -r requirements.in
 pyphen==0.17.2
     # via weasyprint
@@ -333,11 +333,11 @@ six==1.17.0
     #   python-dateutil
 soupsieve==2.8.4
     # via beautifulsoup4
-sqlparse==0.5.5
+sqlparse==0.6.0
     # via
     #   django
     #   django-silk
-tablib==3.9.0
+tablib==3.10.0
     # via django-import-export
 textx==4.3.0
     # via -r requirements.in

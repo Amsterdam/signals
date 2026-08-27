@@ -104,6 +104,27 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         # no feedback object should have been made
         self.assertEqual(Feedback.objects.count(), 0)
 
+    def test_email_preview_escapes_javascript_link_in_signal_text(self):
+        self.signal.text = 'Test: <a href="javascript:alert()">Klik hier voor meer informatie</a> einde.'
+        self.signal.save(update_fields=['text'])
+
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
+
+        response = self.client.post(
+            endpoint,
+            data={'status': workflow.AFGEHANDELD, 'text': 'veilige status tekst'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertIn('Klik hier voor meer informatie', response_data['html'])
+        self.assertIn(
+            '&lt;a href=&quot;javascript:alert()&quot;&gt;Klik hier voor meer informatie&lt;/a&gt;',
+            response_data['html']
+        )
+        self.assertNotIn('<a href="javascript:alert()">', response_data['html'])
+
     def test_get_email_preview_status(self):
         currently_set_status = self.signal.status
         status_count = self.signal.statuses.count()

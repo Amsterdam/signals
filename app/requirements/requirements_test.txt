@@ -118,7 +118,7 @@ cron-descriptor==1.4.5
     # via
     #   -r requirements.txt
     #   django-celery-beat
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   -r requirements.txt
     #   azure-identity
@@ -499,7 +499,7 @@ pyjwt[crypto]==2.13.0
     #   -r requirements.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.14.2
+pypdf==6.15.0
     # via -r requirements.txt
 pyphen==0.17.2
     # via
@@ -600,12 +600,12 @@ soupsieve==2.8.4
     # via
     #   -r requirements.txt
     #   beautifulsoup4
-sqlparse==0.5.5
+sqlparse==0.6.0
     # via
     #   -r requirements.txt
     #   django
     #   django-silk
-tablib==3.9.0
+tablib==3.10.0
     # via
     #   -r requirements.txt
     #   django-import-export
