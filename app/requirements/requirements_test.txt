@@ -143,7 +143,7 @@ diff-match-patch==20241021
     #   django-import-export
 distlib==0.4.3
     # via virtualenv
-django==4.2.30
+django==5.2.16
     # via
     #   -r requirements.txt
     #   django-appconf
