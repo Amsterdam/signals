@@ -14,7 +14,7 @@ STATUS_UPDATE_FEED_MAX_PAGE_SIZE=500
 Use a dedicated source value that is not shared by other reporting channels. A generic value such as `online` should only be enabled when the integration intentionally needs status updates for every signal using that source.
 Changing the client source affects newly created signals only; existing signals keep their original source value.
 
-Give the integration user only the `signals.sia_status_updates_read` permission and use the existing private API token authentication.
+Give the integration user both the existing `signals.sia_read` permission and the dedicated `signals.sia_status_updates_read` permission. Use the existing private API token authentication.
 
 ## Request
 
@@ -41,11 +41,12 @@ Authorization: Bearer <token>
 }
 ```
 
-The mapping is deliberately small:
+The feed translates internal Signalen states to stable user-facing statuses:
 
-* `b` and `reopened` become `IN_PROGRESS`.
+* `b`, `ingepland`, `h`, `forward to external`, `ready to send`, `sent`, `done external`, `closure requested`, `reaction received`, and `reopened` become `IN_PROGRESS`.
 * `o` becomes `RESOLVED`.
-* Other Signalen statuses are not returned.
+* `a` becomes `CANCELLED`.
+* `m`, `i`, `reaction requested`, `send failed`, `s`, and `reopen requested` are not returned.
 
 The page limit counts every status event for the selected source, including statuses that are not returned. An empty `items` array can therefore still have a newer `next_cursor`. Store `next_cursor` only after processing the response successfully, and keep polling until the cursor no longer changes while catching up.
 

@@ -12,7 +12,7 @@ from signals.test.utils import SignalsBaseApiTestCase
 
 @override_settings(
     STATUS_UPDATE_FEED_ALLOWED_SOURCES=('mobile-app',),
-    STATUS_UPDATE_FEED_MAX_PAGE_SIZE=10,
+    STATUS_UPDATE_FEED_MAX_PAGE_SIZE=20,
 )
 class TestStatusUpdateFeed(SignalsBaseApiTestCase):
     endpoint = '/signals/v1/private/status-updates'
@@ -20,8 +20,9 @@ class TestStatusUpdateFeed(SignalsBaseApiTestCase):
 
     def setUp(self):
         self.integration_user = UserFactory.create()
-        self.permission = Permission.objects.get(codename='sia_status_updates_read')
-        self.integration_user.user_permissions.add(self.permission)
+        self.read_permission = Permission.objects.get(codename='sia_read')
+        self.status_update_permission = Permission.objects.get(codename='sia_status_updates_read')
+        self.integration_user.user_permissions.add(self.read_permission, self.status_update_permission)
         self.client.force_authenticate(user=self.integration_user)
 
     def test_authentication_is_required(self):
@@ -32,7 +33,20 @@ class TestStatusUpdateFeed(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_dedicated_permission_is_required(self):
-        self.client.force_authenticate(user=UserFactory.create())
+        user = UserFactory.create()
+        user.user_permissions.add(self.read_permission)
+        self.client.force_authenticate(user=user)
+
+        get_response = self.client.get(self.endpoint, {'source': self.source})
+        head_response = self.client.head(self.endpoint, {'source': self.source})
+
+        self.assertEqual(get_response.status_code, 403)
+        self.assertEqual(head_response.status_code, 403)
+
+    def test_read_permission_is_required(self):
+        user = UserFactory.create()
+        user.user_permissions.add(self.status_update_permission)
+        self.client.force_authenticate(user=user)
 
         get_response = self.client.get(self.endpoint, {'source': self.source})
         head_response = self.client.head(self.endpoint, {'source': self.source})
@@ -49,27 +63,38 @@ class TestStatusUpdateFeed(SignalsBaseApiTestCase):
 
     def test_only_supported_statuses_and_fields_are_returned(self):
         signal = SignalFactory.create(source=self.source)
-        expected_statuses = [
-            Status.objects.create(
+        status_mapping = [
+            (workflow.BEHANDELING, 'IN_PROGRESS'),
+            (workflow.INGEPLAND, 'IN_PROGRESS'),
+            (workflow.ON_HOLD, 'IN_PROGRESS'),
+            (workflow.DOORGEZET_NAAR_EXTERN, 'IN_PROGRESS'),
+            (workflow.TE_VERZENDEN, 'IN_PROGRESS'),
+            (workflow.VERZONDEN, 'IN_PROGRESS'),
+            (workflow.AFGEHANDELD_EXTERN, 'IN_PROGRESS'),
+            (workflow.VERZOEK_TOT_AFHANDELING, 'IN_PROGRESS'),
+            (workflow.REACTIE_ONTVANGEN, 'IN_PROGRESS'),
+            (workflow.HEROPEND, 'IN_PROGRESS'),
+            (workflow.AFGEHANDELD, 'RESOLVED'),
+            (workflow.GEANNULEERD, 'CANCELLED'),
+        ]
+        expected_statuses = []
+        for state, _ in status_mapping:
+            expected_statuses.append(Status.objects.create(
                 _signal=signal,
-                state=workflow.BEHANDELING,
+                state=state,
                 text='Internal note',
                 user='handler@example.com',
                 extra_properties={'internal': 'value'},
-            ),
-            Status.objects.create(_signal=signal, state=workflow.AFGEHANDELD, text='Resolved'),
-            Status.objects.create(_signal=signal, state=workflow.HEROPEND, text='Reopened'),
-        ]
+            ))
 
         response = self.client.get(self.endpoint, {'source': self.source})
 
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        self.assertEqual([item['status'] for item in body['items']], [
-            'IN_PROGRESS',
-            'RESOLVED',
-            'IN_PROGRESS',
-        ])
+        self.assertEqual(
+            [item['status'] for item in body['items']],
+            [expected_status for _, expected_status in status_mapping],
+        )
         self.assertEqual([item['event_id'] for item in body['items']], [row.pk for row in expected_statuses])
         self.assertEqual(body['next_cursor'], expected_statuses[-1].pk)
         for item in body['items']:
@@ -99,27 +124,41 @@ class TestStatusUpdateFeed(SignalsBaseApiTestCase):
     def test_cursor_advances_over_statuses_that_are_not_returned(self):
         signal = SignalFactory.create(source=self.source)
         initial_cursor = signal.status.pk
-        waiting = Status.objects.create(_signal=signal, state=workflow.AFWACHTING)
+        hidden_statuses = [
+            workflow.GEMELD,
+            workflow.AFWACHTING,
+            workflow.REACTIE_GEVRAAGD,
+            workflow.VERZENDEN_MISLUKT,
+            workflow.GESPLITST,
+            workflow.VERZOEK_TOT_HEROPENEN,
+        ]
+        hidden_rows = [
+            Status.objects.create(_signal=signal, state=state)
+            for state in hidden_statuses
+        ]
         in_progress = Status.objects.create(_signal=signal, state=workflow.BEHANDELING)
 
-        first_response = self.client.get(self.endpoint, {
-            'source': self.source,
-            'after': initial_cursor,
-            'limit': 1,
-        })
-        second_response = self.client.get(self.endpoint, {
-            'source': self.source,
-            'after': first_response.json()['next_cursor'],
-            'limit': 1,
-        })
+        cursor = initial_cursor
+        for hidden_row in hidden_rows:
+            response = self.client.get(self.endpoint, {
+                'source': self.source,
+                'after': cursor,
+                'limit': 1,
+            })
+            self.assertEqual(response.json(), {'items': [], 'next_cursor': hidden_row.pk})
+            cursor = hidden_row.pk
 
-        self.assertEqual(first_response.json(), {'items': [], 'next_cursor': waiting.pk})
-        self.assertEqual(second_response.json()['items'][0]['event_id'], in_progress.pk)
-        self.assertEqual(second_response.json()['next_cursor'], in_progress.pk)
+        visible_response = self.client.get(self.endpoint, {
+            'source': self.source,
+            'after': cursor,
+            'limit': 1,
+        })
+        self.assertEqual(visible_response.json()['items'][0]['event_id'], in_progress.pk)
+        self.assertEqual(visible_response.json()['next_cursor'], in_progress.pk)
 
     def test_cursor_and_limit_are_validated(self):
         invalid_cursor_response = self.client.get(self.endpoint, {'source': self.source, 'after': -1})
-        invalid_limit_response = self.client.get(self.endpoint, {'source': self.source, 'limit': 11})
+        invalid_limit_response = self.client.get(self.endpoint, {'source': self.source, 'limit': 21})
 
         self.assertEqual(invalid_cursor_response.status_code, 400)
         self.assertEqual(invalid_limit_response.status_code, 400)

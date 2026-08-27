@@ -11,8 +11,17 @@ from signals.apps.signals.models import Status
 
 STATUS_UPDATE_MAPPING = {
     workflow.BEHANDELING: 'IN_PROGRESS',
-    workflow.AFGEHANDELD: 'RESOLVED',
+    workflow.INGEPLAND: 'IN_PROGRESS',
+    workflow.ON_HOLD: 'IN_PROGRESS',
+    workflow.DOORGEZET_NAAR_EXTERN: 'IN_PROGRESS',
+    workflow.TE_VERZENDEN: 'IN_PROGRESS',
+    workflow.VERZONDEN: 'IN_PROGRESS',
+    workflow.AFGEHANDELD_EXTERN: 'IN_PROGRESS',
+    workflow.VERZOEK_TOT_AFHANDELING: 'IN_PROGRESS',
+    workflow.REACTIE_ONTVANGEN: 'IN_PROGRESS',
     workflow.HEROPEND: 'IN_PROGRESS',
+    workflow.AFGEHANDELD: 'RESOLVED',
+    workflow.GEANNULEERD: 'CANCELLED',
 }
 
 
