@@ -12,6 +12,7 @@ To connect to the API a token must be retrieved more information on how to retri
 * [Updating a signal](v1/private/signals/02.updating_a_signal.md)
 * [Listing signals](v1/private/signals/03.listing_signals.md)
 * [Getting details of a signal](v1/private/signals/04.signal_detail.md)
+* [Polling status updates](v1/private/status_updates.md)
 
 ## Swagger documentation
 

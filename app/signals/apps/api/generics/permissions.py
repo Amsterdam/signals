@@ -43,6 +43,14 @@ class SIAPermissions(SIABasePermission):
     }
 
 
+class SIAStatusUpdateFeedPermission(SIABasePermission):
+    perms_map = {
+        'GET': ['signals.sia_read', 'signals.sia_status_updates_read'],
+        'OPTIONS': [],
+        'HEAD': ['signals.sia_read', 'signals.sia_status_updates_read'],
+    }
+
+
 class SignalCreateInitialPermission(SIABasePermission):
     perms_map = {
         'GET': ['signals.sia_read'],

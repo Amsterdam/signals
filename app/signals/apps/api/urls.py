@@ -25,6 +25,7 @@ from signals.apps.api.views import (
     SignalContextViewSet,
     SignalPromotedToParentViewSet,
     StatusMessageTemplatesViewSet,
+    StatusUpdateFeedView,
     StoredSignalFilterViewSet
 )
 from signals.apps.api.views.area import PrivateAreaCreateViewSet, PrivateAreaTypeViewSet
@@ -115,6 +116,9 @@ urlpatterns = [
 
     # Private additions
     path('v1/private/', include([
+        # Read status changes from an enabled signal source
+        re_path(r'status-updates/?$', StatusUpdateFeedView.as_view(), name='status-update-feed'),
+
         # Returns the details of the currently logged in user
         re_path('me/?$', LoggedInUserView.as_view(), name='auth-me'),
 

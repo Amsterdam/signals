@@ -78,6 +78,7 @@ class Signal(CreatedUpdatedModel):
         indexes = [
             models.Index(fields=['created_at']),
             models.Index(fields=['id', 'parent']),
+            models.Index(fields=['source']),
         ]
 
     def __init__(self, *args, **kwargs):
