@@ -347,7 +347,7 @@ tinycss2==1.5.1
     #   weasyprint
 tinyhtml5==2.1.0
     # via weasyprint
-tornado==6.5.7
+tornado==6.5.8
     # via flower
 types-requests==2.33.0.20260518
     # via -r requirements.in
