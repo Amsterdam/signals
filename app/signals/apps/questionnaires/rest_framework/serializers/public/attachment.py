@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from signals.apps.questionnaires.fieldtypes.attachment import Attachment
 from signals.apps.questionnaires.models import Question
+from signals.apps.services.attachment_files import sanitize_attachment
 
 
 class PublicAttachmentSerializer(serializers.Serializer):
@@ -57,7 +58,8 @@ class PublicAttachmentSerializer(serializers.Serializer):
             random_uuid = uuid.uuid4()
             extension = file.name.split('.')[-1]
             path = f'{session_uuid.hex[:2]}/{session_uuid.hex[2:4]}/{session_uuid}/{random_uuid.hex}.{extension}'
-            file_path = default_storage.save(f'attachments/questionnaires/sessions/{path}', file.file)
+            clean = sanitize_attachment(file)
+            file_path = default_storage.save(f'attachments/questionnaires/sessions/{path}', clean)
             answer_payload.append({'original_filename': file.name, 'file_path': file_path})
 
         # Make sure the downstream JSONSchema checks succeed if only one
