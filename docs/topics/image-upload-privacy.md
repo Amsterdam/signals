@@ -46,12 +46,35 @@ in-memory PDF image rendering are outside this attachment policy. Do not
 globally wrap all storage: that would also change unrelated files and storage
 backends.
 
+### Storage route inventory
+
+The following is a source-level trace, not a claim that every route has passed
+an integration test. Run the application regressions listed in the PR on the
+supported Docker/PostGIS stack before merging.
+
+| Route | Write boundary |
+| --- | --- |
+| Public/staff multipart upload | `api.serializers.attachment.BaseSignalAttachmentSerializer.create` calls `Signal.actions.add_attachment`; model `save` calls the custom field before storage. Existing MIME/extension validation is unchanged. |
+| Child-report and automatic child copies | `signals.managers.SignalManager._copy_attachment_no_transaction` calls `target_attachment.file.save`. A new byte copy is sanitized; the source is not overwritten. |
+| Questionnaire/session upload, including reply-photo requests | `questionnaires.rest_framework.serializers.public.attachment.PublicAttachmentSerializer.create` validates and sanitizes **all** batch members before its first direct storage write. |
+| Forwarding report illustrations | `questionnaires.services.forward_to_external._copy_attachments_to_attached_files` creates `StoredFile` with copied bytes, invoking its custom field. |
+| Forwarded reply copied back into a report | `ForwardToExternalSessionService._copy_attachments_from_session_to_signal` creates `Attachment` with the answer's stored bytes, invoking its custom field. |
+| Model creation, file assignment, replacement, or `FieldFile.save` | Both custom fields sanitize uncommitted bytes, even with `save=False`. `Attachment.save(update_fields=['file'])` persists the derived image flag and MIME type, including after a separate `FieldFile.save(save=False)`. |
+| Caption/public-flag changes and committed path references | No new byte write, hence no additional JPEG encoding. A separate model save after `FieldFile.save` does not encode again. |
+| Imports | The current `signals.resources` import/export resources cover configuration (categories, questions, departments, areas and routing), not citizen attachment-byte imports. A script assigning new file bytes uses the model boundary; path-only registrations, fixtures and historical migrations do not sanitize existing storage. |
+
+There is no storage/database transaction across file services. Batch input
+validation failures store no files, but later storage or database failures can
+still leave **sanitized** orphan blobs, as with the existing upload flow. The
+processing budgets below apply per image, not to the total number of files in a
+multipart request; request-size and concurrency limits still matter.
+
 ## Metadata and rendering policy
 
 | Input | Output and tradeoff |
 | --- | --- |
 | JPEG | Same format and dimensions, except for EXIF orientation. Re-encoded at quality 95 with 4:4:4 sampling, **not lossless**; size and fine detail may change. |
-| PNG | Pixel data and transparency retained, including palette transparency and Pillow-supported 16-bit grayscale. Palette inputs may become RGBA. No promise to preserve original PNG chunk layout or all high-bit-depth color encodings. |
+| PNG | Pixel data and transparency retained, including palette transparency and Pillow-supported 16-bit grayscale with a re-serialized numeric tRNS transparency key. Palette inputs may become RGBA. No promise to preserve original PNG chunk layout or all high-bit-depth color encodings. |
 | GIF | Composited animation frames, timing, loop count and transparency retained. Re-encoding full frames may change palette allocation, compression and file size; composited frames with more than 256 colors can be quantized. |
 | Animated PNG | Composited frames with replacement blending, timing and loop count retained. A separate default image remains outside the animation. Existing endpoint MIME allowlists remain in force; this does not broaden accepted MIME types. |
 | JPEG-compatible MPO, HDR gain maps, Motion Photos | Only the decoded primary standard-range JPEG picture is kept. Secondary pictures, gain maps, video/audio and appended payloads are not copied. Native HEIC, AVIF, WebP and other unsupported image formats are not newly enabled. |
@@ -65,7 +88,8 @@ Uploaded ICC profiles can themselves contain identifying/free-form information.
 Valid, supported profiles are used by Pillow's LittleCMS integration to convert
 pixels to sRGB, then discarded. No input ICC bytes are embedded in the output.
 Invalid, oversized or unsupported profiles cause rejection rather than silent
-color fallback. Gamut conversion and conversion to supported output precision
+color fallback. Missing LittleCMS support also produces a validation error.
+Gamut conversion and conversion to supported output precision
 can change colors. Unprofiled CMYK JPEG uses Pillow's RGB conversion.
 
 For PNG without an ICC profile, the numeric `gAMA`, `cHRM` and `sRGB` rendering
@@ -84,6 +108,11 @@ There is no “store the original if conversion fails” path. Storage/database
 failures still propagate normally. Removing the former global
 `ImageFile.LOAD_TRUNCATED_IMAGES = True` override restores Pillow's default
 strict decoding; truncated images previously tolerated may now be rejected.
+For historical attachments, PDF image rendering explicitly loads pixels within
+its existing error handler: corrupt/truncated photos are logged and skipped,
+rather than aborting the entire PDF. Those photos will be absent from the PDF;
+the stored originals are not changed. No per-request global decoder toggle is
+used, and upload validation remains strict.
 
 The following are **new conservative processing limits**, not previously
 guaranteed upload capabilities:

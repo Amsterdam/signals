@@ -10,6 +10,7 @@ from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image, ImageCms, PngImagePlugin
+from pypdf import PdfWriter
 from rest_framework.test import APITestCase
 
 from signals.apps.questionnaires.factories import (
@@ -24,7 +25,10 @@ from signals.apps.questionnaires.services.forward_to_external import (
     ForwardToExternalSessionService,
     create_session_for_forward_to_external
 )
-from signals.apps.questionnaires.tests.rest_framework.views.public.test_public_sessions_endpoint import test_urlconf
+from signals.apps.questionnaires.tests.rest_framework.views.public.test_public_sessions_endpoint import (
+    test_urlconf
+)
+from signals.apps.services.domain.image_sanitizer import sanitize_image
 from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Attachment, Note, Signal
 from signals.apps.signals.workflow import DOORGEZET_NAAR_EXTERN
@@ -145,6 +149,33 @@ class TestSignalImageUploadSanitization(IsolatedImageStorageMixin, SignalsBaseAp
                     self.assertFalse(self.signal.attachments.exists())
                     self.assertEqual(Note.objects.count(), before_notes)
                     self.assertEqual(self.stored_names(), set())
+
+    def test_private_pdf_is_byte_for_byte_unchanged(self):
+        output = BytesIO()
+        pdf = PdfWriter()
+        pdf.add_blank_page(width=100, height=100)
+        pdf.add_metadata({'/Author': MARKER.decode()})
+        pdf.write(output)
+        data = output.getvalue()
+        response = self.client.post(self.endpoint(private=True), {
+            'file': SimpleUploadedFile('synthetic.pdf', data, content_type='application/pdf'),
+        }, format='multipart')
+        self.assertEqual(response.status_code, 201, response.data)
+        attachment = self.signal.attachments.get()
+        self.assertFalse(attachment.is_image)
+        self.assertEqual(attachment.mimetype, 'application/pdf')
+        with attachment.file.open('rb') as saved:
+            self.assertEqual(saved.read(), data)
+
+    def test_processing_limit_errors_are_visible_without_storage_writes(self):
+        for private in (False, True):
+            with self.subTest(private=private), override_settings(IMAGE_MAX_FRAME_PIXELS=1):
+                with patch.object(default_storage, 'save', wraps=default_storage.save) as save:
+                    response = self.client.post(self.endpoint(private), {'file': upload()}, format='multipart')
+                self.assertEqual(response.status_code, 400, response.data)
+                self.assertIn('processing limit', str(response.data))
+                save.assert_not_called()
+                self.assertFalse(self.signal.attachments.exists())
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
@@ -281,6 +312,32 @@ class TestImageModelPersistenceSanitization(IsolatedImageStorageMixin, TestCase)
                 self.assertEqual(instance.file.name, original_name)
                 self.assertEqual(self.stored_names(), before)
                 self.assert_clean_image(original_name, 'PNG')
+
+    def test_existing_references_and_metadata_updates_do_not_reencode(self):
+        attachment = Attachment.objects.create(_signal=self.signal, file=upload())
+        name = attachment.file.name
+        with attachment.file.open('rb') as saved:
+            original = saved.read()
+        with patch('signals.apps.services.attachment_files.sanitize_image', wraps=sanitize_image) as sanitize:
+            attachment.caption = 'Synthetic caption'
+            attachment.save(update_fields=['caption'])
+            attachment.file = name
+            attachment.save(update_fields=['file'])
+            Attachment.objects.create(_signal=self.signal, file=name, mimetype='image/jpeg')
+        sanitize.assert_not_called()
+        with default_storage.open(name, 'rb') as saved:
+            self.assertEqual(saved.read(), original)
+        self.assertEqual(self.stored_names(), {name})
+
+    def test_direct_file_save_followed_by_model_save_encodes_only_once(self):
+        attachment = Attachment(_signal=self.signal)
+        with patch('signals.apps.services.attachment_files.sanitize_image', wraps=sanitize_image) as sanitize:
+            attachment.file.save('synthetic.jpg', upload(), save=False)
+            attachment.save()
+            attachment.caption = 'Synthetic caption'
+            attachment.save()
+        sanitize.assert_called_once()
+        self.assert_clean_image(attachment.file.name, 'JPEG')
 
     def legacy_attachment(self):
         # Seed a pre-existing unsanitized blob without exercising the new write boundary.

@@ -48,17 +48,19 @@ class PublicAttachmentSerializer(serializers.Serializer):
             msg = 'Multiple uploaded files not allowed because multiple_answers_allowed is False.'
             raise ValidationError({'file': msg})
 
-        # Create files on disk after they are validated
-        answer_payload = []
+        # Validate and process the whole batch before persisting any member.
+        clean_files = []
         for file in files:
             question.get_field_type().validate_file(file)
+            clean_files.append(sanitize_attachment(file))
 
+        answer_payload = []
+        for file, clean in zip(files, clean_files):
             # Store the file in the default storage
             session_uuid = session_service.session.uuid
             random_uuid = uuid.uuid4()
             extension = file.name.split('.')[-1]
             path = f'{session_uuid.hex[:2]}/{session_uuid.hex[2:4]}/{session_uuid}/{random_uuid.hex}.{extension}'
-            clean = sanitize_attachment(file)
             file_path = default_storage.save(f'attachments/questionnaires/sessions/{path}', clean)
             answer_payload.append({'original_filename': file.name, 'file_path': file_path})
 

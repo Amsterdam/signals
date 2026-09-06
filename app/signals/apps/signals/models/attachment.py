@@ -4,9 +4,11 @@ import logging
 
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.db.models.fields.files import FieldFile
 
-from signals.apps.services.attachment_files import SanitizedAttachmentFile, SanitizedAttachmentFileField
+from signals.apps.services.attachment_files import (
+    SanitizedAttachmentFile,
+    SanitizedAttachmentFileField
+)
 from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.images import IsImageChecker
 from signals.apps.services.domain.mimetypes import (
@@ -101,10 +103,10 @@ class Attachment(CreatedUpdatedModel):
 
     def save(self, *args, **kwargs):
         update_fields = kwargs.get('update_fields')
-        if isinstance(self.file, FieldFile) and not self.file._committed:
-            if update_fields is not None and 'file' in update_fields:
-                kwargs['update_fields'] = set(update_fields) | {'is_image', 'mimetype'}
-        elif self.pk is None:
+        if update_fields is not None and 'file' in update_fields:
+            # FieldFile.save(save=False) has already committed the blob and updated these attributes.
+            kwargs['update_fields'] = set(update_fields) | {'is_image', 'mimetype'}
+        if self.pk is None and self.file._committed:
             self.is_image = IsImageChecker(self.file)()
             if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type

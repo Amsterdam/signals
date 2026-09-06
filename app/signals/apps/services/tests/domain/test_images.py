@@ -68,6 +68,22 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
 
+    def test_get_context_data_skips_historical_truncated_image(self):
+        output = BytesIO()
+        Image.new('RGB', (16, 12), 'red').save(output, format='JPEG')
+        name = default_storage.save('historical-truncated.jpg', ContentFile(output.getvalue()[:-10]))
+        self.addCleanup(default_storage.delete, name)
+        AttachmentFactory.create(_signal=self.signal, file=name, is_image=True)
+        AttachmentFactory.create(
+            _signal=self.signal, file__filename='synthetic.jpg', file__data=output.getvalue(),
+        )
+
+        data, names, _, _ = DataUriImageEncodeService.get_context_data_images(self.signal, 800)
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(len(names), 1)
+        self.assertNotIn('historical-truncated.jpg', names)
+
     def test_get_context_data_images_for_rgba(self):
         # Reproduce problem reported in SIG-3972, RGBA PNG image attachment causes a failure to create PDFs
         image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))

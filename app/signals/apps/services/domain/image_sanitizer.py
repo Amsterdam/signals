@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2026 Gemeente Amsterdam
 from io import BytesIO
-from struct import error as StructError, pack
+from struct import error as StructError
+from struct import pack
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from PIL import Image, ImageCms, ImageOps, PngImagePlugin, UnidentifiedImageError
+from PIL import Image, ImageCms, ImageOps, PngImagePlugin, UnidentifiedImageError, features
 
 MAX_ICC_BYTES = 1_048_576
 
@@ -24,11 +25,14 @@ class _LimitedBuffer(BytesIO):
 
 def _render_frame(image, image_format):
     frame = ImageOps.exif_transpose(image)
-    if frame.mode == 'P' or 'transparency' in frame.info or image_format == 'GIF':
+    if (frame.mode == 'P' or image_format == 'GIF'
+            or ('transparency' in frame.info and frame.mode != 'I;16')):
         frame = frame.convert('RGBA')
 
     profile = image.info.get('icc_profile')
     if profile:
+        if not features.check_module('littlecms2'):
+            raise ValidationError('Image color conversion is unavailable. Please upload another image.')
         if len(profile) > MAX_ICC_BYTES:
             raise ValidationError('Image color profile exceeds the processing limit.')
         output_mode = 'RGBA' if 'A' in frame.getbands() else 'RGB'
@@ -42,6 +46,9 @@ def _render_frame(image, image_format):
     # A fresh image, not an info-dict blacklist: plugins must never inherit input metadata.
     clean = Image.new(frame.mode, frame.size)
     clean.paste(frame)
+    if frame.mode == 'I;16' and 'transparency' in frame.info:
+        # Keep the decoded numeric tRNS key; RGBA conversion would clip 16-bit samples to 8 bits.
+        clean.info['transparency'] = frame.info['transparency']
     return clean
 
 
@@ -110,10 +117,12 @@ def _encode(image, output):
 
 def sanitize_image(content, max_bytes):
     """Return a new encoded image; never return the original on processing failure."""
-    if content.size > max_bytes:
-        raise ValidationError('Image exceeds the attachment size limit.')
     content.seek(0)
     try:
+        if content.size > max_bytes:
+            raise ValidationError('Image exceeds the attachment size limit.')
+        if min(settings.IMAGE_MAX_FRAMES, settings.IMAGE_MAX_FRAME_PIXELS, settings.IMAGE_MAX_TOTAL_PIXELS) <= 0:
+            raise ValidationError('Image processing limits must be positive.')
         # verify() catches structural corruption before a separate, complete pixel decode.
         with Image.open(content, formats=('JPEG', 'PNG', 'GIF')) as image:
             image.verify()

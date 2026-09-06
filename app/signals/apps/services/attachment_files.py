@@ -8,7 +8,10 @@ from django.db.models import FileField
 from django.db.models.fields.files import FieldFile
 
 from signals.apps.services.domain.image_sanitizer import sanitize_image
-from signals.apps.services.domain.mimetypes import MimeTypeFromContentResolver, MimeTypeResolvingError
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolver,
+    MimeTypeResolvingError
+)
 
 
 def sanitize_attachment(content, name=None):

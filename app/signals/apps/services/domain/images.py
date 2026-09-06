@@ -44,6 +44,8 @@ class DataUriImageEncodeService:
                     with default_storage.open(att.file.name) as file:
                         buffer.write(file.read())
                         image = Image.open(buffer)
+                        # Decode inside the error handler so corrupt historical images cannot abort a PDF.
+                        image.load()
                 except UnidentifiedImageError:
                     # PIL cannot open the attached file it is probably not an image.
                     msg = f'Cannot open image attachment pk={att.pk}'
