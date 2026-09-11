@@ -256,10 +256,23 @@ STATIC_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL: str = '/signals/media/'
 MEDIA_ROOT: str = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
+# Storage backends. STORAGES replaces DEFAULT_FILE_STORAGE and STATICFILES_STORAGE,
+# which Django removed in 5.1. Note that this only configures Django's own storage
+# registry, i.e. what default_storage resolves to. The datawarehouse containers are
+# handled separately, see AZURE_CONTAINERS below and signals.apps.reporting.utils.
+STORAGES: dict[str, dict[str, str]] = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
 S3_STORAGE_ENABLED: bool = os.getenv('S3_STORAGE_ENABLED', False) in TRUE_VALUES
 if S3_STORAGE_ENABLED:
     # S3 Settings
-    DEFAULT_FILE_STORAGE: str = 'storages.backends.s3.S3Storage'
+    STORAGES['default']['BACKEND'] = 'storages.backends.s3.S3Storage'
 
     AWS_ACCESS_KEY_ID: str | None = os.getenv('S3_STORAGE_ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY: str | None = os.getenv('S3_STORAGE_SECRET_KEY')
@@ -272,7 +285,7 @@ if S3_STORAGE_ENABLED:
 AZURE_STORAGE_ENABLED: bool = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
 if AZURE_STORAGE_ENABLED:
     # Azure Settings
-    DEFAULT_FILE_STORAGE: str = 'storages.backends.azure_storage.AzureStorage'
+    STORAGES['default']['BACKEND'] = 'storages.backends.azure_storage.AzureStorage'
 
     AZURE_ACCOUNT_NAME: str | None = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
     AZURE_ACCOUNT_KEY: str | None = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
