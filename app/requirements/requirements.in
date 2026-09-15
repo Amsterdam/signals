@@ -11,7 +11,7 @@ django-extensions
 django-filter
 django-markdownx
 django-o365mail
-djangorestframework<3.16
+djangorestframework<3.18
 djangorestframework-gis
 django-silk
 django-storages
