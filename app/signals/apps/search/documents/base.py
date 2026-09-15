@@ -53,8 +53,10 @@ class DocumentBase(Document):
             index_instance.delete()
 
     @classmethod
-    def prepare_batch(cls, queryset):
-        for obj in queryset.iterator():
+    def prepare_batch(cls, queryset, chunk_size=2000):
+        # The indexing queryset uses prefetch_related(), for which Django requires an
+        # explicit chunk_size on iterator(). 2000 matches Django's own default.
+        for obj in queryset.iterator(chunk_size=chunk_size):
             yield cls().create_document(obj).create_document_dict()
 
     @classmethod
@@ -64,7 +66,7 @@ class DocumentBase(Document):
             end = start + size
             bulk(
                 client=es,
-                actions=cls.prepare_batch(queryset[start:end]),
+                actions=cls.prepare_batch(queryset[start:end], chunk_size=size),
                 chunk_size=size,
             )
 
