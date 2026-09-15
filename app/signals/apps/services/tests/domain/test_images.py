@@ -5,6 +5,8 @@ from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from PIL import Image
 
 from signals.apps.services.domain.images import DataUriImageEncodeService, IsImageChecker
@@ -40,7 +42,10 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(att_created_ats), 0)
 
     def test_get_context_data_invalid_images(self):
-        AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=b'blah', is_image=True)
+        # Simulate a historical corrupt blob; new image writes are rejected.
+        name = default_storage.save('historical-invalid.jpg', ContentFile(b'blah'))
+        self.addCleanup(default_storage.delete, name)
+        AttachmentFactory.create(_signal=self.signal, file=name, is_image=True)
         jpg_data_uris, att_filenames, user_emails, att_created_ats = \
             DataUriImageEncodeService.get_context_data_images(self.signal, 800)
         self.assertEqual(len(jpg_data_uris), 0)
@@ -62,6 +67,22 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(att_created_ats), 1)
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
+
+    def test_get_context_data_skips_historical_truncated_image(self):
+        output = BytesIO()
+        Image.new('RGB', (16, 12), 'red').save(output, format='JPEG')
+        name = default_storage.save('historical-truncated.jpg', ContentFile(output.getvalue()[:-10]))
+        self.addCleanup(default_storage.delete, name)
+        AttachmentFactory.create(_signal=self.signal, file=name, is_image=True)
+        AttachmentFactory.create(
+            _signal=self.signal, file__filename='synthetic.jpg', file__data=output.getvalue(),
+        )
+
+        data, names, _, _ = DataUriImageEncodeService.get_context_data_images(self.signal, 800)
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(len(names), 1)
+        self.assertNotIn('historical-truncated.jpg', names)
 
     def test_get_context_data_images_for_rgba(self):
         # Reproduce problem reported in SIG-3972, RGBA PNG image attachment causes a failure to create PDFs
