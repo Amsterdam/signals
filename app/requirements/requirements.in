@@ -2,7 +2,7 @@ azure-monitor-opentelemetry-exporter
 azure-storage-blob
 beautifulsoup4==4.14.3
 Celery
-Django>=5.0,<5.1
+Django>=5.1,<5.2
 django-celery-beat
 django-celery-email
 django-celery-results

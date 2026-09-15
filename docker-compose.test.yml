@@ -10,9 +10,9 @@ services:
       - docker-compose/environments/.test
 
   database:
-    # postgis 3.2 is the extension version provided by Azure Database for PostgreSQL Flexible Server at the time of writing
-    # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions#postgres-12-extensions
-    image: postgis/postgis:12-3.2-alpine
+    # Matches the PostgreSQL major version of the Azure Database for PostgreSQL Flexible
+    # Server instances we run on (14.x). Django 5.1 dropped PostgreSQL 12.
+    image: postgis/postgis:14-3.5-alpine
     shm_size: '1024m'
     ports:
       - "5409:5432"
