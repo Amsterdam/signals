@@ -26,19 +26,28 @@ class QuestionFilterSet(FilterSet):
         sub_cat = self.form.cleaned_data.get('sub_slug', None)
         sub_slug = sub_cat.slug if sub_cat else None
 
+        if not main_slug:
+            # Without a category there is no such thing as "the" position of a
+            # question: a question that is linked to several categories has one
+            # position per category. Ordering on those multi-valued columns puts
+            # them in the SELECT, which breaks the DISTINCT on the queryset and
+            # returns a question once per category it is linked to. Order on the
+            # question itself instead, so every question is returned exactly once.
+            # The key is not unique, so pk is used to keep paging deterministic.
+            return queryset.filter(category__is_active=True).distinct().order_by('key', 'pk')
+
         # sort on main category first, then question ordering
         qs = queryset.filter(category__is_active=True).order_by(
             '-categoryquestion__category__parent', 'categoryquestion__order'
         )
 
-        if main_slug:
-            if sub_slug:
-                childq = Q(category__parent__slug=main_slug) & Q(category__slug=sub_slug)
-                parentq = Q(category__parent__isnull=True) & Q(category__slug=main_slug)
-                qs = qs.filter(childq | parentq)
-            else:
-                qs = qs.filter(
-                    category__parent__isnull=True,
-                    category__slug=main_slug
-                )
+        if sub_slug:
+            childq = Q(category__parent__slug=main_slug) & Q(category__slug=sub_slug)
+            parentq = Q(category__parent__isnull=True) & Q(category__slug=main_slug)
+            qs = qs.filter(childq | parentq)
+        else:
+            qs = qs.filter(
+                category__parent__isnull=True,
+                category__slug=main_slug
+            )
         return qs
