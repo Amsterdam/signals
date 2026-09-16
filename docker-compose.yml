@@ -167,7 +167,9 @@ services:
       - RABBITMQ_DEFAULT_VHOST=vhost
 
   minio:
-    image: minio/minio
+    # MinIO removed its images from Docker Hub on 2026-09-11; quay.io is their
+    # current official distribution and carries the same tags.
+    image: quay.io/minio/minio
     ports:
       - "9000:9000"
       - "9001:9001"

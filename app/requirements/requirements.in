@@ -2,7 +2,7 @@ azure-monitor-opentelemetry-exporter
 azure-storage-blob
 beautifulsoup4==4.14.3
 Celery
-Django>4.2.19,<4.3
+Django>=5.0,<5.1
 django-celery-beat
 django-celery-email
 django-celery-results
@@ -11,7 +11,7 @@ django-extensions
 django-filter
 django-markdownx
 django-o365mail
-djangorestframework<3.16
+djangorestframework<3.18
 djangorestframework-gis
 django-silk
 django-storages

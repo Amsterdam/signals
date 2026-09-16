@@ -90,7 +90,7 @@ defusedxml==0.7.1
     # via djangorestframework-xml
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.30
+django==5.0.14
     # via
     #   -r requirements/requirements.in
     #   django-appconf
@@ -141,7 +141,7 @@ django-storages[s3]==1.14.6
     # via -r requirements/requirements.in
 django-timezone-field==7.2.2
     # via django-celery-beat
-djangorestframework==3.15.2
+djangorestframework==3.17.2
     # via
     #   -r requirements/requirements.in
     #   djangorestframework-csv
