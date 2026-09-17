@@ -98,7 +98,17 @@ def queryset_to_csv_file(queryset: QuerySet, csv_file_path: str) -> TextIO:
     """
     sql, params = queryset.query.sql_with_params()
     sql = f"COPY ({sql}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER E',')"
-    sql = sql.replace('AS "_', 'AS "')
+
+    # Annotations are prefixed with an underscore where their name would otherwise
+    # clash with a model field; that prefix is stripped again for the CSV header.
+    # Only annotation aliases are renamed, because model columns such as _signal_id
+    # are expected to keep their name. This used to be a blind replace of 'AS "_',
+    # which was safe only as long as Django aliased nothing but annotations. As of
+    # Django 5.2 every selected column gets an explicit alias, so a blind replace
+    # renames real columns too.
+    for alias in queryset.query.annotations:
+        if alias.startswith('_'):
+            sql = sql.replace(f'AS "{alias}"', f'AS "{alias[1:]}"')
 
     with open(csv_file_path, 'w') as file:
         with connection.cursor() as cursor:
