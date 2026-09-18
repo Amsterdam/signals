@@ -66,6 +66,7 @@ BOUNDING_BOX: list[float] = [float(i) for i in os.getenv('BOUNDING_BOX', '3.3,50
 # Django's security settings
 SECURE_BROWSER_XSS_FILTER: bool = True
 SECURE_CONTENT_TYPE_NOSNIFF: bool = True
+SECURE_REFERRER_POLICY: str = 'strict-origin-when-cross-origin'
 X_FRAME_OPTIONS: str = 'DENY'
 
 # Application definition
