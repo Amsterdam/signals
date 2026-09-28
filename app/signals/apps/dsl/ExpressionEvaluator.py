@@ -15,7 +15,7 @@ TermExpression: TermTimeExpression | TermBooleanExpression | TermStringExpressio
 TermStringExpression: str_val=STRING | id_val=ID;
 TermNumericExpression: numeric_val=NUMBER;
 TermTimeExpression: time_val=/\d{1,2}\:\d{2}(\:\d{2})?/;
-TermBooleanExpression: bool_val=/true|false|True|False/;
+TermBooleanExpression: bool_val=/(true|false|True|False)\\b/;
 Comment: /\/\/.*$/;
 ''' # noqa
 
