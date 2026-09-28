@@ -22,6 +22,7 @@ class ExpressionContext(models.Model):
     CTX_TIME = 'time'
     CTX_SET = 'set'
     CTX_DICT = 'dict'
+    CTX_BOOLEAN = 'boolean'
     CTX_TYPE_CHOICES = (
         (CTX_POINT, CTX_POINT),
         (CTX_STRING, CTX_STRING),
@@ -29,6 +30,7 @@ class ExpressionContext(models.Model):
         (CTX_TIME, CTX_TIME),
         (CTX_SET, CTX_SET),
         (CTX_DICT, CTX_DICT),
+        (CTX_BOOLEAN, CTX_BOOLEAN),
     )
 
     class Meta:

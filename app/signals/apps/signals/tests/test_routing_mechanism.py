@@ -185,6 +185,68 @@ class TestRoutingMechanism(TestCase):
         self.assertTrue("value 3.2" in ctx['key3_list'])
         self.assertEqual(ctx['key4'], "value 4")
 
+    def test_context_includes_text_anonymity_and_address(self):
+        signal = SignalFactory.create(
+            text='A fallen tree blocks the road',
+            location__address={'postcode': '1011PN', 'huisnummer': 1},
+            reporter__email='',
+            reporter__phone='',
+        )
+
+        ctx = SignalContext()(signal)
+
+        self.assertEqual(ctx['text'], 'A fallen tree blocks the road')
+        self.assertTrue(ctx['is_anonymous'])
+        self.assertEqual(ctx['address'], {'postcode': '1011PN', 'huisnummer': 1})
+
+    def test_routing_with_text_anonymity_and_address(self):
+        expression = ExpressionFactory.create(
+            _type=self.exp_routing_type,
+            name='anonymous tree report at a specific address',
+            code=(
+                'text == "A fallen tree blocks the road" and is_anonymous == true '
+                'and address."postcode" == "1011PN" and address."huisnummer" == 1'
+            ),
+        )
+        department = DepartmentFactory.create()
+        RoutingExpressionFactory.create(
+            _expression=expression,
+            _department=department,
+            is_active=True,
+            order=1,
+        )
+        signal = SignalFactory.create(
+            text='A fallen tree blocks the road',
+            location__address={'postcode': '1011PN', 'huisnummer': 1},
+            reporter__email='',
+            reporter__phone='',
+        )
+
+        self.dsl_service.process_routing_rules(signal)
+        signal.refresh_from_db()
+
+        self.assertEqual(signal.routing_assignment.departments.first(), department)
+
+    def test_routing_when_text_contains_value(self):
+        expression = ExpressionFactory.create(
+            _type=self.exp_routing_type,
+            name='route emphatic reports',
+            code='text contains "!!!"',
+        )
+        department = DepartmentFactory.create()
+        RoutingExpressionFactory.create(
+            _expression=expression,
+            _department=department,
+            is_active=True,
+            order=1,
+        )
+        signal = SignalFactory.create(text='Dangerous situation!!!')
+
+        self.dsl_service.process_routing_rules(signal)
+        signal.refresh_from_db()
+
+        self.assertEqual(signal.routing_assignment.departments.first(), department)
+
     def test_context_uses_local_incident_datetime_for_time_and_day(self):
         signal = SignalFactory.create(
             incident_date_start=datetime(2021, 7, 18, 22, 30, 45, tzinfo=datetime_timezone.utc)
