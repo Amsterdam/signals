@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0s
-# Copyright (C) 2026 Gemeente Amsterdam
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2026 Delta10 B.V.
 
 from django.db import migrations, models
 
