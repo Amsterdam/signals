@@ -6,13 +6,12 @@ can be edited in the Django admin. These expressions allow reasoning based on
 nuisance complaint location, status, and category.
 
 Rules can also use the report text (`text`), whether the reporter has supplied
-no contact details (`is_anonymous`), and individual address fields through the
-`address` dictionary. For example:
+no contact details (`is_anonymous`), and the formatted address (`address`).
+The address has the same value as the `address_text` field shown in the
+frontend. For example:
 ```
-text contains "Illegal dumping" and is_anonymous == true and address."postcode" == "1011PN"
+text contains "Illegal dumping" and is_anonymous == true and address contains "1011PN"
 ```
-Address keys use their API names, such as `openbare_ruimte`, `huisnummer`,
-`huisletter`, `huisnummer_toevoeging`, `postcode`, and `woonplaats`.
 
 Use `contains` for a case-sensitive text fragment match. For example,
 `text contains "!!!"` routes reports that contain three exclamation marks.

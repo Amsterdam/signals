@@ -188,7 +188,12 @@ class TestRoutingMechanism(TestCase):
     def test_context_includes_text_anonymity_and_address(self):
         signal = SignalFactory.create(
             text='A fallen tree blocks the road',
-            location__address={'postcode': '1011PN', 'huisnummer': 1},
+            location__address={
+                'openbare_ruimte': 'Amstel',
+                'huisnummer': 1,
+                'postcode': '1011PN',
+                'woonplaats': 'Amsterdam',
+            },
             reporter__email='',
             reporter__phone='',
         )
@@ -197,7 +202,7 @@ class TestRoutingMechanism(TestCase):
 
         self.assertEqual(ctx['text'], 'A fallen tree blocks the road')
         self.assertTrue(ctx['is_anonymous'])
-        self.assertEqual(ctx['address'], {'postcode': '1011PN', 'huisnummer': 1})
+        self.assertEqual(ctx['address'], 'Amstel 1 1011PN Amsterdam')
 
     def test_routing_with_text_anonymity_and_address(self):
         expression = ExpressionFactory.create(
@@ -205,7 +210,7 @@ class TestRoutingMechanism(TestCase):
             name='anonymous tree report at a specific address',
             code=(
                 'text == "A fallen tree blocks the road" and is_anonymous == true '
-                'and address."postcode" == "1011PN" and address."huisnummer" == 1'
+                'and address contains "Amstel 1"'
             ),
         )
         department = DepartmentFactory.create()
@@ -217,7 +222,12 @@ class TestRoutingMechanism(TestCase):
         )
         signal = SignalFactory.create(
             text='A fallen tree blocks the road',
-            location__address={'postcode': '1011PN', 'huisnummer': 1},
+            location__address={
+                'openbare_ruimte': 'Amstel',
+                'huisnummer': 1,
+                'postcode': '1011PN',
+                'woonplaats': 'Amsterdam',
+            },
             reporter__email='',
             reporter__phone='',
         )
