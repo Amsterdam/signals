@@ -749,7 +749,7 @@ uritemplate==4.2.0
     # via
     #   -r requirements_test.txt
     #   drf-spectacular
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements_test.txt
     #   botocore
