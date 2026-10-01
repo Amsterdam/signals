@@ -541,7 +541,7 @@ pyjwt[crypto]==2.15.0
     #   -r requirements_test.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.18.0
+pypdf==6.19.0
     # via -r requirements_test.txt
 pyphen==0.18.1
     # via
@@ -765,7 +765,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.7.12
+virtualenv==21.7.13
     # via
     #   -r requirements_test.txt
     #   tox
