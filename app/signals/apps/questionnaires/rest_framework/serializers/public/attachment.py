@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from signals.apps.questionnaires.fieldtypes.attachment import Attachment
 from signals.apps.questionnaires.models import Question
+from signals.apps.services.attachment_files import sanitize_attachment
 
 
 class PublicAttachmentSerializer(serializers.Serializer):
@@ -47,17 +48,20 @@ class PublicAttachmentSerializer(serializers.Serializer):
             msg = 'Multiple uploaded files not allowed because multiple_answers_allowed is False.'
             raise ValidationError({'file': msg})
 
-        # Create files on disk after they are validated
-        answer_payload = []
+        # Validate and process the whole batch before persisting any member.
+        clean_files = []
         for file in files:
             question.get_field_type().validate_file(file)
+            clean_files.append(sanitize_attachment(file))
 
+        answer_payload = []
+        for file, clean in zip(files, clean_files):
             # Store the file in the default storage
             session_uuid = session_service.session.uuid
             random_uuid = uuid.uuid4()
             extension = file.name.split('.')[-1]
             path = f'{session_uuid.hex[:2]}/{session_uuid.hex[2:4]}/{session_uuid}/{random_uuid.hex}.{extension}'
-            file_path = default_storage.save(f'attachments/questionnaires/sessions/{path}', file.file)
+            file_path = default_storage.save(f'attachments/questionnaires/sessions/{path}', clean)
             answer_payload.append({'original_filename': file.name, 'file_path': file_path})
 
         # Make sure the downstream JSONSchema checks succeed if only one
