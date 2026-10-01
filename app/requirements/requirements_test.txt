@@ -491,7 +491,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.21.0
     # via pytest
-pyjwt[crypto]==2.13.0
+pyjwt[crypto]==2.15.0
     # via
     #   -r requirements.txt
     #   mozilla-django-oidc

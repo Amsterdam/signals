@@ -281,7 +281,7 @@ pycparser==3.0
     # via cffi
 pydyf==0.12.1
     # via weasyprint
-pyjwt[crypto]==2.13.0
+pyjwt[crypto]==2.15.0
     # via
     #   mozilla-django-oidc
     #   msal
