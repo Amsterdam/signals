@@ -619,7 +619,7 @@ tinyhtml5==2.1.0
     #   weasyprint
 tomli-w==1.2.0
     # via tox
-tornado==6.5.8
+tornado==6.5.9
     # via
     #   -r requirements.txt
     #   flower
@@ -707,7 +707,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.7.9
+virtualenv==21.7.12
     # via tox
 wcwidth==0.8.3
     # via
