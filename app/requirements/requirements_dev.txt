@@ -412,7 +412,7 @@ o365==2.1.9
     # via
     #   -r requirements_test.txt
     #   django-o365mail
-oauthlib==3.3.1
+oauthlib==4.0.0
     # via
     #   -r requirements_test.txt
     #   requests-oauthlib
