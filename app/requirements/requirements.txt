@@ -285,7 +285,7 @@ pyjwt[crypto]==2.15.0
     # via
     #   mozilla-django-oidc
     #   msal
-pypdf==6.18.0
+pypdf==6.19.0
     # via -r requirements.in
 pyphen==0.18.1
     # via weasyprint
