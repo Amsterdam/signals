@@ -1820,6 +1820,18 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsInstance(self.signal.attachments.filter(is_image=True).first(), Attachment)
 
+    @override_settings(API_MAX_NUMBER_OF_PUBLIC_ATTACHMENTS=1)
+    def test_image_upload_not_restricted_by_reporter_attachment_limit(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+
+        for _ in range(2):
+            image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+            response = self.client.post(endpoint, data={'file': image})
+            self.assertEqual(response.status_code, 201)
+
+        self.assertEqual(self.signal.attachments.count(), 2)
+        self.assertFalse(self.signal.attachments.filter(created_by__isnull=True).exists())
+
     def test_created_by_field_present(self):
         # We must expose the username of the user who uploaded an attachment.
         endpoint = self.attachment_endpoint.format(self.signal.id)
