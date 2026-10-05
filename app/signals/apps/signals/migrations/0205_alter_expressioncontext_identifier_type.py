@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0203_signal_source_index'),
+        ('signals', '0204_alter_category_departments_alter_category_questions'),
     ]
 
     operations = [
