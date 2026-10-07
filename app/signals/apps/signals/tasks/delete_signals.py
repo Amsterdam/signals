@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from signals.apps.signals.models import DeletedSignal, Signal
+from signals.apps.signals.services.attachments import delete_attachment_files_after_commit
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GESPLITST
 from signals.celery import app
 
@@ -81,10 +82,13 @@ def delete_signal(signal_id: int, batch_uuid: uuid.UUID | None = None):  # noqa 
             DeletedSignal.objects.create_from_signal(signal=signal, action='automatic', note=note,
                                                      batch_uuid=batch_uuid)
 
-            for attachment in signal.attachments.all():
-                attachment.delete()
+            # Django's cascade removes Attachment rows but does not
+            # remove FileField contents from object storage. Keep the names before
+            # deleting the Signal and remove their blobs after a successful commit.
+            attachment_file_names = list(signal.attachments.values_list('file', flat=True))
 
             signal.delete()
+            delete_attachment_files_after_commit(attachment_file_names)
     except Exception as e:
         logging.error(f'Deleting Signal with id #{signal.id} went wrong, error: {e}')
 
