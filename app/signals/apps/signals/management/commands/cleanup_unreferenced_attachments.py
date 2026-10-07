@@ -6,7 +6,7 @@ from django.core.management import BaseCommand, CommandError
 
 from signals.apps.signals.services.attachments import (
     delete_attachment_files,
-    iter_unreferenced_attachment_files,
+    iter_unreferenced_attachment_files
 )
 
 DELETE_BATCH_SIZE = 1000

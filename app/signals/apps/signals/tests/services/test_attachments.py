@@ -9,7 +9,7 @@ from signals.apps.signals.models import Attachment, Signal
 from signals.apps.signals.services.attachments import (
     delete_attachment_files,
     iter_attachment_files,
-    iter_unreferenced_attachment_files,
+    iter_unreferenced_attachment_files
 )
 from signals.apps.signals.tasks.delete_signals import delete_signal
 
