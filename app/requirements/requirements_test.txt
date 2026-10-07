@@ -326,7 +326,7 @@ lxml==6.1.3
     #   xmlunittest
 lxml-stubs==0.5.1
     # via -r requirements_test.in
-mako==1.4.1
+mako==1.4.2
     # via pytest-bdd
 markdown==3.10.3
     # via
@@ -496,7 +496,7 @@ pyjwt[crypto]==2.15.0
     #   -r requirements.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.18.0
+pypdf==6.19.0
     # via -r requirements.txt
 pyphen==0.18.1
     # via
@@ -707,7 +707,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.7.12
+virtualenv==21.7.13
     # via tox
 wcwidth==0.8.3
     # via
@@ -721,7 +721,7 @@ webencodings==0.6.1
     #   cssselect2
     #   tinycss2
     #   tinyhtml5
-werkzeug==3.1.8
+werkzeug==3.1.9
     # via moto
 wrapt==2.4.0
     # via
