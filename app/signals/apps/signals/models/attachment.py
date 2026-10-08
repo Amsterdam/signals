@@ -4,8 +4,11 @@ import logging
 
 from django.conf import settings
 from django.contrib.gis.db import models
-from PIL import ImageFile
 
+from signals.apps.services.attachment_files import (
+    SanitizedAttachmentFile,
+    SanitizedAttachmentFileField
+)
 from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.images import IsImageChecker
 from signals.apps.services.domain.mimetypes import (
@@ -22,9 +25,6 @@ from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
 
-# Allow truncated image to be loaded:
-ImageFile.LOAD_TRUNCATED_IMAGES = True
-
 IMAGE_MIME_TYPES = (
     'image/jpeg',
     'image/png',
@@ -38,6 +38,20 @@ PRIVATE_ALLOWED_MIME_TYPES = (
 )
 
 
+class SignalAttachmentFile(SanitizedAttachmentFile):
+    def _prepare_content(self, name, content):
+        # FieldFile.save() may write before model.save(), including replacement files.
+        clean = super()._prepare_content(name, content)
+        self.instance.is_image = IsImageChecker(clean)()
+        self.instance.mimetype = MimeTypeFromContentResolverFactory()(clean)() if clean.size else ''
+        clean.seek(0)
+        return clean
+
+
+class SignalAttachmentFileField(SanitizedAttachmentFileField):
+    attr_class = SignalAttachmentFile
+
+
 class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     _signal = models.ForeignKey(
@@ -46,7 +60,7 @@ class Attachment(CreatedUpdatedModel):
         on_delete=models.CASCADE,
         related_name='attachments',
     )
-    file = models.FileField(
+    file = SignalAttachmentFileField(
         upload_to='attachments/%Y/%m/%d/',
         null=False,
         blank=False,
@@ -88,12 +102,12 @@ class Attachment(CreatedUpdatedModel):
         ]
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            # Check if file is image
-            is_image = IsImageChecker(self.file)
-            self.is_image = is_image()
-
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and 'file' in update_fields:
+            # FieldFile.save(save=False) has already committed the blob and updated these attributes.
+            kwargs['update_fields'] = set(update_fields) | {'is_image', 'mimetype'}
+        if self.pk is None and self.file._committed:
+            self.is_image = IsImageChecker(self.file)()
             if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type
-
         super().save(*args, **kwargs)
