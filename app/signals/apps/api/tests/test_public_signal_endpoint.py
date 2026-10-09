@@ -18,7 +18,12 @@ from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
+from signals.apps.signals.factories import (
+    AttachmentFactory,
+    CategoryFactory,
+    SignalFactory,
+    SourceFactory
+)
 from signals.apps.signals.models import Attachment, Note, Priority, Reporter, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, STATUS_CHOICES
@@ -262,6 +267,30 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         filename = os.path.basename(attachment.file.name)
         self.assertEqual(f'Bijlage toegevoegd door melder: {filename}', note.text)
+
+    @override_settings(API_MAX_NUMBER_OF_PUBLIC_ATTACHMENTS=1)
+    def test_add_attachment_limit_only_counts_reporter_attachments(self):
+        signal = SignalFactory.create(status__state=GEMELD)
+        AttachmentFactory.create(
+            _signal=signal,
+            created_by='employee@example.com',
+            public=True,
+        )
+
+        data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+        response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+        self.assertEqual(response.status_code, 201)
+
+        attachment_count = Attachment.objects.count()
+        note_count = Note.objects.count()
+
+        data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+        response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Maximum number of attachments (1) reached.', response.json())
+        self.assertEqual(Attachment.objects.count(), attachment_count)
+        self.assertEqual(Note.objects.count(), note_count)
 
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create(status__state=GEMELD)

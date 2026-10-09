@@ -487,6 +487,7 @@ API_PDF_RESIZE_IMAGES_TO: int = 800
 
 # Maximum size for attachments
 API_MAX_UPLOAD_SIZE: int = int(os.getenv('API_MAX_UPLOAD_SIZE', '20971520'))  # 20MB
+API_MAX_NUMBER_OF_PUBLIC_ATTACHMENTS: int = int(os.getenv('API_MAX_NUMBER_OF_PUBLIC_ATTACHMENTS', '9'))
 
 # Enable public map geo endpoint
 ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT: bool = os.getenv('ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT', False) in TRUE_VALUES
