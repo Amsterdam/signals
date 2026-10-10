@@ -6,12 +6,14 @@ from signals.apps.dsl.evaluators.evaluator import Evaluator
 
 
 class TerminalEvaluator(Evaluator):
+    bool_val = None
     id_val = None
     str_val = None
     numeric_val = None
     time_val = None
 
     def __init__(self, **kwargs):
+        self.bool_val = kwargs.get('bool_val', None)
         self.id_val = kwargs.get('id_val', None)
         self.str_val = kwargs.get('str_val', None)
         self.numeric_val = kwargs.get('numeric_val', None)
@@ -25,6 +27,8 @@ class TerminalEvaluator(Evaluator):
                 pass
 
     def evaluate(self, ctx):
+        if self.bool_val is not None:
+            return self.bool_val.lower() == 'true'
         if self.id_val:
             return self.resolve(ctx, self.id_val)
         if self.str_val:

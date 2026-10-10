@@ -6,14 +6,16 @@ GRAMMAR = '''
 RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)*;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)*;
-BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')') ;
+BinaryExpression: InExpression | ContainsExpression | EqualityExpression | ('(' OrExpression ')') ;
 EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
 EqualityOperand: '==' | '!=' | '<=' | '<' | '>=' | '>';
 InExpression: lhs=TermStringExpression 'in' rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*;
-TermExpression: TermTimeExpression | TermStringExpression | TermNumericExpression;
+ContainsExpression: lhs=TermStringExpression 'contains' rhs=TermStringExpression;
+TermExpression: TermTimeExpression | TermBooleanExpression | TermStringExpression | TermNumericExpression;
 TermStringExpression: str_val=STRING | id_val=ID;
 TermNumericExpression: numeric_val=NUMBER;
 TermTimeExpression: time_val=/\d{1,2}\:\d{2}(\:\d{2})?/;
+TermBooleanExpression: bool_val=/(true|false|True|False)\\b/;
 Comment: /\/\/.*$/;
 ''' # noqa
 

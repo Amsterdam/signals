@@ -41,6 +41,7 @@ class PrivateExpressionViewSet(ModelViewSet):
 
     # default values for certain types. is used by validator to validate expressions
     _default_context_type = {
+        ExpressionContext.CTX_BOOLEAN: False,
         ExpressionContext.CTX_DICT: dict(),
         ExpressionContext.CTX_NUMBER: 1,
         ExpressionContext.CTX_POINT: geos.Point(1, 1),
