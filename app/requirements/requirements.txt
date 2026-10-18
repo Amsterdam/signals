@@ -218,7 +218,7 @@ networkx==3.6.1
     # via -r requirements.in
 o365==2.1.9
     # via django-o365mail
-oauthlib==3.3.1
+oauthlib==4.0.0
     # via requests-oauthlib
 opentelemetry-api==1.44.0
     # via
@@ -281,11 +281,11 @@ pycparser==3.0
     # via cffi
 pydyf==0.12.1
     # via weasyprint
-pyjwt[crypto]==2.13.0
+pyjwt[crypto]==2.15.0
     # via
     #   mozilla-django-oidc
     #   msal
-pypdf==6.18.0
+pypdf==6.19.0
     # via -r requirements.in
 pyphen==0.18.1
     # via weasyprint
@@ -345,7 +345,7 @@ tinycss2==1.5.1
     #   weasyprint
 tinyhtml5==2.1.0
     # via weasyprint
-tornado==6.5.8
+tornado==6.5.9
     # via flower
 types-requests==2.33.0.20260906
     # via -r requirements.in
@@ -370,7 +370,7 @@ tzlocal==5.4.4
     #   o365
 uritemplate==4.2.0
     # via drf-spectacular
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements.in
     #   botocore
