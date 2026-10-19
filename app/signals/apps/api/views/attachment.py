@@ -23,6 +23,7 @@ from signals.apps.api.serializers import (
 from signals.apps.api.serializers.attachment import PrivateSignalAttachmentUpdateSerializer
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.services.attachments import delete_attachment_files_after_commit
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -116,7 +117,9 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, ModelViewSet):
 
         # We are not calling super().destroy(*args, **kwargs) here because that
         # would again run get_object() which we already did above.
+        attachment_file_name = attachment.file.name
         self.perform_destroy(attachment)
+        delete_attachment_files_after_commit([attachment_file_name])
 
         att_filename = os.path.split(attachment.file.name)[1]
         Signal.actions.create_note({
