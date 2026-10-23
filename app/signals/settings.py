@@ -119,6 +119,7 @@ MIDDLEWARE: list[str] = [
     'corsheaders.middleware.CorsMiddleware',
     'signals.apps.api.middleware.MaintenanceModeMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'signals.middleware.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

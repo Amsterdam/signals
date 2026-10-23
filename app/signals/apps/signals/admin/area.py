@@ -3,10 +3,12 @@
 from django.contrib.gis.admin import GISModelAdmin
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
+from signals.apps.signals.admin.widgets import AdminOSMWidget
 from signals.apps.signals.resources import AreaResource, AreaTypeResource
 
 
 class AreaAdmin(ImportExportModelAdmin, ExportActionMixin, GISModelAdmin):
+    gis_widget = AdminOSMWidget
     resource_class = AreaResource
 
     search_fields = ['name', 'code', '_type__name', '_type__code']

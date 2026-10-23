@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls %}
+{% load i18n admin_urls static %}
 {% block object-tools-items %}
     <li>
         <a href="{% url 'questionnaires:public-questionnaire-detail' uuid=original.uuid %}" class="historylink" target="_blank">Public API</a>
@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block extrahead %}{{ block.super }}
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
-    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js" defer></script>
+    <script src="{% static 'questionnaires/js/mermaid-init.js' %}" defer></script>
 {% endblock %}
