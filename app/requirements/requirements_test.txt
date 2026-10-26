@@ -449,7 +449,7 @@ parse-type==0.6.6
     # via pytest-bdd
 pathspec==1.1.1
     # via mypy
-pillow==12.3.0
+pillow==13.0.0
     # via
     #   -r requirements.txt
     #   django-markdownx
