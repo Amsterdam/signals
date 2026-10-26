@@ -2,10 +2,10 @@
 # Copyright (C) 2018 - 2025 Gemeente Amsterdam
 from signals.celery import app as celery_app
 
-VERSION = (2, 50, "21")
+VERSION = (2, 50, "22")
 __version__ = ".".join(str(part) for part in VERSION)
 __all__ = [
-    "celery_app",
     "VERSION",
     "__version__",
+    "celery_app",
 ]
