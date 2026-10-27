@@ -63,7 +63,7 @@ botocore==1.43.90
     #   boto3
     #   moto
     #   s3transfer
-brotli==1.2.0
+brotli==1.2.1
     # via
     #   -r requirements_test.txt
     #   fonttools
@@ -80,7 +80,7 @@ celery==5.6.3
     #   flower
 celery-types==0.26.0
     # via -r requirements_test.txt
-certifi==2026.7.22
+certifi==2026.10.19
     # via
     #   -r requirements_test.txt
     #   elasticsearch
@@ -224,7 +224,7 @@ django-timezone-field==7.2.2
     # via
     #   -r requirements_test.txt
     #   django-celery-beat
-djangorestframework==3.17.2
+djangorestframework==3.18.2
     # via
     #   -r requirements_test.txt
     #   djangorestframework-csv
@@ -276,7 +276,7 @@ faker==40.38.0
     # via
     #   -r requirements_test.txt
     #   factory-boy
-filelock==3.32.6
+filelock==4.2.1
     # via
     #   -r requirements_test.txt
     #   python-discovery
@@ -352,7 +352,7 @@ lxml==6.1.3
     #   xmlunittest
 lxml-stubs==0.5.1
     # via -r requirements_test.txt
-mako==1.4.1
+mako==1.4.2
     # via
     #   -r requirements_test.txt
     #   pytest-bdd
@@ -473,6 +473,7 @@ packaging==26.3
     #   pytest
     #   pytest-bdd
     #   tox
+    #   virtualenv
 parse==1.22.1
     # via
     #   -r requirements_test.txt
@@ -486,7 +487,7 @@ pathspec==1.1.1
     # via
     #   -r requirements_test.txt
     #   mypy
-pillow==12.3.0
+pillow==13.0.0
     # via
     #   -r requirements_test.txt
     #   django-markdownx
@@ -541,7 +542,7 @@ pyjwt[crypto]==2.15.0
     #   -r requirements_test.txt
     #   mozilla-django-oidc
     #   msal
-pypdf==6.18.0
+pypdf==6.21.2
     # via -r requirements_test.txt
 pyphen==0.18.1
     # via
@@ -584,7 +585,7 @@ python-dateutil==2.9.0.post0
     #   elasticsearch-dsl
     #   freezegun
     #   o365
-python-discovery==1.6.0
+python-discovery==1.6.4
     # via
     #   -r requirements_test.txt
     #   tox
@@ -765,7 +766,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.7.12
+virtualenv==21.14.13
     # via
     #   -r requirements_test.txt
     #   tox
@@ -781,7 +782,7 @@ webencodings==0.6.1
     #   cssselect2
     #   tinycss2
     #   tinyhtml5
-werkzeug==3.1.8
+werkzeug==3.1.9
     # via
     #   -r requirements_test.txt
     #   moto

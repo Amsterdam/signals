@@ -237,6 +237,7 @@ CACHES: dict[str, dict[str, str | int]] = {
 SECURE_SSL_REDIRECT: bool = os.getenv('SECURE_SSL_REDIRECT', True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT: list[str] = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER: tuple[str, str] = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_AGE: int = 24 * 60 * 60  # 1 day
 SESSION_COOKIE_SECURE: bool = os.getenv('SESSION_COOKIE_SECURE', True) in TRUE_VALUES
 CSRF_COOKIE_SECURE: bool = os.getenv('CSRF_COOKIE_SECURE', True) in TRUE_VALUES
 
