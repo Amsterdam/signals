@@ -8,7 +8,10 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS prod
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
+ARG VERSION=0.0.0
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
+
+ENV VERSION=${VERSION}
 
 WORKDIR /app
 
