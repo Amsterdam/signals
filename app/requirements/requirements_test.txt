@@ -620,7 +620,7 @@ tinyhtml5==2.1.0
     #   weasyprint
 tomli-w==1.2.0
     # via tox
-tornado==6.5.9
+tornado==6.6
     # via
     #   -r requirements.txt
     #   flower
