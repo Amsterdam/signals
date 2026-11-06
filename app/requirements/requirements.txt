@@ -218,7 +218,7 @@ networkx==3.6.1
     # via -r requirements.in
 o365==2.1.9
     # via django-o365mail
-oauthlib==4.0.0
+oauthlib==4.0.1
     # via requests-oauthlib
 opentelemetry-api==1.44.0
     # via
