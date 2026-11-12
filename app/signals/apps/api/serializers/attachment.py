@@ -4,6 +4,8 @@ import os
 from datetime import timedelta
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -49,6 +51,19 @@ class BaseSignalAttachmentSerializer(HALSerializer):
 
 class PublicSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
     serializer_url_field = PublicSignalAttachmentLinksField
+
+    def validate_attachment_limit(self, signal: Signal) -> None:
+        max_number_of_attachments = settings.API_MAX_NUMBER_OF_PUBLIC_ATTACHMENTS
+        reporter_attachment_count = Attachment.objects.filter(
+            _signal=signal,
+            created_by__isnull=True,
+            public=True,
+        ).count()
+
+        if reporter_attachment_count >= max_number_of_attachments:
+            raise ValidationError(
+                f'Maximum number of attachments ({max_number_of_attachments}) reached.'
+            )
 
     class Meta:
         model = Attachment
@@ -102,9 +117,13 @@ class PublicSignalAttachmentSerializer(BaseSignalAttachmentSerializer):
                 msg = 'No feedback expected for this signal hence no uploads allowed.'
                 raise ValidationError(msg)
 
-        attachment = super().create(validated_data)
-        attachment.public = True
-        attachment.save()
+        with transaction.atomic():
+            signal = Signal.objects.select_for_update().get(pk=signal.pk)
+            self.validate_attachment_limit(signal)
+
+            attachment = super().create(validated_data)
+            attachment.public = True
+            attachment.save()
 
         return attachment
 
