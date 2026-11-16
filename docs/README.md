@@ -12,3 +12,4 @@
 * [Dummy data for local development or testing](topics/dummy-data.md)
 * [Open Source dependencies](topics/dependencies.md)
 * [Routing expressions](topics/routing-rules.md)
+* [Privacy of uploaded image attachments](topics/image-upload-privacy.md)

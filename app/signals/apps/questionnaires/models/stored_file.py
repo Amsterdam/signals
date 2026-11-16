@@ -2,6 +2,8 @@
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 from django.contrib.gis.db import models
 
+from signals.apps.services.attachment_files import SanitizedAttachmentFileField
+
 
 class StoredFile(models.Model):
     """
@@ -11,7 +13,7 @@ class StoredFile(models.Model):
 
     # This model exists to allow deduplication of images that are used in
     # potentially a large number of questionnaires.
-    file = models.FileField(
+    file = SanitizedAttachmentFileField(
         upload_to='attachments/questionnaires/stored_files/%Y/%m/%d/',
         null=False,
         blank=False,
