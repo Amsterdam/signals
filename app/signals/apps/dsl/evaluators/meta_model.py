@@ -3,6 +3,7 @@
 from textx import metamodel_from_str
 
 from signals.apps.dsl.evaluators.equality_evaluator import EqualityEvaluator
+from signals.apps.dsl.evaluators.evaluator import Evaluator
 from signals.apps.dsl.evaluators.in_evaluator import InEvaluator
 from signals.apps.dsl.evaluators.logical_evaluator import LogicalEvaluator
 from signals.apps.dsl.evaluators.root_evaluator import RootEvaluator
@@ -41,6 +42,15 @@ class InExpression(InEvaluator):
         super().__init__(**kwargs)
 
 
+class ContainsExpression(Evaluator):
+    def __init__(self, **kwargs):
+        self.lhs = kwargs.pop('lhs')
+        self.rhs = kwargs.pop('rhs')
+
+    def evaluate(self, ctx):
+        return self.rhs.evaluate(ctx) in self.lhs.evaluate(ctx)
+
+
 class TermStringExpression(TerminalEvaluator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -56,13 +66,18 @@ class TermTimeExpression(TerminalEvaluator):
         super().__init__(**kwargs)
 
 
+class TermBooleanExpression(TerminalEvaluator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
 class MetaModel(object):
     def __init__(self, grammar):
         self.mm = metamodel_from_str(
             lang_desc=grammar,
             classes=[
-                RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression,
-                TermStringExpression, TermNumericExpression, TermTimeExpression
+                RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression, ContainsExpression,
+                TermStringExpression, TermNumericExpression, TermTimeExpression, TermBooleanExpression
             ],
             debug=False
         )

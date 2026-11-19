@@ -65,6 +65,9 @@ class SignalContext:
             'main': signal.category_assignment.category.parent.name,
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
+            'text': signal.text,
+            'is_anonymous': signal.reporter is None or signal.reporter.is_anonymous,
+            'address': signal.location.address_text or '',
             'time': time.strptime(local_tz.strftime("%H:%M:%S"), "%H:%M:%S"),
             'day': local_tz.strftime("%A"),
             'areas': self.areas

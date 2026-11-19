@@ -32,7 +32,10 @@ class DslTest(TestCase):
                 }
             },
             'listval': 'geo1',
-            'list': set(['geo1', 'geo2'])
+            'list': set(['geo1', 'geo2']),
+            'is_anonymous': True,
+            'address': 'Amstel 1 1011PN Amsterdam',
+            'false_alarm': 'yes',
         }
 
     def test_numeric_operations(self):
@@ -85,6 +88,26 @@ class DslTest(TestCase):
         self.assertTrue(c.compile('maincat == "dieren"').evaluate(self.context))
         self.assertTrue(c.compile('maincat != "test"').evaluate(self.context))
         self.assertFalse(c.compile('maincat != "dieren"').evaluate(self.context))
+
+    def test_contains_operations(self):
+        c = self.compiler
+        self.assertTrue(c.compile('maincat contains "ier"').evaluate(self.context))
+        self.assertFalse(c.compile('maincat contains "boom"').evaluate(self.context))
+
+    def test_boolean_operations(self):
+        c = self.compiler
+        self.assertTrue(c.compile('is_anonymous == true').evaluate(self.context))
+        self.assertTrue(c.compile('is_anonymous == True').evaluate(self.context))
+        self.assertFalse(c.compile('is_anonymous == false').evaluate(self.context))
+
+    def test_identifier_starting_with_boolean_literal(self):
+        c = self.compiler
+        self.assertTrue(c.compile('false_alarm == "yes"').evaluate(self.context))
+
+    def test_address_operations(self):
+        c = self.compiler
+        self.assertTrue(c.compile('address contains "1011PN"').evaluate(self.context))
+        self.assertTrue(c.compile('address == "Amstel 1 1011PN Amsterdam"').evaluate(self.context))
 
     def test_in_collection_operations(self):
         c = self.compiler
